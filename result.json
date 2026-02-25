@@ -1,0 +1,20 @@
+{
+  "profile": {
+    "id": "e163a5bc-0043-4650-9dd5-2fca566ddef0",
+    "full_name": "Test Agent User 2",
+    "email": "testuser_1771805690106@example.com",
+    "phone": null,
+    "university": null,
+    "faculty": null,
+    "student_id": null,
+    "avatar_url": null,
+    "membership_qr_token": null,
+    "membership_expires_at": null,
+    "role": "user",
+    "status": "active",
+    "total_points": 0,
+    "created_at": "2026-02-23T00:14:50.92049+00:00",
+    "updated_at": "2026-02-23T00:14:50.92049+00:00"
+  },
+  "profileError": null
+}

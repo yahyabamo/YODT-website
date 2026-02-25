@@ -1,0 +1,15 @@
+{
+  "fetchUsersData": [
+    {
+      "id": "c911ff6d-5d3a-4bac-90f3-5c58c6c9794d",
+      "full_name": "Test Agent User 3",
+      "email": "testuser_1771805774696@example.com",
+      "role": "user",
+      "status": "active",
+      "total_points": 0,
+      "university": null,
+      "created_at": "2026-02-23T00:16:15.438897+00:00"
+    }
+  ],
+  "fetchError": null
+}
