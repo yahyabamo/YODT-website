@@ -62,92 +62,99 @@ import QuranLife from "./pages/QuranLife";
 import VerifyCertificate from "./pages/VerifyCertificate";
 // import InstructorDashboard from "./pages/hidden/InstructorDashboard";
 
+import { ThemeProvider } from './context/ThemeContext';
+import { LanguageProvider } from './context/LanguageContext';
+
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner position="top-center" />
+    <ThemeProvider>
+      <LanguageProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner position="top-center" />
 
-      {/* 2. Wrap EVERYTHING inside the AuthProvider */}
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/home" element={<Home />} />
+          {/* 2. Wrap EVERYTHING inside the AuthProvider */}
+          <AuthProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/home" element={<Home />} />
 
-            {/* 3. Protect only the Admin Route */}
-            <Route
-              path="/admin"
-              element={
-                <AdminGuard>
-                  <Admin />
-                </AdminGuard>
-              }
-            />
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/home/activities" element={<HomeActivities />} />
-            <Route path="/home/offers" element={<HomeOffers />} />
-            <Route path="/home/reels" element={<HomeReels />} />
-            <Route path="/activities" element={<Activities />} />
-            <Route path="/points" element={<Points />} />
-            <Route path="/supporters" element={<Supporters />} />
-            <Route path="/subscriptions" element={<Subscriptions />} />
-            <Route path="/discounts" element={<Discounts />} />
-            <Route path="/membership-card" element={<MembershipCard />} />
-            <Route path="/profile" element={<Profile />} />
-            {/* <Route path="/academy" element={<AcademyNew />} /> */}
-            {/* <Route path="/academy-old" element={<Academy />} /> */}
-            {/* <Route path="/academy/:courseId" element={<CourseDetailNew />} /> */}
-            {/* <Route path="/academy-old/:courseId" element={<CourseDetail />} /> */}
-            <Route path="/certificates" element={<Certificates />} />
-            <Route path="/verify/:certificateId" element={<VerifyCertificate />} />
-            {/* <Route path="/instructor-dashboard" element={<InstructorDashboard />} /> */}
-            <Route path="/jobs" element={<Jobs />} />
-            <Route path="/volunteers" element={<Volunteers />} />
-            <Route path="/guide" element={<Guide />} />
-            <Route path="/policies" element={<Policies />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/faq" element={<FAQ />} />
-            <Route path="/suggestions" element={<Suggestions />} />
-            {/* <Route path="/videos" element={<Videos />} /> */}
-            <Route path="/community" element={<Community />} />
-            <Route path="/transparency" element={<Transparency />} />
-            <Route path="/notes" element={<Notes />} />
-            {/* <Route path="/yemen-reels" element={<YemenReels />} /> */}
-            {/* <Route path="/news" element={<News />} /> */}
-            <Route path="/events" element={<Events />} />
-            <Route path="/map" element={<IstanbulMap />} />
-            <Route path="/translate" element={<Translate />} />
-            <Route path="/sponsor-portal" element={<SponsorPortal />} />
-            <Route path="/sponsor/:sponsorId" element={<SponsorProfile />} />
-            <Route path="/founding-committee" element={<FoundingCommittee />} />
-            <Route path="/turkey-apps" element={<TurkeyApps />} />
-            {/* <Route path="/doctors" element={<Doctors />} /> */}
-            <Route path="/corps" element={<Corps />} />
-            <Route path="/partners" element={<Partners />} />
-            {/* <Route path="/medical-hub" element={<MedicalHub />} /> */}
-            {/* <Route path="/medical-community" element={<MedicalCommunity />} /> */}
-            {/* <Route path="/doctors-directory" element={<DoctorsDirectory />} /> */}
-            {/* <Route path="/doctor/:doctorId" element={<DoctorProfile />} /> */}
-            {/* <Route path="/medical-congress" element={<MedicalCongress />} /> */}
-            {/* <Route path="/consultation/:doctorId" element={<Consultation />} /> */}
-            <Route path="/quran-life" element={<QuranLife />} />
-            {/* <Route path="/visual-content" element={<VisualContent />} /> */}
-            {/* <Route path="/university" element={<University />} /> */}
-            {/* <Route path="/orbit" element={<Orbit />} /> */}
-            {/* <Route path="/orbit/brief" element={<OrbitBrief />} /> */}
-            {/* <Route path="/orbit/podium" element={<OrbitPodium />} /> */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
+                {/* 3. Protect only the Admin Route */}
+                <Route
+                  path="/admin"
+                  element={
+                    <AdminGuard>
+                      <Admin />
+                    </AdminGuard>
+                  }
+                />
+                <Route path="/" element={<Index />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/home" element={<Home />} />
+                <Route path="/home/activities" element={<HomeActivities />} />
+                <Route path="/home/offers" element={<HomeOffers />} />
+                <Route path="/home/reels" element={<HomeReels />} />
+                <Route path="/activities" element={<Activities />} />
+                <Route path="/points" element={<Points />} />
+                <Route path="/supporters" element={<Supporters />} />
+                <Route path="/subscriptions" element={<Subscriptions />} />
+                <Route path="/discounts" element={<Discounts />} />
+                <Route path="/membership-card" element={<MembershipCard />} />
+                <Route path="/profile" element={<Profile />} />
+                {/* <Route path="/academy" element={<AcademyNew />} /> */}
+                {/* <Route path="/academy-old" element={<Academy />} /> */}
+                {/* <Route path="/academy/:courseId" element={<CourseDetailNew />} /> */}
+                {/* <Route path="/academy-old/:courseId" element={<CourseDetail />} /> */}
+                <Route path="/certificates" element={<Certificates />} />
+                <Route path="/verify/:certificateId" element={<VerifyCertificate />} />
+                {/* <Route path="/instructor-dashboard" element={<InstructorDashboard />} /> */}
+                <Route path="/jobs" element={<Jobs />} />
+                <Route path="/volunteers" element={<Volunteers />} />
+                <Route path="/guide" element={<Guide />} />
+                <Route path="/policies" element={<Policies />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/suggestions" element={<Suggestions />} />
+                {/* <Route path="/videos" element={<Videos />} /> */}
+                <Route path="/community" element={<Community />} />
+                <Route path="/transparency" element={<Transparency />} />
+                <Route path="/notes" element={<Notes />} />
+                {/* <Route path="/yemen-reels" element={<YemenReels />} /> */}
+                {/* <Route path="/news" element={<News />} /> */}
+                <Route path="/events" element={<Events />} />
+                <Route path="/map" element={<IstanbulMap />} />
+                <Route path="/translate" element={<Translate />} />
+                <Route path="/sponsor-portal" element={<SponsorPortal />} />
+                <Route path="/sponsor/:sponsorId" element={<SponsorProfile />} />
+                <Route path="/founding-committee" element={<FoundingCommittee />} />
+                <Route path="/turkey-apps" element={<TurkeyApps />} />
+                {/* <Route path="/doctors" element={<Doctors />} /> */}
+                <Route path="/corps" element={<Corps />} />
+                <Route path="/partners" element={<Partners />} />
+                {/* <Route path="/medical-hub" element={<MedicalHub />} /> */}
+                {/* <Route path="/medical-community" element={<MedicalCommunity />} /> */}
+                {/* <Route path="/doctors-directory" element={<DoctorsDirectory />} /> */}
+                {/* <Route path="/doctor/:doctorId" element={<DoctorProfile />} /> */}
+                {/* <Route path="/medical-congress" element={<MedicalCongress />} /> */}
+                {/* <Route path="/consultation/:doctorId" element={<Consultation />} /> */}
+                <Route path="/quran-life" element={<QuranLife />} />
+                {/* <Route path="/visual-content" element={<VisualContent />} /> */}
+                {/* <Route path="/university" element={<University />} /> */}
+                {/* <Route path="/orbit" element={<Orbit />} /> */}
+                {/* <Route path="/orbit/brief" element={<OrbitBrief />} /> */}
+                {/* <Route path="/orbit/podium" element={<OrbitPodium />} /> */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </AuthProvider>
 
-    </TooltipProvider>
+        </TooltipProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

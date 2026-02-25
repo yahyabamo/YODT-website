@@ -219,8 +219,8 @@ export const GlobalSearch = ({ isOpen, onClose }: GlobalSearchProps) => {
               <p className="text-xs text-muted-foreground px-2 mb-2 font-medium">اقتراحات</p>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { label: 'الدورات', path: '/university', icon: GraduationCap },
-                  { label: 'الأطباء', path: '/doctors-directory', icon: Stethoscope },
+                  // { label: 'الدورات', path: '/university', icon: GraduationCap },
+                  // { label: 'الأطباء', path: '/doctors-directory', icon: Stethoscope },
                   { label: 'الوظائف', path: '/jobs', icon: Briefcase },
                   { label: 'الفعاليات', path: '/events', icon: Calendar },
                 ].map((item) => (

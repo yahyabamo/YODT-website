@@ -187,10 +187,9 @@ const Partners = () => {
                         <div className="flex gap-2 mt-3">
                           <Button
                             size="sm"
-                            onClick={() => navigate(`/partner/${partner.id}`)}
+                            onClick={() => navigate(`/home/offers`)}
                           >
-                            عرض التفاصيل
-                            <ChevronLeft className="h-4 w-4 mr-1" />
+                            الذهاب الى صفحة العروض                            <ChevronLeft className="h-4 w-4 mr-1" />
                           </Button>
                           {partner.website && (
                             <Button

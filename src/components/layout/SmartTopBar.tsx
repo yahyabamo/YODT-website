@@ -11,7 +11,9 @@ import { Button } from '@/components/ui/button';
 import logo from '@/assets/logo.png';
 import { cn } from '@/lib/utils';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
-
+import { useTheme } from '@/context/ThemeContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { Sun, Moon } from 'lucide-react';
 
 /**
  * Smart Top Bar - Premium Navigation
@@ -81,6 +83,8 @@ export const SmartTopBar = ({ onOpenAI, onOpenSearch }: SmartTopBarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
+  // const { language, toggleLanguage, t } = useLanguage();
 
   const handleNavigate = (path: string) => {
     setIsOpen(false);
@@ -279,15 +283,34 @@ export const SmartTopBar = ({ onOpenAI, onOpenSearch }: SmartTopBarProps) => {
       </button>
 
       {/* Right Actions */}
-      <div className="flex items-center gap-0.5">
+      <div className="flex items-center gap-1.5 ">
         <Button
           variant="ghost"
           size="icon"
-          className="rounded-xl h-9 w-9 hover:bg-secondary"
+          className="rounded-xl h-9 w-9 hover:bg-secondary hidden sm:flex"
           onClick={onOpenSearch}
         >
           <Search className="w-4 h-4 text-muted-foreground" />
         </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-xl h-9 w-9 hover:bg-secondary"
+          onClick={toggleTheme}
+        >
+          {theme === 'dark' ? (
+            <Sun className="w-4 h-4 text-warning" />
+          ) : (
+            <Moon className="w-4 h-4 text-primary" />
+          )}
+        </Button>
+        {/* <Button
+          variant="ghost"
+          className="rounded-xl h-9 px-2 hover:bg-secondary font-bold text-sm text-foreground"
+          onClick={toggleLanguage}
+        >
+          {language === 'ar' ? 'EN' : 'AR'}
+        </Button> */}
         <NotificationBell />
       </div>
     </header>

@@ -1,29 +1,21 @@
 import { useState, useEffect } from 'react';
 import {
-  ChevronLeft, Bot, GraduationCap, Stethoscope, Radio, Briefcase,
-  TrendingUp, Clock, Sparkles, BookOpen, Heart, MapPin, Calendar,
-  Sun, Moon, Sunrise, Sunset, ArrowUp, Gift, Zap, Play,
-  QrCode
+  ChevronLeft, Sparkles, BookOpen, Heart, MapPin, Calendar,
+  Briefcase, Gift, Play, QrCode, Zap, User, ArrowLeft, ArrowUpRight
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { SmartTopBar } from '@/components/layout/SmartTopBar';
 import { GlobalSearch } from '@/components/layout/GlobalSearch';
-import { useGenderContent } from '@/hooks/useGenderContent';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
+import { useLanguage } from '@/context/LanguageContext';
 
 /**
- * Home Page - "لوحة القيادة اليومية"
- * Daily dashboard with reason to return everyday
+ * Home Page - Institutional Dashboard Redesign
  */
-
-
 
 interface Profile {
   id: string;
@@ -31,14 +23,10 @@ interface Profile {
   full_name: string;
 }
 
-
-
-
-
 const Home = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { isMale } = useGenderContent();
+  const { language, t } = useLanguage();
   const [showSearch, setShowSearch] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -49,7 +37,6 @@ const Home = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Fetch profile when user is ready
   useEffect(() => {
     if (authLoading) return;
 
@@ -74,128 +61,67 @@ const Home = () => {
       setProfile(data);
     } catch (error) {
       console.error('Error fetching profile:', error);
-      toast.error('حدث خطأ في تحميل البيانات');
+      toast.error(language === 'ar' ? 'حدث خطأ في تحميل البيانات' : 'Error loading data');
     } finally {
       setLoading(false);
     }
   };
-  // Prayer times (mock - will be dynamic based on city)
-  // const prayerTimes = [
-  //   { name: 'الفجر', time: '05:42', passed: true },
-  //   { name: 'الظهر', time: '12:34', passed: true },
-  //   { name: 'العصر', time: '15:28', passed: false, next: true },
-  //   { name: 'المغرب', time: '17:52', passed: false },
-  //   { name: 'العشاء', time: '19:12', passed: false },
-  // ];
 
-  // const nextPrayer = prayerTimes.find(p => p.next);
-
-  // Core sections - 6 main pillars
   const coreSections = [
     {
       icon: Sparkles,
-      label: 'الانشطة',
+      label: language === 'ar' ? 'الأنشطة' : 'Activities',
       path: '/home/activities',
-      desc: 'تعلّم',
       gradient: 'from-primary/20 to-primary/5',
-      iconColor: 'text-primary',
+      iconColor: 'col-primary',
     },
-    /* { 
-       icon: Stethoscope, 
-       label: 'المستشفى', 
-       path: '/medical-hub', 
-       desc: 'صحتك',
-       gradient: 'from-accent/20 to-accent/5',
-       iconColor: 'text-accent',
-       badge: 'جديد'
-     },*/
-    // {
-    //   icon: BookOpen,
-    //   label: 'القرآن',
-    //   path: '/quran-life',
-    //   desc: 'ذكر',
-    //   gradient: 'from-emerald-500/20 to-emerald-500/5',
-    //   iconColor: 'text-emerald-600',
-    //   badge: null
-    // },
     {
       icon: Play,
-      label: 'المحتوى',
+      label: language === 'ar' ? 'المحتوى' : 'Reels',
       path: '/home/reels',
-      desc: 'ريلز',
       gradient: 'from-rose-500/20 to-rose-500/5',
       iconColor: 'text-rose-500',
     },
     {
       icon: QrCode,
-      label: 'بطاقة العضوية',
+      label: language === 'ar' ? 'بطاقة العضوية' : 'Membership',
       path: '/membership-card',
-      desc: 'الاشتراكات',
       gradient: 'from-warning/20 to-warning/5',
       iconColor: 'text-warning',
-      badge: null
     },
     {
       icon: Heart,
-      label: 'الداعمون',
+      label: language === 'ar' ? 'الداعمون' : 'Partners',
       path: '/partners',
-      desc: 'خصومات',
       gradient: 'from-pink-500/20 to-pink-500/5',
       iconColor: 'text-pink-500',
-      badge: 'خصومات حصرية'
+      badge: language === 'ar' ? 'خصومات حصرية' : 'Exclusive',
     },
   ];
 
-  // Quick services - More comprehensive
   const quickServices = [
-    // { label: 'الأكاديمية', path: '/academy', icon: GraduationCap, color: 'text-primary' },
-    { label: 'الشهادات', path: '/certificates', icon: '📜' },
-    { label: 'خريطة', path: '/map', icon: MapPin, color: 'text-blue-500' },
-    // { label: 'ترجمة', path: '/translate', icon: '🔤' },
-    { label: 'فعاليات', path: '/events', icon: Calendar, color: 'text-orange-500' },
-    { label: 'تطبيقات', path: '/turkey-apps', icon: '📱' },
-    { label: 'وظائف', path: '/jobs', icon: Briefcase, color: 'text-violet-500' },
-    { label: 'خصومات', path: '/discounts', icon: Gift, color: 'text-rose-500' },
-    { label: 'تطوع', path: '/volunteers', icon: '🤝' },
-    { label: 'الدليل', path: '/guide', icon: '📋' },
-    { label: 'القرآن  ', path: '/quran-life', icon: BookOpen, color: 'text-emerald-600' },
+    // { label: language === 'ar' ? 'الشهادات' : 'Certificates', path: '/certificates', icon: '📜' },
+    { label: language === 'ar' ? 'الخريطة' : 'Map', path: '/map', icon: MapPin, color: 'text-blue-500' },
+    { label: language === 'ar' ? 'الفعاليات' : 'Events', path: '/events', icon: Calendar, color: 'text-orange-500' },
+    { label: language === 'ar' ? 'تطبيقات' : 'Apps', path: '/turkey-apps', icon: '📱' },
+    { label: language === 'ar' ? 'الوظائف' : 'Jobs', path: '/jobs', icon: Briefcase, color: 'text-violet-500' },
+    { label: language === 'ar' ? 'الخصومات' : 'Discounts', path: '/discounts', icon: Gift, color: 'text-rose-500' },
+    { label: language === 'ar' ? 'تطوع' : 'Volunteer', path: '/volunteers', icon: '🤝' },
+    { label: language === 'ar' ? 'الدليل' : 'Guide', path: '/guide', icon: '📋' },
+    { label: language === 'ar' ? 'القرآن' : 'Quran', path: '/quran-life', icon: BookOpen, color: 'text-emerald-600' },
   ];
-
-
-
-  // Daily content
-  const dailyQuote = {
-    text: 'العلم نور والجهل ظلام، فاسعَ للنور دائماً',
-    source: 'حكمة اليوم'
-  };
-
-  // Get current date in Arabic
-  const formatHijriDate = () => {
-    const options: Intl.DateTimeFormatOptions = {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      calendar: 'islamic-umalqura'
-    };
-    return currentTime.toLocaleDateString('ar-SA', options);
-  };
-
-  const formatGregorianDate = () => {
-    const options: Intl.DateTimeFormatOptions = {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    };
-    return currentTime.toLocaleDateString('ar-SA', options);
-  };
 
   const getGreeting = () => {
     const hour = currentTime.getHours();
-    if (hour < 12) return 'صباح الخير';
-    if (hour < 17) return 'مساء النور';
-    return 'مساء الخير';
+    if (hour < 12) return t('home.greeting.morning');
+    if (hour < 17) return t('home.greeting.afternoon');
+    return t('home.greeting.evening');
   };
 
+  const getFirstName = () => {
+    if (!profile?.full_name) return '';
+    return profile.full_name.split(' ')[0];
+  };
 
   if (authLoading || loading) {
     return (
@@ -208,208 +134,168 @@ const Home = () => {
   if (!profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">لم يتم العثور على الملف الشخصي</p>
+        <p className="text-muted-foreground">{language === 'ar' ? 'لم يتم العثور على الملف الشخصي' : 'Profile not found'}</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-background pb-24">
-      {/* Sticky Header */}
-      <header className="sticky-header">
+    <div className="min-h-screen min-h-[100dvh] bg-background pb-24 font-display">
+      <header className="sticky z-40 top-0 bg-background/80 backdrop-blur-xl border-b border-border/40">
         <div className="p-4 max-w-screen-xl mx-auto">
           <SmartTopBar onOpenSearch={() => setShowSearch(true)} />
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="p-4 max-w-screen-xl mx-auto space-y-5">
+      <main className="max-w-screen-xl mx-auto space-y-8 mt-6">
 
-        {/* Greeting & Date Section */}
-        <section className="animate-fade-in">
-          <div className="flex items-start justify-between">
+        {/* Section 1: Hero Welcome Area */}
+        <section className="px-4 animate-fade-in relative overflow-hidden">
+          {/* Subtle Background Pattern */}
+          <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, var(--primary) 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
+
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-small text-muted-foreground mb-1">{formatHijriDate()}</p>
-              <p className="text-xs text-muted-foreground/60 mb-3">{formatGregorianDate()}</p>
-              <h1 className="text-h1 text-foreground flex items-center gap-2">
+              <p className="text-sm font-medium text-muted-foreground/80 mb-1 tracking-wide uppercase">
                 {getGreeting()}
-                <span className="text-2xl">👋</span>
+              </p>
+              <h1 className="text-h1 text-foreground font-bold tracking-tight">
+                {getFirstName()}
               </h1>
             </div>
 
-            {/* Points Badge */}
             <button
               onClick={() => navigate('/points')}
-              className="flex items-center gap-2 bg-gradient-to-r from-primary/15 to-primary/5 px-4 py-2 rounded-full hover:from-primary/20 hover:to-primary/10 transition-all group"
+              className="flex items-center gap-2 bg-card border border-border/50 shadow-soft px-4 py-2.5 rounded-2xl hover:shadow-card hover:border-primary/30 transition-all group"
             >
-              <Zap className="w-4 h-4 text-primary" />
-              <span className="text-sm font-bold text-primary">{profile.total_points}</span>
-              <ArrowUp className="w-3 h-3 text-primary/60 group-hover:translate-y-[-2px] transition-transform" />
+              <div className="bg-primary/10 p-1.5 rounded-full group-hover:bg-primary/20 transition-colors">
+                <Zap className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex flex-col items-start -space-y-0.5">
+                <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t('home.points')}</span>
+                <span className="text-base font-bold text-foreground">{profile.total_points}</span>
+              </div>
             </button>
           </div>
         </section>
 
-
-        {/* {AI Assistant - Premium
-        <section className="animate-slide-up" style={{ animationDelay: '0.05s' }}>
-          <button
-            onClick={() => setShowAI(true)}
-            className="w-full p-4 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-2 border-dashed border-primary/20 hover:border-primary/40 hover:from-primary/15 transition-all duration-300 group"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center group-hover:from-primary/30 transition-all">
-                <Bot className="h-6 w-6 text-primary" />
-              </div>
-              <div className="flex-1 text-right">
-                <span className="flex items-center gap-2 text-h3 font-bold text-foreground">
-                  المساعد الذكي
-                  <Sparkles className="w-4 h-4 text-primary/60" />
-                </span>
-                <span className="text-small text-muted-foreground block mt-0.5">
-                  {isMale ? 'كيف يمكنني مساعدتك اليوم؟' : 'كيف يمكنني مساعدتكِ اليوم؟'}
-                </span>
-              </div>
-              <ChevronLeft className="w-5 h-5 text-primary/40 group-hover:text-primary/70 group-hover:-translate-x-1 transition-all" />
-            </div>
-          </button>
-        </section>
-        } */}
-
-        {/* Core Sections Grid - Premium */}
-        <section className="animate-slide-up" style={{ animationDelay: '0.08s' }}>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-h2 font-bold text-foreground">الأقسام الرئيسية</h2>
+        {/* Section 2: Main Features Grid */}
+        <section className="px-4 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-h3 font-bold text-foreground tracking-tight">{t('home.sections.title')}</h2>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             {coreSections.map((section, index) => (
               <button
                 key={section.path}
                 onClick={() => navigate(section.path)}
-                className="group relative p-4 rounded-2xl bg-card border border-border/30 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-300 text-center"
-                style={{ animationDelay: `${0.1 + index * 0.02}s` }}
+                className="group relative p-5 rounded-3xl bg-card border border-border/40 shadow-xs hover:shadow-card hover:-translate-y-1 transition-all duration-300 text-right overflow-hidden flex flex-col items-start"
+                style={{ animationDelay: `${0.1 + index * 0.05}s` }}
               >
+                {/* Decorative blob */}
+                <div className={`absolute -right-6 -top-6 w-24 h-24 rounded-full bg-gradient-to-br ${section.gradient} blur-2xl opacity-50 group-hover:opacity-100 transition-opacity duration-500`}></div>
+
                 {section.badge && (
-                  <span className="absolute -top-1.5 -left-1.5 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+                  <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold tracking-wider">
                     {section.badge}
                   </span>
                 )}
-                <div className={`w-12 h-12 mx-auto rounded-2xl bg-gradient-to-br ${section.gradient} flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform duration-300`}>
-                  <section.icon className={`h-6 w-6 ${section.iconColor}`} />
+
+                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${section.gradient} flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 relative z-10`}>
+                  <section.icon className={`h-7 w-7 ${section.iconColor === 'col-primary' ? 'text-primary' : section.iconColor}`} />
                 </div>
-                <h3 className="text-sm font-bold text-foreground">{section.label}</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">{section.desc}</p>
+
+                <h3 className="text-base font-bold text-foreground relative z-10 group-hover:text-primary transition-colors">{section.label}</h3>
+                <div className="mt-4 flex items-center gap-1 text-xs text-muted-foreground font-medium relative z-10 opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                  {language === 'ar' ? 'استكشف' : 'Explore'}
+                  {language === 'ar' ? <ChevronLeft className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3 rotate-180" />}
+                </div>
               </button>
             ))}
           </div>
         </section>
 
-        {/* Daily Quote Card */}
-        <section className="animate-slide-up" style={{ animationDelay: '0.12s' }}>
-          <Card className="border-0 bg-gradient-to-br from-secondary via-secondary/70 to-secondary/30">
-            <CardContent className="p-5">
-              <div className="flex items-start gap-4">
-                <div className="text-3xl">✨</div>
-                <div className="flex-1">
-                  <p className="text-small text-primary font-semibold mb-2">{dailyQuote.source}</p>
-                  <p className="text-body text-foreground leading-relaxed font-medium">
-                    "{dailyQuote.text}"
-                  </p>
+        {/* Section 5: Points Card */}
+        <section className="px-4 animate-slide-up" style={{ animationDelay: '0.4s' }}>
+          <div className="relative overflow-hidden rounded-3xl bg-foreground shadow-elevated group cursor-pointer" onClick={() => navigate('/points')}>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+            <div className="absolute bottom-0 left-0 w-40 h-40 bg-accent/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+
+            <div className="relative p-6 lg:p-8 flex items-center justify-between">
+              <div>
+                <p className="text-background/70 font-medium text-sm mb-1">{t('home.points.card.title')}</p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-bold tracking-tight text-background">{profile.total_points}</span>
+                  <span className="text-primary font-medium tracking-wide">{t('home.points')}</span>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+
+              <div className="w-12 h-12 rounded-full bg-background/10 backdrop-blur-sm flex items-center justify-center border border-background/20 group-hover:bg-primary group-hover:border-primary transition-all duration-300">
+                {language === 'ar' ? (
+                  <ArrowLeft className="w-5 h-5 text-background" />
+                ) : (
+                  <ArrowUpRight className="w-5 h-5 text-background" />
+                )}
+              </div>
+            </div>
+          </div>
         </section>
 
-        {/* Quick Services */}
-        <section className="animate-slide-up" style={{ animationDelay: '0.15s' }}>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-h3 font-bold text-foreground">خدمات سريعة</h2>
-            <button onClick={() => navigate('/guide')} className="text-small text-primary font-medium">
-              المزيد ←
-            </button>
+        {/* Section 4: Quick Services */}
+        <section className="animate-slide-up" style={{ animationDelay: '0.3s' }}>
+          <div className="px-4 mb-4">
+            <h2 className="text-h3 font-bold text-foreground tracking-tight">{t('home.services.title')}</h2>
           </div>
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1">
-            {quickServices.map((service) => (
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-4 -mx-1 px-5 snap-x">
+            {quickServices.map((service, index) => (
               <button
                 key={service.path}
                 onClick={() => navigate(service.path)}
-                className="flex-shrink-0 flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-secondary/80 hover:bg-secondary transition-colors"
+                className="snap-start flex-shrink-0 flex items-center gap-3 px-5 py-3 rounded-full bg-card border border-border/60 hover:border-primary/30 hover:bg-secondary/50 hover:shadow-sm transition-all group"
               >
                 {typeof service.icon === 'string' ? (
-                  <span className="text-lg">{service.icon}</span>
+                  <span className="text-xl group-hover:scale-110 transition-transform">{service.icon}</span>
                 ) : (
-                  <service.icon className={`w-4 h-4 ${service.color || 'text-muted-foreground'}`} />
+                  <div className={`p-1.5 rounded-full bg-secondary group-hover:bg-background transition-colors`}>
+                    <service.icon className={`w-4 h-4 ${service.color || 'text-muted-foreground'}`} />
+                  </div>
                 )}
-                <span className="text-small font-medium text-foreground whitespace-nowrap">{service.label}</span>
+                <span className="text-sm font-semibold text-foreground whitespace-nowrap">{service.label}</span>
               </button>
             ))}
+            <div className="w-4 flex-shrink-0"></div>
           </div>
         </section>
 
-        {/* Progress Card - Premium */}
-        <section className="animate-slide-up" style={{ animationDelay: '0.18s' }}>
-          <Card className="card-featured border-0 overflow-hidden">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-h3 font-bold text-primary-foreground"> نقاطك </h2>
-                {/* <button
-                  onClick={() => navigate('/points')}
-                  className="text-sm text-primary-foreground/80 hover:text-primary-foreground flex items-center gap-1 transition-colors"
-                >
-                  التفاصيل
-                  <ChevronLeft className="w-4 h-4" />
-                </button> */}
-              </div>
 
-              {/* Progress Bar */}
-              {/* <div className="mb-4">
-                <div className="flex items-center justify-between mb-2">
-                  {/* <span className="text-small text-primary-foreground/80"> نقاطك</span>
-                  <span className="text-small font-bold text-primary-foreground">{stats.weekProgress}%</span>
-                </div>
-                <Progress value={stats.weekProgress} className="h-2 bg-primary-foreground/20" />
-              </div> */}
 
-              {/* Stats Grid */}
-              <div className="grid grid-cols-4 gap-2">
-                {/* <div className="text-center bg-primary-foreground/15 rounded-xl py-2.5 px-1">
-                  <p className="text-lg font-bold text-primary-foreground">{stats.points}</p>
-                  <p className="text-[10px] text-primary-foreground/70">ترتيبك</p>
-                </div> */}
-                {/* <div className="text-center bg-primary-foreground/15 rounded-xl py-2.5 px-1">
-                  <p className="text-lg font-bold text-primary-foreground">#{profile.total_points}</p>
-                  <p className="text-[10px] text-primary-foreground/70">تفاعلاتك</p>
-                </div> */}
-                <div className="text-center bg-primary-foreground/15 rounded-xl py-2.5 px-1">
-                  <p className="text-lg font-bold text-primary-foreground">{profile.total_points}</p>
-                  <p className="text-[10px] text-primary-foreground/70">نقطة</p>
+        {/* Section 3: Wisdom of the Day */}
+        <section className="px-4 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+          <div className="relative rounded-3xl overflow-hidden border border-border/30 bg-card shadow-soft p-1">
+            <div className="absolute inset-0 bg-gradient-to-br from-secondary/40 via-transparent to-primary/5"></div>
+            <div className="relative bg-background/50 backdrop-blur-md rounded-[20px] p-6 lg:p-8">
+              <div className="flex flex-col items-center justify-center space-y-4 text-center">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
+                  <Sparkles className="w-6 h-6 animate-pulse" />
                 </div>
-                {/* <div className="text-center bg-primary-foreground/15 rounded-xl py-2.5 px-1">
-                  <p className="text-lg font-bold text-primary-foreground">{stats.streak}🔥</p>
-                  <p className="text-[10px] text-primary-foreground/70">أيام</p>
-                </div> */}
+                <div>
+                  <h3 className="text-xs font-bold tracking-widest text-primary/80 uppercase mb-3">{t('home.wisdom')}</h3>
+                  <p className="text-lg lg:text-xl text-foreground font-medium leading-relaxed max-w-md mx-auto">
+                    "{t('home.wisdom.text')}"
+                  </p>
+                </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </section>
 
-        {/* CTA Button */}
-        <section className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
-          {/* CTA Hidden */}
-        </section>
 
       </main>
 
       <BottomNav />
-
-      {/* AI Assistant Modal - Hidden */}
-
-      {/* Global Search Modal */}
       <GlobalSearch isOpen={showSearch} onClose={() => setShowSearch(false)} />
     </div>
   );
-
 };
-
 
 export default Home;
