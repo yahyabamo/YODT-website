@@ -12,26 +12,19 @@ import { cn } from '@/lib/utils';
 
 // ─────────────────────────────────────────────
 // YouTube IFrame API — loaded ONCE globally
-// Stores pending callbacks so multiple ReelVideos
-// can all init after the API loads.
+// Queue pattern so all ReelVideo instances init correctly
 // ─────────────────────────────────────────────
 const ytReadyCallbacks: (() => void)[] = [];
 let ytApiState: 'idle' | 'loading' | 'ready' = 'idle';
 
 const loadYouTubeAPI = (onReady: () => void) => {
-    if (ytApiState === 'ready') {
-        onReady();
-        return;
-    }
+    if (ytApiState === 'ready') { onReady(); return; }
     ytReadyCallbacks.push(onReady);
     if (ytApiState === 'loading') return;
-
     ytApiState = 'loading';
     const tag = document.createElement('script');
     tag.src = 'https://www.youtube.com/iframe_api';
     document.head.appendChild(tag);
-
-    // ✅ Single global callback — fires all queued inits
     (window as any).onYouTubeIframeAPIReady = () => {
         ytApiState = 'ready';
         ytReadyCallbacks.forEach(cb => cb());
@@ -59,10 +52,11 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
     const [newComment, setNewComment] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
-    const [isMuted, setIsMuted] = useState(true); // ✅ start muted for mobile autoplay
-    const [hasUnmuted, setHasUnmuted] = useState(false); // track first unmute
+    const [isMuted, setIsMuted] = useState(true);
     const [progress, setProgress] = useState(0);
     const [playerReady, setPlayerReady] = useState(false);
+    // Tracks whether video has been started by a user gesture (needed for iOS)
+    const [hasStarted, setHasStarted] = useState(false);
 
     const playerRef = useRef<any>(null);
     const progressInterval = useRef<any>(null);
@@ -81,21 +75,20 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
             playerRef.current = new (window as any).YT.Player(divId, {
                 videoId,
                 playerVars: {
-                    autoplay: 0,
+                    autoplay: 0,       // 0 so iOS doesn't block it; we call playVideo() on tap
                     controls: 0,
                     modestbranding: 1,
                     rel: 0,
                     iv_load_policy: 3,
                     loop: 1,
                     playlist: videoId,
-                    playsinline: 1,
-                    mute: 1, // ✅ muted so mobile allows autoplay
-                    origin: window.location.origin, // ✅ required on Vercel/production
+                    playsinline: 1,    // required for iOS inline playback
+                    mute: 1,
+                    origin: window.location.origin,
                 },
                 events: {
-                    onReady: (e: any) => {
+                    onReady: () => {
                         if (destroyed) return;
-                        e.target.mute(); // ensure muted
                         setPlayerReady(true);
                     },
                     onStateChange: (e: any) => {
@@ -104,6 +97,7 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
                         if (!YTState) return;
                         if (e.data === YTState.PLAYING) {
                             setIsPaused(false);
+                            setHasStarted(true);
                             startProgressTracking();
                         } else if (e.data === YTState.PAUSED) {
                             setIsPaused(true);
@@ -114,7 +108,7 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
                         }
                     },
                     onError: (e: any) => {
-                        console.error('YT Player error:', e.data, 'for video:', reel.video_url);
+                        console.error('YT error:', e.data, reel.video_url);
                     }
                 }
             });
@@ -127,13 +121,15 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
             try { playerRef.current?.destroy(); } catch (_) { }
             playerRef.current = null;
             setPlayerReady(false);
+            setHasStarted(false);
         };
     }, [reel.id]);
 
-    // ── Play / pause when active changes ──
+    // ── Play/pause when active state changes ──
     useEffect(() => {
         if (!playerReady) return;
         if (isActive) {
+            // Works on desktop + Android; silently fails on iOS (user must tap)
             playerRef.current?.playVideo();
             loadStats();
             incrementViewCount(reel.id);
@@ -141,6 +137,8 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
             playerRef.current?.pauseVideo();
             stopProgressTracking();
             setProgress(0);
+            setHasStarted(false);
+            setIsMuted(true);
         }
     }, [isActive, playerReady]);
 
@@ -162,17 +160,11 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
     };
 
     const loadStats = async () => {
-        try {
-            const data = await fetchReelStats(reel.id, user?.id);
-            setStats(data);
-        } catch (_) { }
+        try { const data = await fetchReelStats(reel.id, user?.id); setStats(data); } catch (_) { }
     };
 
     const loadComments = async () => {
-        try {
-            const data = await fetchComments(reel.id);
-            setComments(data);
-        } catch (_) { }
+        try { const data = await fetchComments(reel.id); setComments(data); } catch (_) { }
     };
 
     const handleToggleLike = async () => {
@@ -183,35 +175,51 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
         } catch { toast.error('فشل في تحديث الإعجاب'); }
     };
 
-    // ── Single tap = pause/play, double tap = like ──
+    // Tap logic:
+    // - If video hasn't started yet (iOS): first tap starts it + unmutes
+    // - Double tap on running video: like
+    // - Single tap on running video: pause / resume
     const handleTap = useCallback(() => {
         const now = Date.now();
+
+        // iOS first tap — start the video with sound
+        if (!hasStarted && playerReady) {
+            playerRef.current?.playVideo();
+            playerRef.current?.unMute();
+            playerRef.current?.setVolume(100);
+            setIsMuted(false);
+            setHasStarted(true);
+            lastTap.current = now;
+            return;
+        }
+
+        // Double tap — like
         if (now - lastTap.current < 300) {
             clearTimeout(tapTimeout.current);
             lastTap.current = 0;
             if (!stats.isLiked) handleToggleLike();
             setShowHeart(true);
             setTimeout(() => setShowHeart(false), 900);
-        } else {
-            lastTap.current = now;
-            tapTimeout.current = setTimeout(() => {
-                if (isPaused) {
-                    playerRef.current?.playVideo();
-                } else {
-                    playerRef.current?.pauseVideo();
-                }
-            }, 300);
+            return;
         }
-    }, [isPaused, stats.isLiked]);
 
-    // ── First tap unmutes, subsequent taps toggle mute ──
+        // Single tap — pause / resume
+        lastTap.current = now;
+        tapTimeout.current = setTimeout(() => {
+            if (isPaused) {
+                playerRef.current?.playVideo();
+            } else {
+                playerRef.current?.pauseVideo();
+            }
+        }, 300);
+    }, [isPaused, stats.isLiked, hasStarted, playerReady]);
+
     const handleToggleMute = (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!hasUnmuted || isMuted) {
+        if (isMuted) {
             playerRef.current?.unMute();
             playerRef.current?.setVolume(100);
             setIsMuted(false);
-            setHasUnmuted(true);
         } else {
             playerRef.current?.mute();
             setIsMuted(true);
@@ -248,14 +256,14 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
     return (
         <div className="relative h-screen w-full snap-start bg-black flex items-center justify-center overflow-hidden">
 
-            {/* YouTube player target */}
+            {/* YouTube player target div */}
             <div
                 id={divId}
                 className="absolute inset-0 w-full h-full"
                 style={{ transform: 'scale(1.5)', transformOrigin: 'center center', pointerEvents: 'none' }}
             />
 
-            {/* Thumbnail shown while player loads */}
+            {/* Thumbnail while player loads */}
             {!playerReady && reel.thumbnail_url && (
                 <img
                     src={reel.thumbnail_url}
@@ -264,11 +272,32 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
                 />
             )}
 
-            {/* Gradient overlay */}
+            {/* Gradient */}
             <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60 pointer-events-none z-20" />
 
-            {/* Tap / gesture layer */}
+            {/* Full-screen tap layer */}
             <div className="absolute inset-0 z-30 cursor-pointer" onClick={handleTap} />
+
+            {/* iOS: tap-to-start overlay */}
+            {playerReady && !hasStarted && isActive && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-40 gap-3">
+                    <div className="w-20 h-20 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center border-2 border-white/40">
+                        <Play className="text-white w-10 h-10 fill-white ml-1" />
+                    </div>
+                    <span className="text-white/80 text-sm bg-black/40 backdrop-blur-md px-4 py-1.5 rounded-full">
+                        اضغط للتشغيل
+                    </span>
+                </div>
+            )}
+
+            {/* Pause indicator */}
+            {hasStarted && isPaused && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-40">
+                    <div className="w-16 h-16 rounded-full bg-black/50 flex items-center justify-center">
+                        <Play className="text-white w-8 h-8 fill-white ml-1" />
+                    </div>
+                </div>
+            )}
 
             {/* Heart animation */}
             {showHeart && (
@@ -277,28 +306,16 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
                 </div>
             )}
 
-            {/* Pause indicator */}
-            {isPaused && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-40">
-                    <div className="w-16 h-16 rounded-full bg-black/50 flex items-center justify-center">
-                        <Play className="text-white w-8 h-8 fill-white ml-1" />
-                    </div>
-                </div>
-            )}
-
-            {/* Mute button — top right */}
+            {/* Mute button */}
             <button
                 className="absolute top-6 right-4 z-40 w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center"
                 onClick={handleToggleMute}
             >
-                {isMuted
-                    ? <VolumeX className="text-white w-5 h-5" />
-                    : <Volume2 className="text-white w-5 h-5" />
-                }
+                {isMuted ? <VolumeX className="text-white w-5 h-5" /> : <Volume2 className="text-white w-5 h-5" />}
             </button>
 
-            {/* Unmute hint — shown on first load */}
-            {isMuted && !hasUnmuted && isActive && (
+            {/* "Tap for sound" hint shown while muted after starting */}
+            {isMuted && hasStarted && isActive && (
                 <div className="absolute top-6 right-16 z-40 bg-black/60 backdrop-blur-md rounded-full px-3 py-1.5 pointer-events-none">
                     <span className="text-white text-xs">اضغط للصوت</span>
                 </div>
@@ -331,45 +348,43 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
             <div className="absolute left-4 right-20 bottom-[155px] pointer-events-none text-right z-40" dir="rtl">
                 <h3 className="text-white font-bold text-lg mb-1 drop-shadow-lg">@{reel.author || 'اتحاد الطلاب'}</h3>
                 <p className="text-white/90 text-sm line-clamp-2 mb-3 leading-relaxed">{reel.title}</p>
-                {/* <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
                     <div className="bg-white/20 backdrop-blur-md rounded-full px-3 py-1 flex items-center gap-2">
                         <Music2 className="w-3 h-3 text-white animate-pulse" />
                         <span className="text-white text-[10px]">الصوت الأصلي - اتحاد الطلاب اليمنيين</span>
                     </div>
-                </div> */}
-            </div>
-
-            {/* Progress bar + skip */}
-            <div className="absolute bottom-[130px] left-0 right-0 z-40 px-4">
-                <div className="flex items-center gap-3">
-                    <button
-                        className="text-white/80 text-xs font-bold bg-white/20 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0"
-                        onClick={(e) => handleSkip(e, -10)}
-                    >-10</button>
-
-                    <div className="relative flex-1 h-2 bg-white/30 rounded-full overflow-hidden">
-                        <div
-                            className="absolute left-0 top-0 h-full bg-white rounded-full transition-all duration-300"
-                            style={{ width: `${progress}%` }}
-                        />
-                        <input
-                            type="range"
-                            min={0}
-                            max={100}
-                            step={0.1}
-                            value={progress}
-                            onChange={handleSeek}
-                            onClick={(e) => e.stopPropagation()}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                        />
-                    </div>
-
-                    <button
-                        className="text-white/80 text-xs font-bold bg-white/20 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0"
-                        onClick={(e) => handleSkip(e, 10)}
-                    >+10</button>
                 </div>
             </div>
+
+            {/* Progress bar + skip — only after video starts */}
+            {hasStarted && (
+                <div className="absolute bottom-[130px] left-0 right-0 z-40 px-4">
+                    <div className="flex items-center gap-3">
+                        <button
+                            className="text-white/80 text-xs font-bold bg-white/20 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0"
+                            onClick={(e) => handleSkip(e, -10)}
+                        >-10</button>
+
+                        <div className="relative flex-1 h-2 bg-white/30 rounded-full overflow-hidden">
+                            <div
+                                className="absolute left-0 top-0 h-full bg-white rounded-full transition-all duration-300"
+                                style={{ width: `${progress}%` }}
+                            />
+                            <input
+                                type="range" min={0} max={100} step={0.1} value={progress}
+                                onChange={handleSeek}
+                                onClick={(e) => e.stopPropagation()}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            />
+                        </div>
+
+                        <button
+                            className="text-white/80 text-xs font-bold bg-white/20 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0"
+                            onClick={(e) => handleSkip(e, 10)}
+                        >+10</button>
+                    </div>
+                </div>
+            )}
 
             {/* Comments Drawer */}
             <Drawer.Root open={isCommentsOpen} onOpenChange={setIsCommentsOpen}>
@@ -442,7 +457,6 @@ const HomeReels = () => {
 
     useEffect(() => { loadReels(); }, []);
 
-    // Focus search input when opened
     useEffect(() => {
         if (isSearchOpen) setTimeout(() => searchInputRef.current?.focus(), 100);
     }, [isSearchOpen]);
@@ -455,7 +469,6 @@ const HomeReels = () => {
         finally { setLoading(false); }
     };
 
-    // ✅ Filter reels by search query
     const filteredReels = searchQuery.trim()
         ? reels.filter(r =>
             r.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -483,7 +496,7 @@ const HomeReels = () => {
     return (
         <div className="h-screen w-full bg-black overflow-hidden relative">
 
-            {/* ✅ Search bar — top of screen */}
+            {/* Search bar */}
             <div className="absolute top-0 left-0 right-0 z-50 px-4 pt-4 pb-2">
                 {isSearchOpen ? (
                     <div className="flex items-center gap-2 bg-white/15 backdrop-blur-md rounded-full px-4 py-2 border border-white/20">
@@ -515,8 +528,6 @@ const HomeReels = () => {
                         </button>
                     </div>
                 )}
-
-                {/* Search results count */}
                 {searchQuery.trim() && (
                     <div className="text-center mt-2">
                         <span className="text-white/70 text-xs bg-black/40 backdrop-blur-md px-3 py-1 rounded-full">
@@ -540,11 +551,7 @@ const HomeReels = () => {
                     </div>
                 ) : (
                     filteredReels.map((reel, index) => (
-                        <ReelVideo
-                            key={reel.id}
-                            reel={reel}
-                            isActive={index === activeIndex}
-                        />
+                        <ReelVideo key={reel.id} reel={reel} isActive={index === activeIndex} />
                     ))
                 )}
             </div>
