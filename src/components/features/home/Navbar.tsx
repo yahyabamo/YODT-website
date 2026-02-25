@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import logo from '@/assets/logo.png';
 
 // ... inside the component function
 
@@ -35,12 +36,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <div className="nav-inner">
                     {/* Logo */}
                     <a href="#" className="nav-logo">
-                        <div className="logo-mark">
-                            <img
-                                src="src/assets/logo.png"
-                                alt="Yemeni Students Union"
-                                className="h-8 w-auto mr-2 rtl:ml-2 rtl:mr-0"
-                            />
+                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center p-2">
+                            <img src={logo} alt="الاتحاد" className="w-full h-full object-contain" />
                         </div>
                         <div className="logo-text">
                             <span className="logo-text-main ar-only">اتحاد الطلاب اليمنيين</span>

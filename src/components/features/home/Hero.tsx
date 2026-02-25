@@ -74,14 +74,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenModal }) => {
                             <div className="hero-stat-label ar-only">شريك استراتيجي</div>
                             <div className="hero-stat-label en-only">Partners</div>
                         </div>
-                        <div className="hero-badge-float">
-                            <div className="badge-icon">🏆</div>
-                            <div className="badge-info">
-                                <div className="badge-num">+100</div>
-                                <div className="badge-label ar-only">فعالية منظمة</div>
-                                <div className="badge-label en-only">Events Organized</div>
-                            </div>
-                        </div>
+
                     </div>
                 </div>
 
@@ -130,6 +123,14 @@ export const Hero: React.FC<HeroProps> = ({ onOpenModal }) => {
                         </div>
                     </div>
                     {/* Floating badge */}
+                    {/* <div className="hero-badge-float">
+                        <div className="badge-icon">🏆</div>
+                        <div className="badge-info">
+                            <div className="badge-num">+100</div>
+                            <div className="badge-label ar-only">فعالية منظمة</div>
+                            <div className="badge-label en-only">Events Organized</div>
+                        </div>
+                    </div> */}
 
                 </div>
             </div>

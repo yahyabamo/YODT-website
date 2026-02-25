@@ -77,20 +77,20 @@ export const Footer = () => {
                         <span className="contact-icon">📱</span>
                         <span>+90 5XX XXX XXXX</span>
                     </div>
-                    <div className="footer-contact-item">
+                    {/* <div className="footer-contact-item">
                         <span className="contact-icon">⏰</span>
                         <span>
                             <span className="ar-only">السبت - الخميس: 9ص - 6م</span>
                             <span className="en-only">Sat–Thu: 9AM – 6PM</span>
                         </span>
-                    </div>
+                    </div> */}
                 </div>
             </div>
 
             <div style={{ borderTop: '1px solid var(--border)', maxWidth: 'var(--max)', margin: '0 auto', padding: '24px 5vw', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
                 <div className="footer-copy">
-                    <span className="ar-only">© 2024 اتحاد الطلاب اليمنيين في تركيا – فرع إسطنبول. جميع الحقوق محفوظة.</span>
-                    <span className="en-only">© 2024 Yemeni Students Union in Turkey – Istanbul Branch. All rights reserved.</span>
+                    <span className="ar-only">© 2026 اتحاد الطلاب اليمنيين في تركيا – فرع إسطنبول. جميع الحقوق محفوظة.</span>
+                    <span className="en-only">© 2026 Yemeni Students Union in Turkey – Istanbul Branch. All rights reserved.</span>
                 </div>
                 <div className="footer-bottom-links">
                     <a href="#"><span className="ar-only">سياسة الخصوصية</span><span className="en-only">Privacy Policy</span></a>

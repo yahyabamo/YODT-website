@@ -23,18 +23,18 @@ export const Activities = () => {
                                     <div className="placeholder-text en-only">Cultural Events</div>
                                 </div>
                             </div>
-                            <div className="activity-date">
+                            {/* <div className="activity-date">
                                 <span className="date-day">01</span>
                                 <span className="date-month ar-only">برامج</span>
                                 <span className="date-month en-only">PROG</span>
-                            </div>
+                            </div> */}
                         </div>
                         <div className="activity-content">
                             <div className="activity-tags">
-                                <span className="activity-tag ar-only">ثقافة</span>
-                                <span className="activity-tag en-only">Culture</span>
-                                <span className="activity-tag ar-only">فن</span>
-                                <span className="activity-tag en-only">Art</span>
+                                {/* <span className="activity-tag ar-only">ثقافة</span>
+                                <span className="activity-tag en-only">Culture</span> */}
+                                {/* <span className="activity-tag ar-only">فن</span>
+                                <span className="activity-tag en-only">Art</span> */}
                             </div>
                             <h3 className="activity-title ar-only">الفعاليات الثقافية والأدبية</h3>
                             <h3 className="activity-title en-only">Cultural & Literary Events</h3>
@@ -50,11 +50,11 @@ export const Activities = () => {
                                     <span className="ar-only">قاعات المؤتمرات</span>
                                     <span className="en-only">Conference Halls</span>
                                 </div>
-                                <div className="meta-item">
+                                {/* <div className="meta-item">
                                     <span className="meta-icon">✨</span>
                                     <span className="ar-only">متجدد</span>
                                     <span className="en-only">Ongoing</span>
-                                </div>
+                                </div> */}
                             </div>
                         </div>
                     </div>
