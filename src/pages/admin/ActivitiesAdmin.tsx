@@ -18,23 +18,28 @@ const inputStyle: React.CSSProperties = {
 };
 
 async function uploadImage(file: File): Promise<string> {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
-    const filePath = `${fileName}`;
+    const cloudName = "dknz5c7d0";
+    const uploadPreset = "activity_unsigned";
 
-    const { error: uploadError } = await supabase.storage
-        .from('media')
-        .upload(filePath, file);
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", uploadPreset);
 
-    if (uploadError) {
-        throw uploadError;
+    const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        {
+            method: "POST",
+            body: formData,
+        }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.error?.message || "Upload failed");
     }
 
-    const { data } = supabase.storage
-        .from('media')
-        .getPublicUrl(filePath);
-
-    return data.publicUrl;
+    return data.secure_url;
 }
 
 export default function ActivitiesAdmin({ setConfirm }: { setConfirm: (v: any) => void }) {
@@ -49,6 +54,7 @@ export default function ActivitiesAdmin({ setConfirm }: { setConfirm: (v: any) =
     const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
     const [attendees, setAttendees] = useState<any[]>([]);
     const [loadingAttendees, setLoadingAttendees] = useState(false);
+    const [openImage, setOpenImage] = useState<string | null>(null);
 
     const load = async () => {
         setLoading(true);
@@ -121,6 +127,14 @@ export default function ActivitiesAdmin({ setConfirm }: { setConfirm: (v: any) =
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                     {acts.map(a => (
                         <div key={a.id} className="bg-white rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,.06)] border border-[#f0f0f0] overflow-hidden flex flex-col">
+                            {a.image_url && (
+                                <img
+                                    src={a.image_url}
+                                    alt={a.title}
+                                    className="w-full h-40 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                                    onClick={() => setOpenImage(a.image_url)}
+                                />
+                            )}
                             <div className="h-1" style={{ background: sColor[a.status] }} />
                             <div className="p-4 flex-1 flex flex-col">
                                 <div className="flex items-start justify-between mb-2.5">
@@ -213,6 +227,29 @@ export default function ActivitiesAdmin({ setConfirm }: { setConfirm: (v: any) =
                                 </div>
                             )}
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Lightbox Modal */}
+            {openImage && (
+                <div
+                    className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-200 cursor-zoom-out"
+                    onClick={() => setOpenImage(null)}
+                >
+                    <div className="relative max-w-4xl w-full flex flex-col items-center justify-center animate-in zoom-in-95 duration-200">
+                        <button
+                            onClick={() => setOpenImage(null)}
+                            className="absolute -top-14 right-0 md:-right-12 p-2 text-white/80 hover:text-white transition-colors rounded-full bg-black/40 hover:bg-black/60 focus:outline-none"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                        </button>
+                        <img
+                            src={openImage}
+                            alt="تكبير الصورة"
+                            className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl cursor-default"
+                            onClick={(e) => e.stopPropagation()}
+                        />
                     </div>
                 </div>
             )}

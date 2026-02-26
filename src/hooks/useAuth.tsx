@@ -10,6 +10,8 @@ interface Profile {
     status: 'active' | 'inactive' | 'banned';
     total_points: number;
     avatar_url: string | null;
+    university?: string | null;
+    faculty?: string | null;
 }
 
 export const useAuth = () => {
@@ -30,7 +32,7 @@ export const useAuth = () => {
         try {
             const { data, error } = await supabase
                 .from('profiles')
-                .select('id, full_name, email, role, status, total_points, avatar_url')
+                .select('id, full_name, email, role, status, total_points, avatar_url, university, faculty')
                 .eq('id', userId)
                 .single();
 
@@ -38,7 +40,36 @@ export const useAuth = () => {
                 console.error('Profile fetch error:', error.message);
                 // Don't block the app — just leave profile null
             } else {
-                setProfile(data as Profile);
+                let fetchedProfile = data as Profile;
+
+                // Sync registration data if it exists
+                const regDataStr = localStorage.getItem('registrationData');
+                if (regDataStr) {
+                    try {
+                        const regData = JSON.parse(regDataStr);
+                        const updatePayload: any = {};
+                        let needsUpdate = false;
+
+                        if (regData.university && !fetchedProfile.university) { updatePayload.university = regData.university; needsUpdate = true; }
+                        if (regData.faculty && !fetchedProfile.faculty) { updatePayload.faculty = regData.faculty; needsUpdate = true; }
+                        if (regData.avatar_url && !fetchedProfile.avatar_url) { updatePayload.avatar_url = regData.avatar_url; needsUpdate = true; }
+                        if (regData.phone && !(fetchedProfile as any).phone) { updatePayload.phone = regData.phone; needsUpdate = true; }
+
+                        if (needsUpdate) {
+                            const { error: updateErr } = await supabase.from('profiles').update(updatePayload).eq('id', userId);
+                            if (!updateErr) {
+                                fetchedProfile = { ...fetchedProfile, ...updatePayload };
+                            }
+                        }
+
+                        // We do not remove it immediately in case CompleteProfileSection or others need it.
+                        // Or we can remove the specific keys and keep the rest. Actually, let's keep it in localstorage.
+                    } catch (e) {
+                        console.error("Error syncing registration data:", e);
+                    }
+                }
+
+                setProfile(fetchedProfile);
             }
         } finally {
             setLoading(false);
@@ -93,14 +124,17 @@ export const useAuth = () => {
         email: string,
         password: string,
         fullName: string,
-        gender: 'male' | 'female'
+        gender: 'male' | 'female',
+        university?: string,
+        faculty?: string,
+        avatar_url?: string | null
     ) => {
         const { data, error } = await supabase.auth.signUp({
             email,
             password,
             options: {
                 emailRedirectTo: `${window.location.origin}/`,
-                data: { full_name: fullName, gender },
+                data: { full_name: fullName, gender, university, faculty, avatar_url },
             },
         });
         return { data, error };

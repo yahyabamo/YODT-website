@@ -51,7 +51,17 @@ export function Spinner() {
     );
 }
 
-export function Avatar({ name, size = 32 }: { name: string; size?: number }) {
+export function Avatar({ name, size = 32, src }: { name: string; size?: number; src?: string | null }) {
+    if (src) {
+        return (
+            <img
+                src={src}
+                alt={name}
+                style={{ width: size, height: size, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
+            />
+        );
+    }
+
     const cs = ["#8B1A2A", "#1a5276", "#145a32", "#6e2fa0", "#b7770d"];
     const c = cs[(name?.charCodeAt(0) || 0) % cs.length];
     const initials = name ? name.split(" ").slice(0, 2).map((w: string) => w[0]).join("") : "؟";

@@ -9,7 +9,30 @@ import { useAuth } from '@/hooks/useAuth';
 import { ForgotPasswordDialog } from '@/components/auth/ForgotPasswordDialog';
 import logo from '@/assets/logo.png';
 import { z } from 'zod';
-import { User, Check, ArrowRight } from 'lucide-react';
+import { User, Check, ArrowRight, Camera } from 'lucide-react';
+
+const TURKISH_UNIVERSITIES = [
+  'Istanbul University',
+  'Istanbul Technical University (ITU)',
+  'Middle East Technical University (METU)',
+  'Boğaziçi University',
+  'Koç University',
+  'Sabancı University',
+  'Bilkent University',
+  'Hacettepe University',
+  'Ankara University',
+  'Gazi University',
+  'Yıldız Technical University (YTU)',
+  'Marmara University',
+  'Dokuz Eylül University',
+  'Ege University',
+  'Anadolu University',
+  'Gaziantep University',
+  'Karabük University',
+  'Sakarya University',
+  'Kocaeli University',
+  'Bursa Uludağ University',
+];
 
 type Gender = 'male' | 'female' | null;
 
@@ -27,6 +50,12 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [gender, setGender] = useState<Gender>(null);
+  const [university, setUniversity] = useState('');
+  const [faculty, setFaculty] = useState('');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [uniSuggestions, setUniSuggestions] = useState<string[]>([]);
+  const [showUniSuggestions, setShowUniSuggestions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -66,6 +95,37 @@ const Login = () => {
       navigate('/home', { replace: true });
     }
   }, [justLoggedIn, loading, profile, user]);
+
+  const handleUniversityChange = (value: string) => {
+    setUniversity(value);
+    if (value.trim()) {
+      const filtered = TURKISH_UNIVERSITIES.filter(uni =>
+        uni.toLowerCase().includes(value.toLowerCase())
+      );
+      setUniSuggestions(filtered);
+      setShowUniSuggestions(true);
+    } else {
+      setUniSuggestions([]);
+      setShowUniSuggestions(false);
+    }
+  };
+
+  const selectUniversity = (uni: string) => {
+    setUniversity(uni);
+    setShowUniSuggestions(false);
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // ── Login handler ─────────────────────────────────────────────────
   const handleLogin = async (e: React.FormEvent) => {
@@ -111,13 +171,40 @@ const Login = () => {
       if (err instanceof z.ZodError) { toast.error(err.errors[0].message); return; }
     }
     if (!gender) { toast.error('يرجى اختيار النوع'); return; }
+    if (!university.trim()) { toast.error('يرجى إدخال الجامعة'); return; }
+    if (!faculty.trim()) { toast.error('يرجى إدخال الكلية/التخصص'); return; }
 
     setIsLoading(true);
     try {
+      let avatar_url = null;
+      if (avatarFile) {
+        const formData = new FormData();
+        formData.append('file', avatarFile);
+        formData.append('upload_preset', 'avatar_unsigned');
+        formData.append('folder', 'avatars');
+
+        try {
+          const uploadRes = await fetch('https://api.cloudinary.com/v1_1/dknz5c7d0/image/upload', {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (uploadRes.ok) {
+            const uploadData = await uploadRes.json();
+            avatar_url = uploadData.secure_url;
+          } else {
+            toast.error('فشل في رفع الصورة الشخصية');
+          }
+        } catch (uploadError) {
+          console.error("Cloudinary upload failed", uploadError);
+          toast.error('خطأ في الاتصال أثناء رفع الصورة');
+        }
+      }
+
       localStorage.setItem('registrationData', JSON.stringify({
-        phone, userType: 'student', firstName, lastName,
+        phone, userType: 'student', firstName, lastName, university, faculty, avatar_url
       }));
-      const { error } = await signUp(email, password, `${firstName} ${lastName}`, gender);
+      const { error } = await signUp(email, password, `${firstName} ${lastName}`, gender, university, faculty, avatar_url);
       if (error) {
         toast.error(
           error.message.includes('User already registered')
@@ -237,8 +324,18 @@ const Login = () => {
         <Card className="shadow-card animate-slide-up border-0">
           <CardContent className="p-6">
             <div className="text-center mb-6">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                <User className="h-8 w-8 text-primary" />
+              <div className="relative w-24 h-24 mx-auto mb-4">
+                <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden border-2 border-primary/20">
+                  {avatarPreview ? (
+                    <img src={avatarPreview} alt="Avatar preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="h-10 w-10 text-primary" />
+                  )}
+                </div>
+                <label className="absolute bottom-0 right-0 bg-primary text-primary-foreground p-2 rounded-full cursor-pointer shadow-lg hover:bg-primary/90 transition-colors">
+                  <Camera className="w-4 h-4" />
+                  <input type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} />
+                </label>
               </div>
               <h2 className="text-xl font-bold">إنشاء حساب جديد</h2>
               <p className="text-sm text-muted-foreground mt-1">أدخل معلوماتك للانضمام إلى الاتحاد</p>
@@ -248,17 +345,36 @@ const Login = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">الاسم الأول</label>
-                  <Input placeholder="محمد" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="h-12 bg-secondary border-0 rounded-xl" />
+                  <Input placeholder="" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="h-12 bg-secondary border-0 rounded-xl" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">الاسم الأخير</label>
-                  <Input placeholder="أحمد" value={lastName} onChange={(e) => setLastName(e.target.value)} className="h-12 bg-secondary border-0 rounded-xl" />
+                  <Input placeholder="" value={lastName} onChange={(e) => setLastName(e.target.value)} className="h-12 bg-secondary border-0 rounded-xl" />
                 </div>
+              </div>
+
+              <div className="space-y-2 relative">
+                <label className="text-sm font-medium">الجامعة</label>
+                <Input placeholder="اسم الجامعة" value={university} onChange={(e) => handleUniversityChange(e.target.value)} onFocus={() => { if (university.trim()) setShowUniSuggestions(true) }} onBlur={() => setTimeout(() => setShowUniSuggestions(false), 200)} className="h-12 bg-secondary border-0 rounded-xl" />
+                {showUniSuggestions && uniSuggestions.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-popover border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                    {uniSuggestions.map((uni, idx) => (
+                      <div key={idx} className="p-3 text-sm hover:bg-secondary cursor-pointer" onClick={() => selectUniversity(uni)}>
+                        {uni}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">الكلية / التخصص</label>
+                <Input placeholder="الكلية أو التخصص" value={faculty} onChange={(e) => setFaculty(e.target.value)} className="h-12 bg-secondary border-0 rounded-xl" />
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">البريد الإلكتروني</label>
-                <Input type="email" placeholder="example@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="h-12 bg-secondary border-0 rounded-xl" dir="ltr" />
+                <Input type="email" placeholder="example@gmail.com" value={email} onChange={(e) => setEmail(e.target.value)} className="h-12 bg-secondary border-0 rounded-xl" dir="ltr" />
               </div>
 
               <div className="space-y-2">

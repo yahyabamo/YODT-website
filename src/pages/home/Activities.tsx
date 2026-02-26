@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Sparkles, Calendar, MapPin, Users, Star, ArrowLeft } from 'lucide-react';
+import { Sparkles, Calendar, MapPin, Users, Star, ArrowLeft, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -19,6 +19,7 @@ const HomeActivities = () => {
     const [loading, setLoading] = useState(true);
     const [showSearch, setShowSearch] = useState(false);
     const [registeredActivities, setRegisteredActivities] = useState<Set<string>>(new Set());
+    const [openImage, setOpenImage] = useState<string | null>(null);
     const [registeringId, setRegisteringId] = useState<string | null>(null);
 
 
@@ -115,7 +116,8 @@ const HomeActivities = () => {
                                             <img
                                                 src={activity.image_url}
                                                 alt={activity.title}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+                                                onClick={() => setOpenImage(activity.image_url)}
                                                 onError={(e) => {
                                                     (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 400 300" preserveAspectRatio="none"><rect width="400" height="300" fill="%23f3f4f6"/><text x="50%" y="50%" font-family="sans-serif" font-size="20" fill="%239ca3af" text-anchor="middle" dy=".3em">لا توجد صورة</text></svg>';
                                                 }}
@@ -189,6 +191,29 @@ const HomeActivities = () => {
             </div>
 
             <BottomNav />
+
+            {/* Lightbox Modal */}
+            {openImage && (
+                <div
+                    className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-200 cursor-zoom-out"
+                    onClick={() => setOpenImage(null)}
+                >
+                    <div className="relative max-w-4xl w-full flex flex-col items-center justify-center animate-in zoom-in-95 duration-200">
+                        <button
+                            onClick={() => setOpenImage(null)}
+                            className="absolute -top-14 right-0 md:-right-12 p-2 text-white/80 hover:text-white transition-colors rounded-full bg-black/40 hover:bg-black/60 focus:outline-none"
+                        >
+                            <X className="w-6 h-6" />
+                        </button>
+                        <img
+                            src={openImage}
+                            alt="تكبير الصورة"
+                            className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl cursor-default"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -1,6 +1,6 @@
 ﻿import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  MapPin, Phone, Globe, Instagram, ArrowRight, 
+import {
+  MapPin, Phone, Globe, Instagram, ArrowRight,
   Clock, Tag, ExternalLink, Navigation
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,7 +12,7 @@ import { sponsors } from '@/data/sponsorsData';
 const SponsorProfile = () => {
   const { sponsorId } = useParams();
   const navigate = useNavigate();
-  
+
   const sponsor = sponsors.find(s => s.id === sponsorId);
 
   if (!sponsor) {
@@ -42,7 +42,7 @@ const SponsorProfile = () => {
   return (
     <div className="min-h-screen bg-background pb-24">
       <PageHeader title={sponsor.name} showBack />
-      
+
       <div className="px-4 py-4 max-w-lg mx-auto">
         {/* Hero Card */}
         <Card className="border-0 shadow-card overflow-hidden mb-6">
@@ -105,7 +105,7 @@ const SponsorProfile = () => {
             </h2>
             <div className="flex flex-wrap gap-2">
               {sponsor.branches.map((branch, i) => (
-                <span 
+                <span
                   key={i}
                   className="px-4 py-2 bg-secondary rounded-full text-sm font-medium text-foreground"
                 >
@@ -120,7 +120,7 @@ const SponsorProfile = () => {
         <Card className="border-0 shadow-card mb-6">
           <CardContent className="p-4 space-y-4">
             <h2 className="font-bold text-foreground">الموقع والتواصل</h2>
-            
+
             {/* Address */}
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center shrink-0">
@@ -128,7 +128,7 @@ const SponsorProfile = () => {
               </div>
               <div>
                 <p className="text-sm text-foreground">{sponsor.location.address}</p>
-                <a 
+                <a
                   href={sponsor.location.mapUrl}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -146,7 +146,7 @@ const SponsorProfile = () => {
                 <Phone className="w-5 h-5 text-emerald-500" />
               </div>
               <div>
-                <a 
+                <a
                   href={`tel:${sponsor.contact.phone}`}
                   className="text-sm text-foreground font-medium"
                   dir="ltr"
@@ -159,7 +159,7 @@ const SponsorProfile = () => {
             {/* Social Links */}
             <div className="flex gap-3 pt-2">
               {sponsor.contact.instagram && (
-                <a 
+                <a
                   href={`https://instagram.com/${sponsor.contact.instagram.replace('@', '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -169,7 +169,7 @@ const SponsorProfile = () => {
                 </a>
               )}
               {sponsor.contact.website && (
-                <a 
+                <a
                   href={sponsor.contact.website}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -200,7 +200,7 @@ const SponsorProfile = () => {
                 <span>احصل على خصمك فوراً!</span>
               </li>
             </ol>
-            <Button 
+            <Button
               className="w-full mt-4"
               onClick={() => navigate('/membership-card')}
             >

@@ -10,27 +10,34 @@ const inputStyle: React.CSSProperties = {
     boxSizing: "border-box", fontFamily: "inherit"
 };
 
-async function uploadImage(file: File): Promise<string> {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
-    const filePath = `${fileName}`;
+async function uploadImage(file: File, folder: string): Promise<string> {
+    const cloudName = "dknz5c7d0";
+    const uploadPreset = "activity_unsigned"; // ممكن تغير الاسم لو عملت preset خاص بالعروض
 
-    const { error: uploadError } = await supabase.storage
-        .from('media')
-        .upload(filePath, file);
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", uploadPreset);
+    formData.append("folder", folder);
 
-    if (uploadError) {
-        throw uploadError;
+    const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        {
+            method: "POST",
+            body: formData,
+        }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.error?.message || "Upload failed");
     }
 
-    const { data } = supabase.storage
-        .from('media')
-        .getPublicUrl(filePath);
-
-    return data.publicUrl;
+    return data.secure_url;
 }
 
 export default function OffersAdmin({ setConfirm }: { setConfirm: (v: any) => void }) {
+
     const [offers, setOffers] = useState<any[]>([]);
     const [partners, setPartners] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -39,6 +46,7 @@ export default function OffersAdmin({ setConfirm }: { setConfirm: (v: any) => vo
     const [editing, setEditing] = useState<any | null>(null);
     const [form, setForm] = useState<any>({ title: "", partner_id: "", description: "", discount_percentage: 0, expires_at: "", status: "active", image_url: "" });
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
+    const [openImage, setOpenImage] = useState<string | null>(null);
 
     const load = async () => {
         setLoading(true);
@@ -59,7 +67,7 @@ export default function OffersAdmin({ setConfirm }: { setConfirm: (v: any) => vo
         try {
             let finalImageUrl = form.image_url;
             if (selectedImage) {
-                finalImageUrl = await uploadImage(selectedImage);
+                finalImageUrl = await uploadImage(selectedImage, "offers");
             }
             const payload = { title: form.title, partner_id: form.partner_id, description: form.description, discount_percentage: Number(form.discount_percentage), expires_at: form.expires_at || null, status: form.status, image_url: finalImageUrl };
             await upsertOffer(editing ? { ...payload, id: editing.id } : payload);
@@ -97,8 +105,21 @@ export default function OffersAdmin({ setConfirm }: { setConfirm: (v: any) => vo
                             </thead>
                             <tbody>{offers.map(o => (
                                 <tr key={o.id} className="border-b border-[#fafafa] hover:bg-gray-50">
-                                    <td className="p-3 md:px-4 md:py-3 font-bold text-[#111] whitespace-nowrap">{o.title}</td>
-                                    <td className="p-3 md:px-4 md:py-3 text-[#6b7280] whitespace-nowrap">{o.partners?.name || "—"}</td>
+                                    <td className="p-3 md:px-4 md:py-3">
+                                        <div className="flex items-center gap-3">
+                                            {o.image_url && (
+                                                <img
+                                                    src={o.image_url}
+                                                    alt={o.title}
+                                                    className="w-12 h-12 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                                    onClick={() => setOpenImage(o.image_url)}
+                                                />
+                                            )}
+                                            <span className="font-bold text-[#111] whitespace-nowrap">
+                                                {o.title}
+                                            </span>
+                                        </div>
+                                    </td>                                    <td className="p-3 md:px-4 md:py-3 text-[#6b7280] whitespace-nowrap">{o.partners?.name || "—"}</td>
                                     <td className="p-3 md:px-4 md:py-3"><span className="font-black text-lg" style={{ color: B }}>{o.discount_percentage}%</span></td>
                                     <td className="p-3 md:px-4 md:py-3 text-[#9ca3af] text-[12px] whitespace-nowrap">{o.expires_at ? fmtDate(o.expires_at) : "—"}</td>
                                     <td className="p-3 md:px-4 md:py-3 whitespace-nowrap"><Badge type={o.status}>{o.status === "active" ? "نشط" : "معطل"}</Badge></td>
@@ -138,6 +159,29 @@ export default function OffersAdmin({ setConfirm }: { setConfirm: (v: any) => vo
                     {saving ? "جاري الحفظ..." : editing ? "حفظ" : "إضافة"}
                 </button>
             </Modal>
+
+            {/* Lightbox Modal */}
+            {openImage && (
+                <div
+                    className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-200 cursor-zoom-out"
+                    onClick={() => setOpenImage(null)}
+                >
+                    <div className="relative max-w-4xl w-full flex flex-col items-center justify-center animate-in zoom-in-95 duration-200">
+                        <button
+                            onClick={() => setOpenImage(null)}
+                            className="absolute -top-14 right-0 md:-right-12 p-2 text-white/80 hover:text-white transition-colors rounded-full bg-black/40 hover:bg-black/60 focus:outline-none"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                        </button>
+                        <img
+                            src={openImage}
+                            alt="تكبير الصورة"
+                            className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl cursor-default"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

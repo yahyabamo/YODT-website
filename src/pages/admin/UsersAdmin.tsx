@@ -7,7 +7,7 @@ import { Avatar, Badge, Spinner, Inp, Sel, Modal, B } from "./components/AdminUI
 interface User {
     id: string; full_name: string; email: string;
     role: "admin" | "user"; status: "active" | "inactive" | "banned";
-    total_points: number; university: string; created_at: string;
+    total_points: number; university: string; faculty: string; avatar_url: string; created_at: string;
 }
 
 const inputStyle: React.CSSProperties = {
@@ -118,7 +118,7 @@ export default function UsersAdmin({ setConfirm }: { setConfirm: (v: any) => voi
                         <table className="w-full border-collapse text-[13px] text-right">
                             <thead>
                                 <tr className="border-b border-[#f3f4f6] bg-[#fafafa]">
-                                    {["العضو", "الجامعة", "النقاط", "الحالة", "الدور", "الإجراءات"].map(h => (
+                                    {["العضو", "الجامعة", "الكلية", "النقاط", "الحالة", "الدور", "الإجراءات"].map(h => (
                                         <th key={h} className="p-3 md:px-4 md:py-3 font-bold text-[#6b7280] whitespace-nowrap">{h}</th>
                                     ))}
                                 </tr>
@@ -128,7 +128,7 @@ export default function UsersAdmin({ setConfirm }: { setConfirm: (v: any) => voi
                                     <tr key={u.id} className="border-b border-[#fafafa]">
                                         <td className="p-3 md:px-4 md:py-3 min-w-[200px]">
                                             <div className="flex items-center gap-2.5">
-                                                <Avatar name={u.full_name || u.email} size={36} />
+                                                <Avatar name={u.full_name || u.email} src={u.avatar_url} size={36} />
                                                 <div>
                                                     <div className="font-bold text-[#111]">{u.full_name || "—"}</div>
                                                     <div className="text-[11px] text-[#9ca3af]">{u.email}</div>
@@ -136,6 +136,7 @@ export default function UsersAdmin({ setConfirm }: { setConfirm: (v: any) => voi
                                             </div>
                                         </td>
                                         <td className="p-3 md:px-4 md:py-3 text-[#6b7280] whitespace-nowrap">{u.university || "—"}</td>
+                                        <td className="p-3 md:px-4 md:py-3 text-[#6b7280] whitespace-nowrap">{u.faculty || "—"}</td>
                                         <td className="p-3 md:px-4 md:py-3"><span className="font-extrabold text-[15px]" style={{ color: B }}>{(u.total_points || 0).toLocaleString()}</span></td>
                                         <td className="p-3 md:px-4 md:py-3 whitespace-nowrap"><Badge type={u.status}>{u.status === "active" ? "نشط" : u.status === "inactive" ? "غير نشط" : "محظور"}</Badge></td>
                                         <td className="p-3 md:px-4 md:py-3 whitespace-nowrap"><Badge type={u.role}>{u.role === "admin" ? "مدير" : "عضو"}</Badge></td>

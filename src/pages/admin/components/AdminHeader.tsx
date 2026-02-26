@@ -17,11 +17,11 @@ export function AdminHeader({ pageTitle, setSidebarOpen }: AdminHeaderProps) {
     const handleLogout = async () => {
         try {
             await signOut();
-            navigate("/");
+            navigate("/index");
         } catch (error) {
             console.error("Logout failed:", error);
             // Fallback redirect if something fails
-            window.location.href = "/";
+            window.location.href = "/index";
         }
     };
 

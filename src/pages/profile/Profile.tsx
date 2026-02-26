@@ -173,8 +173,12 @@ const Profile = () => {
           <div className="gradient-primary h-24" />
           <CardContent className="pt-0 pb-6 -mt-12">
             <div className="flex flex-col items-center">
-              <div className="w-24 h-24 rounded-full bg-card border-4 border-card shadow-card flex items-center justify-center">
-                <span className="text-4xl">{isStudent ? '👨‍🎓' : '👩‍🎓'}</span>
+              <div className="w-24 h-24 rounded-full bg-card border-4 border-card shadow-card flex items-center justify-center overflow-hidden">
+                {profile.avatar_url ? (
+                  <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-4xl">{isStudent ? '👨‍🎓' : '👩‍🎓'}</span>
+                )}
               </div>
 
               {isEditing ? (

@@ -101,14 +101,14 @@ const Home = () => {
 
   const quickServices = [
     // { label: language === 'ar' ? 'الشهادات' : 'Certificates', path: '/certificates', icon: '📜' },
-    { label: language === 'ar' ? 'الخريطة' : 'Map', path: '/map', icon: MapPin, color: 'text-blue-500' },
+    // { label: language === 'ar' ? 'الخريطة' : 'Map', path: '/map', icon: MapPin, color: 'text-blue-500' },
     // { label: language === 'ar' ? 'الفعاليات' : 'Events', path: '/events', icon: Calendar, color: 'text-orange-500' },
     // { label: language === 'ar' ? 'تطبيقات' : 'Apps', path: '/turkey-apps', icon: '📱' },
     { label: language === 'ar' ? 'الوظائف' : 'Jobs', path: '/jobs', icon: Briefcase, color: 'text-violet-500' },
-    // { label: language === 'ar' ? 'الخصومات' : 'Discounts', path: '/offers', icon: Gift, color: 'text-rose-500' },
+    { label: language === 'ar' ? 'الخصومات' : 'Discounts', path: '/home/offers', icon: Gift, color: 'text-rose-500' },
     // { label: language === 'ar' ? 'تطوع' : 'Volunteer', path: '/volunteers', icon: '🤝' },
     { label: language === 'ar' ? 'الدليل' : 'Guide', path: '/guide', icon: '📋' },
-    { label: language === 'ar' ? 'القرآن' : 'Quran', path: '/quran-life', icon: BookOpen, color: 'text-emerald-600' },
+    // { label: language === 'ar' ? 'القرآن' : 'Quran', path: '/quran-life', icon: BookOpen, color: 'text-emerald-600' },
   ];
 
   const getGreeting = () => {

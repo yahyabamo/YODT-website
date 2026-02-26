@@ -39,7 +39,7 @@ export async function signOut() {
 export async function fetchUsers({ page = 0, pageSize = 20, search = '' } = {}) {
     let query = supabase
         .from('profiles')
-        .select('id, full_name, email, role, status, total_points, university, created_at', { count: 'exact' })
+        .select('id, full_name, email, role, status, total_points, university, faculty, avatar_url, created_at', { count: 'exact' })
         .order('created_at', { ascending: false })
         .range(page * pageSize, (page + 1) * pageSize - 1)
 
