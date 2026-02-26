@@ -27,6 +27,14 @@ import Volunteers from "./pages/Volunteers";
 import Guide from "./pages/Guide";
 import Policies from "./pages/Policies";
 import Admin from "./pages/admin/Admin";
+import DashboardAdmin from "./pages/admin/Dashboard";
+import ScannerAdmin from "./pages/admin/ScannerAdmin";
+import UsersAdmin from "./pages/admin/UsersAdmin";
+import ActivitiesAdmin from "./pages/admin/ActivitiesAdmin";
+import PartnersAdmin from "./pages/admin/PartnersAdmin";
+import OffersAdmin from "./pages/admin/OffersAdmin";
+import ReelsAdmin from "./pages/admin/ReelsAdmin";
+import PointsHistoryAdmin from "./pages/admin/PointsHistoryAdmin";
 import { AuthProvider, AdminGuard } from './context/AuthContext';
 import NotFound from "./pages/NotFound";
 import Suggestions from "./pages/Suggestions";
@@ -91,7 +99,17 @@ const App = () => (
                       <Admin />
                     </AdminGuard>
                   }
-                />
+                >
+                  <Route index element={<DashboardAdmin />} />
+                  <Route path="dashboard" element={<DashboardAdmin />} />
+                  <Route path="scanner" element={<ScannerAdmin />} />
+                  <Route path="users" element={<UsersAdmin setConfirm={() => { }} />} />
+                  <Route path="activities" element={<ActivitiesAdmin setConfirm={() => { }} />} />
+                  <Route path="partners" element={<PartnersAdmin setConfirm={() => { }} />} />
+                  <Route path="offers" element={<OffersAdmin setConfirm={() => { }} />} />
+                  <Route path="reels" element={<ReelsAdmin setConfirm={() => { }} />} />
+                  <Route path="points" element={<PointsHistoryAdmin />} />
+                </Route>
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/home" element={<Home />} />
@@ -116,7 +134,6 @@ const App = () => (
                 <Route path="/volunteers" element={<Volunteers />} />
                 <Route path="/guide" element={<Guide />} />
                 <Route path="/policies" element={<Policies />} />
-                <Route path="/admin" element={<Admin />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/suggestions" element={<Suggestions />} />
                 {/* <Route path="/videos" element={<Videos />} /> */}

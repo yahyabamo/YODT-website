@@ -37,10 +37,12 @@ interface QuickLink {
 // 5 Core Pillars
 const mainSections: MainSection[] = [
   { icon: Home, label: 'الرئيسية', path: '/home', description: 'لوحتك اليومية', color: 'bg-primary/15 text-primary' },
-  { icon: Sparkles, label: 'الانشطة', path: '/ِactivities', description: 'الأنشطة', color: 'bg-primary/15 text-primary' },
+  { icon: Sparkles, label: 'الانشطة', path: '/home/activities', description: 'الأنشطة', color: 'bg-primary/15 text-primary' },
   // { icon: Stethoscope, label: 'المستشفى', path: '/medical-hub', description: 'أطباء واستشارات', color: 'bg-accent/15 text-accent' },
   // { icon: BookOpen, label: 'القرآن', path: '/quran-life', description: 'تحفيظ وأذكار', color: 'bg-emerald-500/15 text-emerald-600' },
-  { icon: Play, label: 'فيديو', path: '/reels', description: 'فيديو ', color: 'bg-warning/15 text-warning' },
+  { icon: Play, label: 'فيديو', path: '/home/reels', description: 'فيديو ', color: 'bg-warning/15 text-warning' },
+  { icon: Heart, label: 'الداعمون', path: '/partners', description: 'الداعمون ', color: 'bg-primary/15 text-warning' },
+
 ];
 
 // Academy & Library 
@@ -55,23 +57,23 @@ const academyLinks: QuickLink[] = [
 // Quick services - ALL sections
 const quickLinks: QuickLink[] = [
   { icon: Briefcase, label: 'الوظائف', path: '/jobs' },
-  { icon: Heart, label: 'الداعمون', path: '/partners' },
-  { icon: '🎁', label: 'الخصومات', path: '/discounts' },
-  { icon: Calendar, label: 'الفعاليات', path: '/events' },
+  // { icon: Heart, label: 'الداعمون', path: '/partners' },
+  { icon: '🎁', label: 'الخصومات', path: '/offers' },
+  // { icon: Calendar, label: 'الفعاليات', path: '/events' },
   { icon: Map, label: 'الخريطة', path: '/map' },
-  { icon: Globe, label: 'الترجمة', path: '/translate' },
+  // { icon: Globe, label: 'الترجمة', path: '/translate' },
   { icon: Users, label: 'الكوادر', path: '/corps' },
-  { icon: Building2, label: 'المجتمع', path: '/community' },
+  // { icon: Building2, label: 'المجتمع', path: '/community' },
   // { icon: '📺', label: 'المحتوى البصري', path: '/visual-content' },
   // { icon: '🎬', label: 'الريلز', path: '/yemen-reels' },
   // { icon: '📰', label: 'الأخبار', path: '/news' },
   { icon: '📱', label: 'تطبيقات تركيا', path: '/turkey-apps' },
-  { icon: '🤝', label: 'التطوع', path: '/volunteers' },
+  // { icon: '🤝', label: 'التطوع', path: '/volunteers' },
+  { icon: BookOpen, label: 'القرآن الكريم', path: '/quran-life' },
   { icon: '📋', label: 'دليل الطالب', path: '/guide' },
-  { icon: '📊', label: 'الشفافية', path: '/transparency' },
-  { icon: '💡', label: 'الاقتراحات', path: '/suggestions' },
-  { icon: HelpCircle, label: 'الأسئلة', path: '/faq' },
-  { icon: Settings, label: 'حسابي', path: '/profile' },
+  // { icon: '📊', label: 'الخصوصية', path: '/transparency' },
+  // { icon: '💡', label: 'الاقتراحات', path: '/suggestions' },
+  { icon: HelpCircle, label: 'الأسئلة الشائعة', path: '/faq' },
 ];
 
 interface SmartTopBarProps {

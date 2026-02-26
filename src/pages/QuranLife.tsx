@@ -27,22 +27,22 @@ const QuranLife = () => {
   });
 
   // Hijri date calculation (simplified)
-  const getHijriDate = () => {
-    const today = new Date();
-    // Simplified approximation - in production use a proper library
-    return {
-      day: 15,
-      month: "رجب",
-      year: 1447
-    };
-  };
+  // const getHijriDate = () => {
+  //   const today = new Date();
+  //   // Simplified approximation - in production use a proper library
+  //   return {
+  //     day: 15,
+  //     month: "رجب",
+  //     year: 1447
+  //   };
+  // };
 
-  const hijriDate = getHijriDate();
+  // const hijriDate = getHijriDate();
 
   const tabs = [
     { id: "prayer", label: "الصلاة", icon: Clock, color: "from-amber-500 to-orange-500" },
     { id: "dhikr", label: "الذكر", icon: Heart, color: "from-pink-500 to-rose-500" },
-    { id: "memorization", label: "الحفظ", icon: BookOpen, color: "from-emerald-500 to-teal-500" },
+    // { id: "memorization", label: "الحفظ", icon: BookOpen, color: "from-emerald-500 to-teal-500" },
     // { id: "teachers", label: "المعلمون", icon: Users, color: "from-blue-500 to-indigo-500" },
     // { id: "family", label: "العائلة", icon: Home, color: "from-purple-500 to-violet-500" },
   ];
@@ -95,7 +95,7 @@ const QuranLife = () => {
             </div>
 
             {/* Hijri Date */}
-            <div className="flex items-center gap-4 p-3 rounded-2xl bg-white/10 backdrop-blur-sm">
+            {/* <div className="flex items-center gap-4 p-3 rounded-2xl bg-white/10 backdrop-blur-sm">
               <div className="flex-1 text-center">
                 <p className="text-3xl font-bold">{hijriDate.day}</p>
                 <p className="text-xs text-emerald-100">{hijriDate.month}</p>
@@ -110,7 +110,7 @@ const QuranLife = () => {
                 <p className="text-lg font-bold">{new Date().toLocaleDateString('ar-SA', { day: 'numeric', month: 'short' })}</p>
                 <p className="text-xs text-emerald-100">ميلادي</p>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -176,9 +176,9 @@ const QuranLife = () => {
               <DhikrTab />
             </TabsContent>
 
-            <TabsContent value="memorization" className="mt-0">
+            {/* <TabsContent value="memorization" className="mt-0">
               <MemorizationTab />
-            </TabsContent>
+            </TabsContent> */}
 
             <TabsContent value="teachers" className="mt-0">
               <QuranTeachersTab />

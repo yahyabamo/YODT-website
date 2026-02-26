@@ -357,8 +357,9 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
             </div>
 
             {/* Progress bar + skip — only after video starts */}
+            {/* bottom-[168px] = safe above BottomNav (~80px) + action sidebar gap */}
             {hasStarted && (
-                <div className="absolute bottom-[130px] left-0 right-0 z-40 px-4">
+                <div className="absolute bottom-[168px] left-0 right-0 z-40 px-4">
                     <div className="flex items-center gap-3">
                         <button
                             className="text-white/80 text-xs font-bold bg-white/20 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0"
@@ -444,14 +445,19 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
 };
 
 // ─────────────────────────────────────────────
-// HomeReels — main page with search
+// HomeReels — main page with TikTok-style search
 // ─────────────────────────────────────────────
 const HomeReels = () => {
     const [reels, setReels] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeIndex, setActiveIndex] = useState(0);
-    const [searchQuery, setSearchQuery] = useState('');
+
+    // Search state
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [suggestions, setSuggestions] = useState<any[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+
     const containerRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -461,6 +467,27 @@ const HomeReels = () => {
         if (isSearchOpen) setTimeout(() => searchInputRef.current?.focus(), 100);
     }, [isSearchOpen]);
 
+    // ── Live suggestions as user types ──
+    useEffect(() => {
+        const q = searchQuery.trim().toLowerCase();
+        if (!q) { setSuggestions([]); setShowSuggestions(false); return; }
+
+        // Deduplicate by title+author, limit to 6 suggestions
+        const seen = new Set<string>();
+        const results = reels.filter(r => {
+            const key = `${r.title}-${r.author}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return (
+                r.title?.toLowerCase().includes(q) ||
+                r.author?.toLowerCase().includes(q)
+            );
+        }).slice(0, 6);
+
+        setSuggestions(results);
+        setShowSuggestions(true);
+    }, [searchQuery, reels]);
+
     const loadReels = async () => {
         try {
             const { data } = await fetchReels({ pageSize: 50 });
@@ -469,22 +496,48 @@ const HomeReels = () => {
         finally { setLoading(false); }
     };
 
-    const filteredReels = searchQuery.trim()
-        ? reels.filter(r =>
-            r.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            r.author?.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        : reels;
-
     const handleScroll = () => {
         if (!containerRef.current) return;
         const index = Math.round(containerRef.current.scrollTop / window.innerHeight);
         if (index !== activeIndex) setActiveIndex(index);
     };
 
-    const handleCloseSearch = () => {
+    // ── Navigate directly to a reel by scrolling to its index ──
+    const navigateToReel = (reelId: string) => {
+        const index = reels.findIndex(r => r.id === reelId);
+        if (index === -1) return;
+        setActiveIndex(index);
+        containerRef.current?.scrollTo({ top: index * window.innerHeight, behavior: 'smooth' });
+        closeSearch();
+    };
+
+    // ── Handle pressing search / Enter ──
+    const handleSearchSubmit = () => {
+        if (!searchQuery.trim()) return;
+        // Navigate to first matching result
+        const first = suggestions[0];
+        if (first) navigateToReel(first.id);
+    };
+
+    const closeSearch = () => {
         setIsSearchOpen(false);
         setSearchQuery('');
+        setSuggestions([]);
+        setShowSuggestions(false);
+    };
+
+    // Highlight matching part of text
+    const highlightMatch = (text: string, query: string) => {
+        if (!query || !text) return <span>{text}</span>;
+        const idx = text.toLowerCase().indexOf(query.toLowerCase());
+        if (idx === -1) return <span>{text}</span>;
+        return (
+            <span>
+                {text.slice(0, idx)}
+                <span className="text-white font-bold">{text.slice(idx, idx + query.length)}</span>
+                {text.slice(idx + query.length)}
+            </span>
+        );
     };
 
     if (loading) return (
@@ -496,64 +549,125 @@ const HomeReels = () => {
     return (
         <div className="h-screen w-full bg-black overflow-hidden relative">
 
-            {/* Search bar */}
-            <div className="absolute top-0 left-0 right-0 z-50 px-4 pt-4 pb-2">
-                {isSearchOpen ? (
-                    <div className="flex items-center gap-2 bg-white/15 backdrop-blur-md rounded-full px-4 py-2 border border-white/20">
-                        <Search className="text-white/60 w-4 h-4 flex-shrink-0" />
-                        <input
-                            ref={searchInputRef}
-                            type="text"
-                            placeholder="ابحث عن فيديو..."
-                            className="flex-1 bg-transparent text-white placeholder-white/50 text-sm outline-none text-right"
-                            dir="rtl"
-                            value={searchQuery}
-                            onChange={(e) => {
-                                setSearchQuery(e.target.value);
-                                setActiveIndex(0);
-                                containerRef.current?.scrollTo({ top: 0 });
-                            }}
-                        />
-                        <button onClick={handleCloseSearch}>
-                            <X className="text-white/60 w-4 h-4" />
-                        </button>
-                    </div>
-                ) : (
-                    <div className="flex justify-end">
-                        <button
-                            onClick={() => setIsSearchOpen(true)}
-                            className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center border border-white/20"
-                        >
-                            <Search className="text-white w-4 h-4" />
-                        </button>
+            {/* ── Search UI ── */}
+            <div className="absolute top-0 left-0 right-0 z-50">
+
+                {/* Search bar row */}
+                <div className="px-4 pt-4 pb-2 flex items-center gap-3">
+                    {isSearchOpen ? (
+                        <>
+                            {/* Input */}
+                            <div className="flex-1 flex items-center gap-2 bg-white/15 backdrop-blur-md rounded-full px-4 py-2.5 border border-white/20">
+                                <Search className="text-white/50 w-4 h-4 flex-shrink-0" />
+                                <input
+                                    ref={searchInputRef}
+                                    type="text"
+                                    placeholder="ابحث عن فيديو أو مستخدم..."
+                                    className="flex-1 bg-transparent text-white placeholder-white/40 text-sm outline-none text-right"
+                                    dir="rtl"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') handleSearchSubmit();
+                                        if (e.key === 'Escape') closeSearch();
+                                    }}
+                                />
+                                {searchQuery && (
+                                    <button onClick={() => { setSearchQuery(''); setSuggestions([]); }}>
+                                        <X className="text-white/40 w-4 h-4" />
+                                    </button>
+                                )}
+                            </div>
+                            {/* Cancel button */}
+                            <button
+                                onClick={closeSearch}
+                                className="text-white/70 text-sm whitespace-nowrap flex-shrink-0"
+                            >
+                                إلغاء
+                            </button>
+                        </>
+                    ) : (
+                        /* Collapsed — just icon button in corner */
+                        <div className="flex-1 flex justify-end">
+                            <button
+                                onClick={() => setIsSearchOpen(true)}
+                                className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center border border-white/20"
+                            >
+                                <Search className="text-white w-4 h-4" />
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                {/* ── Suggestions dropdown ── */}
+                {isSearchOpen && showSuggestions && suggestions.length > 0 && (
+                    <div className="mx-4 rounded-2xl overflow-hidden bg-black/80 backdrop-blur-xl border border-white/10">
+                        {suggestions.map((reel, i) => (
+                            <button
+                                key={reel.id}
+                                className={cn(
+                                    "w-full flex items-center gap-3 px-4 py-3 text-right active:bg-white/10 transition-colors",
+                                    i < suggestions.length - 1 && "border-b border-white/10"
+                                )}
+                                onClick={() => navigateToReel(reel.id)}
+                            >
+                                {/* Thumbnail */}
+                                <div className="w-10 h-10 rounded-lg overflow-hidden bg-white/10 flex-shrink-0">
+                                    {reel.thumbnail_url
+                                        ? <img src={reel.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                                        : <div className="w-full h-full flex items-center justify-center">
+                                            <Search className="text-white/30 w-4 h-4" />
+                                        </div>
+                                    }
+                                </div>
+
+                                {/* Text */}
+                                <div className="flex-1 min-w-0" dir="rtl">
+                                    <div className="text-white/90 text-sm truncate">
+                                        {highlightMatch(reel.title || '', searchQuery)}
+                                    </div>
+                                    <div className="text-white/40 text-xs mt-0.5">
+                                        @{highlightMatch(reel.author || 'اتحاد الطلاب', searchQuery)}
+                                    </div>
+                                </div>
+
+                                {/* Arrow */}
+                                <Search className="text-white/20 w-4 h-4 flex-shrink-0 rotate-0" />
+                            </button>
+                        ))}
+
+                        {/* "Show all results" footer if more than shown */}
+                        {reels.filter(r =>
+                            r.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            r.author?.toLowerCase().includes(searchQuery.toLowerCase())
+                        ).length > 6 && (
+                                <button
+                                    className="w-full py-3 text-center text-white/50 text-xs border-t border-white/10 active:bg-white/5"
+                                    onClick={handleSearchSubmit}
+                                >
+                                    عرض جميع النتائج
+                                </button>
+                            )}
                     </div>
                 )}
-                {searchQuery.trim() && (
-                    <div className="text-center mt-2">
-                        <span className="text-white/70 text-xs bg-black/40 backdrop-blur-md px-3 py-1 rounded-full">
-                            {filteredReels.length} نتيجة لـ "{searchQuery}"
-                        </span>
+
+                {/* No results message */}
+                {isSearchOpen && searchQuery.trim() && suggestions.length === 0 && (
+                    <div className="mx-4 rounded-2xl bg-black/80 backdrop-blur-xl border border-white/10 py-6 text-center">
+                        <p className="text-white/50 text-sm">لا توجد نتائج لـ "{searchQuery}"</p>
                     </div>
                 )}
             </div>
 
-            {/* Scroll container */}
+            {/* ── Scroll container (always shows all reels) ── */}
             <div
                 ref={containerRef}
                 onScroll={handleScroll}
                 className="h-full w-full overflow-y-scroll snap-y snap-mandatory hide-scrollbar"
             >
-                {filteredReels.length === 0 && searchQuery.trim() ? (
-                    <div className="h-screen flex flex-col items-center justify-center gap-4">
-                        <Search className="text-white/30 w-16 h-16" />
-                        <p className="text-white/60 text-lg">لا توجد نتائج</p>
-                        <p className="text-white/40 text-sm">جرب كلمة بحث أخرى</p>
-                    </div>
-                ) : (
-                    filteredReels.map((reel, index) => (
-                        <ReelVideo key={reel.id} reel={reel} isActive={index === activeIndex} />
-                    ))
-                )}
+                {reels.map((reel, index) => (
+                    <ReelVideo key={reel.id} reel={reel} isActive={index === activeIndex} />
+                ))}
             </div>
 
             {/* Bottom Nav */}
