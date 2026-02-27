@@ -531,9 +531,9 @@ const ReelVideo = ({
                         <button
                             className="text-white text-xs font-semibold flex items-center justify-center rounded-full flex-shrink-0 w-9 h-9 active:scale-90 transition-transform"
                             style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(6px)' }}
-                            onClick={(e) => skip(e, 10)}
+                            onClick={(e) => skip(e, -10)}
                         >
-                            +10
+                            −10
                         </button>
 
                         <div className="relative flex-1 h-7 flex items-center">
@@ -556,14 +556,14 @@ const ReelVideo = ({
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                             />
                         </div>
-
                         <button
                             className="text-white text-xs font-semibold flex items-center justify-center rounded-full flex-shrink-0 w-9 h-9 active:scale-90 transition-transform"
                             style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(6px)' }}
-                            onClick={(e) => skip(e, -10)}
+                            onClick={(e) => skip(e, 10)}
                         >
-                            −10
+                            +10
                         </button>
+
                     </div>
                 )}
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
-import { fetchUsers, updateUserStatus, updateUserRole, updateUserPoints, deleteUser } from "@/service/supabaseData";
+import { fetchUsers, updateUserStatus, updateUserPoints } from "@/service/supabaseData";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar, Badge, Spinner, Inp, Sel, Modal, B } from "./components/AdminUI";
 
@@ -64,7 +65,8 @@ export default function UsersAdmin({ setConfirm }: { setConfirm: (v: any) => voi
         onConfirm: async () => {
             try {
                 console.log("Updating user role to:", nr);
-                await updateUserRole(u.id, nr);
+                const { error } = await supabase.from('profiles').update({ role: nr }).eq('id', u.id);
+                if (error) throw error;
                 toast.success("تم تحديث الصلاحية");
                 load(false);
             }
@@ -78,8 +80,9 @@ export default function UsersAdmin({ setConfirm }: { setConfirm: (v: any) => voi
         danger: true,
         onConfirm: async () => {
             try {
-                console.log("Deleting user ID:", u.id);
-                await deleteUser(u.id);
+                console.log("User Deleted:", u.id);
+                const { error } = await supabase.from('profiles').delete().eq('id', u.id);
+                if (error) throw error;
                 toast.success("تم حذف المستخدم بنجاح");
                 load(false);
             }
@@ -168,7 +171,7 @@ export default function UsersAdmin({ setConfirm }: { setConfirm: (v: any) => voi
                                                     { icon: "🚫", bg: "#fee2e2", c: "#dc2626", title: "حظر", fn: () => handleStatus(u, "banned"), disabled: adminUser?.id === u.id },
                                                     { icon: "🗑️", bg: "#fee2e2", c: "#dc2626", title: "حذف", fn: () => handleDelete(u), disabled: adminUser?.id === u.id },
                                                 ].map((btn, i) => (
-                                                    <button key={i} title={btn.title} onClick={btn.fn} disabled={btn.disabled} className={`w-[30px] h-[30px] rounded-lg border-none flex items-center justify-center shrink-0 text-sm transition-opacity ${btn.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:opacity-80 active:scale-95'}`} style={{ background: btn.bg, color: btn.c }}>{btn.icon}</button>
+                                                    <button key={i} type="button" title={btn.title} onClick={(e) => { e.stopPropagation(); btn.fn(); }} disabled={btn.disabled} className={`w-[30px] h-[30px] rounded-lg border-none flex items-center justify-center shrink-0 text-sm transition-opacity ${btn.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:opacity-80 active:scale-95'}`} style={{ background: btn.bg, color: btn.c }}>{btn.icon}</button>
                                                 ))}
                                             </div>
                                         </td>
