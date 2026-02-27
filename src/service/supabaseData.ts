@@ -68,6 +68,15 @@ export async function updateUserRole(userId, role) {
     if (error) throw error
 }
 
+export async function deleteUser(id: string) {
+    console.log("Deleting ID:", id);
+    const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', id);
+    if (error) throw error;
+}
+
 // ── Points ─────────────────────────────────────────────────────
 
 export async function updateUserPoints({ userId, changeAmount, reason, reasonType, changedBy, activityId = null }) {

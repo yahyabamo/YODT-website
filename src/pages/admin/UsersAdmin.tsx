@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
-import { fetchUsers, updateUserStatus, updateUserRole, updateUserPoints } from "@/service/supabaseData";
+import { fetchUsers, updateUserStatus, updateUserRole, updateUserPoints, deleteUser } from "@/service/supabaseData";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar, Badge, Spinner, Inp, Sel, Modal, B } from "./components/AdminUI";
 
@@ -28,14 +28,14 @@ export default function UsersAdmin({ setConfirm }: { setConfirm: (v: any) => voi
     const [pf, setPf] = useState({ amount: "", reason: "", type: "manual" });
     const debRef = useRef<any>();
 
-    const load = useCallback(async () => {
-        setLoading(true);
+    const load = useCallback(async (showLoader: boolean = true) => {
+        if (showLoader) setLoading(true);
         try {
             const { data, count } = await fetchUsers({ page, pageSize: 20, search });
             setUsers(data || []);
             setCount(count || 0);
         } catch { toast.error("فشل تحميل المستخدمين"); }
-        finally { setLoading(false); }
+        finally { if (showLoader) setLoading(false); }
     }, [page, search]);
 
     useEffect(() => { load(); }, [load]);
@@ -52,7 +52,7 @@ export default function UsersAdmin({ setConfirm }: { setConfirm: (v: any) => voi
         message: `هل تريد تغيير حالة ${u.full_name}؟`,
         danger: ns === "banned",
         onConfirm: async () => {
-            try { await updateUserStatus(u.id, ns); toast.success("تم تحديث الحالة"); load(); }
+            try { await updateUserStatus(u.id, ns); toast.success("تم تحديث الحالة"); load(false); }
             catch { toast.error("فشل تحديث الحالة"); }
         }
     });
@@ -62,8 +62,28 @@ export default function UsersAdmin({ setConfirm }: { setConfirm: (v: any) => voi
         message: `تغيير صلاحية ${u.full_name} إلى ${nr === "admin" ? "مدير" : "عضو"}؟`,
         danger: false,
         onConfirm: async () => {
-            try { await updateUserRole(u.id, nr); toast.success("تم تحديث الصلاحية"); load(); }
+            try {
+                console.log("Updating user role to:", nr);
+                await updateUserRole(u.id, nr);
+                toast.success("تم تحديث الصلاحية");
+                load(false);
+            }
             catch { toast.error("فشل تحديث الصلاحية"); }
+        }
+    });
+
+    const handleDelete = (u: User) => setConfirm({
+        title: "حذف المستخدم",
+        message: `هل أنت متأكد من حذف ${u.full_name} بشكل نهائي؟ لا يمكن التراجع عن هذا الإجراء.`,
+        danger: true,
+        onConfirm: async () => {
+            try {
+                console.log("Deleting user ID:", u.id);
+                await deleteUser(u.id);
+                toast.success("تم حذف المستخدم بنجاح");
+                load(false);
+            }
+            catch { toast.error("فشل حذف المستخدم"); }
         }
     });
 
@@ -82,7 +102,7 @@ export default function UsersAdmin({ setConfirm }: { setConfirm: (v: any) => voi
             toast.success(`تم ${amt > 0 ? "إضافة" : "خصم"} ${Math.abs(amt)} نقطة`);
             setPointsModal(null);
             setPf({ amount: "", reason: "", type: "manual" });
-            load();
+            load(false);
         } catch { toast.error("فشل تحديث النقاط"); }
     };
 
@@ -145,8 +165,8 @@ export default function UsersAdmin({ setConfirm }: { setConfirm: (v: any) => voi
                                                 {[
                                                     { icon: "⭐", bg: "#fef3c7", c: "#d97706", title: "إدارة النقاط", fn: () => setPointsModal(u) },
                                                     { icon: "🔑", bg: "#dbeafe", c: "#2563eb", title: "تغيير الدور", fn: () => handleRole(u, u.role === "admin" ? "user" : "admin") },
-                                                    { icon: u.status === "active" ? "⏸" : "▶", bg: "#f3f4f6", c: "#6b7280", title: "تفعيل/تعطيل", fn: () => handleStatus(u, u.status === "active" ? "inactive" : "active") },
                                                     { icon: "🚫", bg: "#fee2e2", c: "#dc2626", title: "حظر", fn: () => handleStatus(u, "banned") },
+                                                    { icon: "🗑️", bg: "#fee2e2", c: "#dc2626", title: "حذف", fn: () => handleDelete(u) },
                                                 ].map((btn, i) => (
                                                     <button key={i} title={btn.title} onClick={btn.fn} className="w-[30px] h-[30px] rounded-lg border-none cursor-pointer text-sm flex items-center justify-center shrink-0" style={{ background: btn.bg, color: btn.c }}>{btn.icon}</button>
                                                 ))}
