@@ -12,10 +12,10 @@ export const Partners = () => {
                         <span className="en-only">Partners of Success</span>
                     </div>
 
-                    <h2 className="heading-lg">
+                    {/* <h2 className="heading-lg">
                         <span className="ar-only">نعتز بشراكاتنا<br />الاستراتيجية</span>
                         <span className="en-only">We Cherish Our<br />Strategic Partnerships</span>
-                    </h2>
+                    </h2> */}
 
                     <div className="divider-line"></div>
 

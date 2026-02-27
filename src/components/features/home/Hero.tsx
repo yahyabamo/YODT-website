@@ -86,10 +86,10 @@ export const Hero: React.FC<HeroProps> = ({ onOpenModal }) => {
                                 <img src={logo} alt="الاتحاد" className="w-full h-full object-contain" />
 
                             </div>
-                            <div className="hero-card-title ar-only">مزايا العضوية المجانية</div>
+                            <div className="hero-card-title ar-only">مزايا العضوية </div>
                             <div className="hero-card-title en-only">Free Membership Benefits</div>
-                            <div className="hero-card-sub ar-only">انضم اليوم واحصل على جميع المزايا فورًا</div>
-                            <div className="hero-card-sub en-only">Join today and get all benefits instantly</div>
+                            <div className="hero-card-sub ar-only">انضم اليوم وكن جزءا من الفريق</div>
+                            <div className="hero-card-sub en-only">Join today and be part of the team</div>
                         </div>
                         <div className="hero-card-body">
                             <div className="member-benefit">
@@ -115,8 +115,8 @@ export const Hero: React.FC<HeroProps> = ({ onOpenModal }) => {
                         </div>
                         <div className="hero-card-footer">
                             <button className="btn btn-primary" onClick={() => navigate('/login')}>
-                                <span className="ar-only">سجل عضويتك مجانًا — الآن</span>
-                                <span className="en-only">Get Free Membership — Now</span>
+                                <span className="ar-only">سجل عضويتك الآن</span>
+                                <span className="en-only">Register Now</span>
                             </button>
                         </div>
                     </div>

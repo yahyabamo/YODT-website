@@ -247,60 +247,60 @@ export const courses: Course[] = [
 ];
 
 export const jobs: Job[] = [
-  {
-    id: '1',
-    title: 'مطور واجهات أمامية',
-    company: 'شركة التقنية المتقدمة',
-    companyLogo: '💻',
-    type: 'full-time',
-    requirements: {
-      englishLevel: 'متوسط',
-      turkishLevel: 'مبتدئ',
-      skills: ['React', 'TypeScript', 'CSS'],
-      minPoints: 300,
-    },
-    isOpen: true,
-    isEligible: true,
-  },
-  {
-    id: '2',
-    title: 'متدرب تسويق رقمي',
-    company: 'مؤسسة التعليم الدولي',
-    companyLogo: '📚',
-    type: 'internship',
-    requirements: {
-      englishLevel: 'متقدم',
-      requiredCourses: ['linkedin'],
-    },
-    isOpen: true,
-    isEligible: true,
-  },
-  {
-    id: '3',
-    title: 'مساعد إداري',
-    company: 'السفارة اليمنية',
-    companyLogo: '🏛️',
-    type: 'part-time',
-    requirements: {
-      turkishLevel: 'متوسط',
-      volunteerOnly: true,
-    },
-    isOpen: true,
-    isEligible: true,
-  },
-  {
-    id: '4',
-    title: 'مصمم جرافيك',
-    company: 'جمعية الطلاب العرب',
-    companyLogo: '🤝',
-    type: 'remote',
-    requirements: {
-      skills: ['Canva', 'Photoshop'],
-      requiredCourses: ['canva'],
-    },
-    isOpen: true,
-    isEligible: false,
-  },
+  //   {
+  //     id: '1',
+  //     title: 'مطور واجهات أمامية',
+  //     company: 'شركة التقنية المتقدمة',
+  //     companyLogo: '💻',
+  //     type: 'full-time',
+  //     requirements: {
+  //       englishLevel: 'متوسط',
+  //       turkishLevel: 'مبتدئ',
+  //       skills: ['React', 'TypeScript', 'CSS'],
+  //       minPoints: 300,
+  //     },
+  //     isOpen: true,
+  //     isEligible: true,
+  //   },
+  //   {
+  //     id: '2',
+  //     title: 'متدرب تسويق رقمي',
+  //     company: 'مؤسسة التعليم الدولي',
+  //     companyLogo: '📚',
+  //     type: 'internship',
+  //     requirements: {
+  //       englishLevel: 'متقدم',
+  //       requiredCourses: ['linkedin'],
+  //     },
+  //     isOpen: true,
+  //     isEligible: true,
+  //   },
+  //   {
+  //     id: '3',
+  //     title: 'مساعد إداري',
+  //     company: 'السفارة اليمنية',
+  //     companyLogo: '🏛️',
+  //     type: 'part-time',
+  //     requirements: {
+  //       turkishLevel: 'متوسط',
+  //       volunteerOnly: true,
+  //     },
+  //     isOpen: true,
+  //     isEligible: true,
+  //   },
+  //   {
+  //     id: '4',
+  //     title: 'مصمم جرافيك',
+  //     company: 'جمعية الطلاب العرب',
+  //     companyLogo: '🤝',
+  //     type: 'remote',
+  //     requirements: {
+  //       skills: ['Canva', 'Photoshop'],
+  //       requiredCourses: ['canva'],
+  //     },
+  //     isOpen: true,
+  //     isEligible: false,
+  //   },
 ];
 
 export const guideSections: GuideSection[] = [

@@ -10,6 +10,8 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { generateSecureToken, getTokenExpirySeconds } from '@/lib/qrToken';
+import { SmartTopBar } from '@/components/layout/SmartTopBar';
+
 
 interface Profile {
   id: string;
@@ -36,6 +38,7 @@ const MembershipCard = () => {
   const [loading, setLoading] = useState(true);
   const [qrToken, setQrToken] = useState('');
   const [expirySeconds, setExpirySeconds] = useState(60);
+  const [showSearch, setShowSearch] = useState(false);
 
   // Fetch profile when user is available
   useEffect(() => {
@@ -157,8 +160,11 @@ const MembershipCard = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <PageHeader title="بطاقة العضوية" />
-
+      <header className="sticky-header">
+        <div className="p-4 max-w-screen-xl mx-auto">
+          <SmartTopBar onOpenSearch={() => setShowSearch(true)} />
+        </div>
+      </header>
       <div className="px-4 py-4 max-w-lg mx-auto space-y-6">
         {/* Membership Card */}
         <Card className="overflow-hidden shadow-card animate-slide-up">

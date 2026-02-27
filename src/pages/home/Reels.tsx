@@ -261,8 +261,8 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
     };
 
     return (
-        <div className="relative h-screen w-full snap-start bg-black flex items-center justify-center overflow-hidden">
-
+        <div className="relative w-full snap-start bg-black flex items-center justify-center overflow-hidden"
+            style={{ height: 'calc(100dvh - 64px - 60px)', marginTop: '64px' }}>
             {/* YouTube player target div */}
             <div
                 id={divId}
@@ -366,7 +366,7 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
             {/* Progress bar + skip — only after video starts */}
             {/* bottom-[168px] = safe above BottomNav (~80px) + action sidebar gap */}
             {hasStarted && (
-                <div className="absolute bottom-[140px] left-0 right-0 z-40 px-4">
+                <div className="absolute bottom-[130px] left-0 right-0 z-40 px-4">
                     <div className="flex items-center gap-3">
                         <button
                             className="text-white/80 text-xs font-bold bg-white/20 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0"

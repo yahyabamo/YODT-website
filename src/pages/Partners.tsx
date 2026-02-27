@@ -12,6 +12,8 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { SmartTopBar } from '@/components/layout/SmartTopBar';
+
 
 interface Partner {
   id: string;
@@ -43,6 +45,8 @@ const Partners = () => {
   const [offers, setOffers] = useState<PartnerOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+
 
   useEffect(() => {
     fetchPartners();
@@ -104,8 +108,11 @@ const Partners = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <PageHeader title="الشركاء والداعمون" />
-
+      <header className="sticky-header">
+        <div className="p-4 max-w-screen-xl mx-auto">
+          <SmartTopBar onOpenSearch={() => setShowSearch(true)} />
+        </div>
+      </header>
       <div className="px-4 py-4 max-w-lg mx-auto space-y-4">
         {/* Hero Section */}
         <Card className="shadow-card overflow-hidden">
@@ -217,7 +224,7 @@ const Partners = () => {
             <p className="text-sm text-muted-foreground mb-3">
               انضم إلى شركائنا ودعم الطلاب اليمنيين
             </p>
-            <Button onClick={() => navigate('/sponsor-portal')}>
+            <Button onClick={() => navigate('/sponsor-portal')} disabled>
               تقدم كداعم
             </Button>
           </CardContent>

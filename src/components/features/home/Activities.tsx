@@ -5,7 +5,7 @@ export const Activities = () => {
     return (
         <section id="activities" className="section-pad" style={{ background: 'var(--bg-2)' }}>
             <div className="container">
-                <div className="section-header center-line reveal" style={{ marginBottom: '60px' }}>
+                <div className="section-header center-line reveal" style={{ marginBottom: '60px', textAlign: 'center' }}>
                     <div className="tag" style={{ display: 'inline-flex', margin: '0 auto 20px' }}><span className="dot"></span>
                         <span className="ar-only">الأنشطة والفعاليات</span>
                         <span className="en-only">Activities & Events</span>
@@ -23,19 +23,9 @@ export const Activities = () => {
                                     <div className="placeholder-text en-only">Cultural Events</div>
                                 </div>
                             </div>
-                            {/* <div className="activity-date">
-                                <span className="date-day">01</span>
-                                <span className="date-month ar-only">برامج</span>
-                                <span className="date-month en-only">PROG</span>
-                            </div> */}
                         </div>
                         <div className="activity-content">
-                            <div className="activity-tags">
-                                {/* <span className="activity-tag ar-only">ثقافة</span>
-                                <span className="activity-tag en-only">Culture</span> */}
-                                {/* <span className="activity-tag ar-only">فن</span>
-                                <span className="activity-tag en-only">Art</span> */}
-                            </div>
+                            <div className="activity-tags"></div>
                             <h3 className="activity-title ar-only">الفعاليات الثقافية والأدبية</h3>
                             <h3 className="activity-title en-only">Cultural & Literary Events</h3>
                             <p className="activity-desc ar-only">
@@ -50,11 +40,6 @@ export const Activities = () => {
                                     <span className="ar-only">قاعات المؤتمرات</span>
                                     <span className="en-only">Conference Halls</span>
                                 </div>
-                                {/* <div className="meta-item">
-                                    <span className="meta-icon">✨</span>
-                                    <span className="ar-only">متجدد</span>
-                                    <span className="en-only">Ongoing</span>
-                                </div> */}
                             </div>
                         </div>
                     </div>
