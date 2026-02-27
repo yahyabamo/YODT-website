@@ -261,13 +261,23 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
     };
 
     return (
-        <div className="relative w-full snap-start bg-black flex items-center justify-center overflow-hidden"
-            style={{ height: 'calc(100dvh - 64px - 60px)', marginTop: '64px' }}>
+        <div
+            className="relative w-full snap-start bg-black flex items-center justify-center overflow-hidden"
+            style={{
+                height: 'calc(100dvh - 64px - 60px)', // Adjust 64 and 60 to your Top/Bottom bar heights
+                marginTop: '64px'
+            }}
+        >
             {/* YouTube player target div */}
             <div
                 id={divId}
                 className="absolute inset-0 w-full h-full"
-                style={{ transform: 'scale(1.5)', transformOrigin: 'center center', pointerEvents: 'none' }}
+                style={{
+                    transform: 'scale(1.3)', // Reduced scale slightly to avoid clipping the start button
+                    transformOrigin: 'center center',
+                    pointerEvents: 'auto', // Change this to 'auto' so you can click Play
+                    zIndex: 5
+                }}
             />
 
             {/* Thumbnail while player loads */}
