@@ -34,7 +34,7 @@ export default function UsersAdmin({ setConfirm }: { setConfirm: (v: any) => voi
             const { data, count } = await fetchUsers({ page, pageSize: 20, search });
             setUsers(data || []);
             setCount(count || 0);
-        } catch { toast.error("فشل تحميل المستخدمين"); }
+        } catch (err: any) { toast.error("فشل تحميل المستخدمين: " + (err?.message || "")); console.error(err); }
         finally { if (showLoader) setLoading(false); }
     }, [page, search]);
 
@@ -53,7 +53,7 @@ export default function UsersAdmin({ setConfirm }: { setConfirm: (v: any) => voi
         danger: ns === "banned",
         onConfirm: async () => {
             try { await updateUserStatus(u.id, ns); toast.success("تم تحديث الحالة"); load(false); }
-            catch { toast.error("فشل تحديث الحالة"); }
+            catch (err: any) { toast.error("فشل تحديث الحالة: " + (err?.message || "")); console.error(err); }
         }
     });
 
@@ -68,7 +68,7 @@ export default function UsersAdmin({ setConfirm }: { setConfirm: (v: any) => voi
                 toast.success("تم تحديث الصلاحية");
                 load(false);
             }
-            catch { toast.error("فشل تحديث الصلاحية"); }
+            catch (err: any) { toast.error("فشل تحديث الصلاحية: " + (err?.message || "")); console.error(err); }
         }
     });
 
@@ -83,7 +83,7 @@ export default function UsersAdmin({ setConfirm }: { setConfirm: (v: any) => voi
                 toast.success("تم حذف المستخدم بنجاح");
                 load(false);
             }
-            catch { toast.error("فشل حذف المستخدم"); }
+            catch (err: any) { toast.error("فشل حذف المستخدم: " + (err?.message || "")); console.error(err); }
         }
     });
 
@@ -103,7 +103,7 @@ export default function UsersAdmin({ setConfirm }: { setConfirm: (v: any) => voi
             setPointsModal(null);
             setPf({ amount: "", reason: "", type: "manual" });
             load(false);
-        } catch { toast.error("فشل تحديث النقاط"); }
+        } catch (err: any) { toast.error("فشل تحديث النقاط: " + (err?.message || "")); console.error(err); }
     };
 
     return (
@@ -163,12 +163,12 @@ export default function UsersAdmin({ setConfirm }: { setConfirm: (v: any) => voi
                                         <td className="p-3 md:px-4 md:py-3">
                                             <div className="flex gap-1.5 flex-wrap">
                                                 {[
-                                                    { icon: "⭐", bg: "#fef3c7", c: "#d97706", title: "إدارة النقاط", fn: () => setPointsModal(u) },
-                                                    { icon: "🔑", bg: "#dbeafe", c: "#2563eb", title: "تغيير الدور", fn: () => handleRole(u, u.role === "admin" ? "user" : "admin") },
-                                                    { icon: "🚫", bg: "#fee2e2", c: "#dc2626", title: "حظر", fn: () => handleStatus(u, "banned") },
-                                                    { icon: "🗑️", bg: "#fee2e2", c: "#dc2626", title: "حذف", fn: () => handleDelete(u) },
+                                                    { icon: "⭐", bg: "#fef3c7", c: "#d97706", title: "إدارة النقاط", fn: () => setPointsModal(u), disabled: false },
+                                                    { icon: "🔑", bg: "#dbeafe", c: "#2563eb", title: "تغيير الدور", fn: () => handleRole(u, u.role === "admin" ? "user" : "admin"), disabled: adminUser?.id === u.id },
+                                                    { icon: "🚫", bg: "#fee2e2", c: "#dc2626", title: "حظر", fn: () => handleStatus(u, "banned"), disabled: adminUser?.id === u.id },
+                                                    { icon: "🗑️", bg: "#fee2e2", c: "#dc2626", title: "حذف", fn: () => handleDelete(u), disabled: adminUser?.id === u.id },
                                                 ].map((btn, i) => (
-                                                    <button key={i} title={btn.title} onClick={btn.fn} className="w-[30px] h-[30px] rounded-lg border-none cursor-pointer text-sm flex items-center justify-center shrink-0" style={{ background: btn.bg, color: btn.c }}>{btn.icon}</button>
+                                                    <button key={i} title={btn.title} onClick={btn.fn} disabled={btn.disabled} className={`w-[30px] h-[30px] rounded-lg border-none flex items-center justify-center shrink-0 text-sm transition-opacity ${btn.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:opacity-80 active:scale-95'}`} style={{ background: btn.bg, color: btn.c }}>{btn.icon}</button>
                                                 ))}
                                             </div>
                                         </td>
