@@ -21,6 +21,22 @@ const BOTTOM_NAV_HEIGHT = 80; // px — adjust to match your BottomNav actual he
 const ytReadyCallbacks: (() => void)[] = [];
 let ytApiState: 'idle' | 'loading' | 'ready' = 'idle';
 
+// iOS requires a user gesture before any video can play.
+// Once the user taps once anywhere, we flip this and all
+// subsequent videos auto-start without needing another tap.
+let iosUnlocked = false;
+const iosUnlockCallbacks: (() => void)[] = [];
+const markIosUnlocked = () => {
+    if (iosUnlocked) return;
+    iosUnlocked = true;
+    iosUnlockCallbacks.forEach(cb => cb());
+    iosUnlockCallbacks.length = 0;
+};
+const whenIosUnlocked = (cb: () => void) => {
+    if (iosUnlocked) { cb(); return; }
+    iosUnlockCallbacks.push(cb);
+};
+
 const loadYouTubeAPI = (onReady: () => void) => {
     if (ytApiState === 'ready') { onReady(); return; }
     ytReadyCallbacks.push(onReady);
@@ -135,11 +151,21 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
         if (!playerReady) return;
 
         if (isActive) {
-            // Attempt autoplay (works on desktop/Android, silently fails on iOS)
-            const playPromise = playerRef.current?.playVideo();
-            setAutoplayAttempted(true);
             loadStats();
             incrementViewCount(reel.id);
+            setAutoplayAttempted(true);
+
+            if (iosUnlocked) {
+                // Already unlocked — play immediately
+                playerRef.current?.playVideo();
+            } else {
+                // Try anyway (desktop/Android). On iOS silently fails.
+                // Register so we auto-play the moment user first taps.
+                playerRef.current?.playVideo();
+                whenIosUnlocked(() => {
+                    if (playerRef.current) playerRef.current.playVideo();
+                });
+            }
         } else {
             playerRef.current?.pauseVideo();
             stopProgressTracking();
@@ -149,13 +175,6 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
             setIsMuted(true);
         }
     }, [isActive, playerReady]);
-
-    // ── Show tap-to-start overlay if autoplay didn't fire after 800ms ──
-    // (iOS will not trigger onStateChange PLAYING so hasStarted stays false)
-    useEffect(() => {
-        if (!isActive || !autoplayAttempted) return;
-        // If still not started after 800ms, iOS blocked it — overlay stays visible
-    }, [autoplayAttempted, isActive]);
 
     const startProgressTracking = () => {
         stopProgressTracking();
@@ -191,17 +210,18 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
     };
 
     // ── Tap handler ──
-    // First tap (iOS / video not started): starts + unmutes
+    // First tap: unlocks iOS audio/video policy + starts video
     // Double tap: like
-    // Single tap (video running): toggle mute → then toggle pause
+    // Single tap (running): unmute first, then toggle pause
     const handleTap = useCallback((e: React.MouseEvent) => {
         e.stopPropagation();
         const now = Date.now();
 
         // ── iOS first-start: video not playing yet ──
         if (!hasStarted) {
+            markIosUnlocked();           // unlock all future auto-plays globally
             playerRef.current?.playVideo();
-            setHasStarted(true); // optimistic — real confirm from onStateChange
+            setHasStarted(true);         // optimistic; confirmed by onStateChange
             return;
         }
 
@@ -219,13 +239,11 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
         clearTimeout(tapTimeout.current);
 
         if (isMuted) {
-            // First unmute tap
             playerRef.current?.unMute();
             playerRef.current?.setVolume(100);
             setIsMuted(false);
             if (isPaused) playerRef.current?.playVideo();
         } else {
-            // Single tap → pause / resume after double-tap window
             tapTimeout.current = setTimeout(() => {
                 if (isPaused) {
                     playerRef.current?.playVideo();
@@ -446,38 +464,35 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
                 </button> */}
             </div>
 
-
-
             {/* ── Progress bar + skip controls ── */}
-            {/* Anchored ABOVE the BottomNav, always visible when video starts */}
-            {hasStarted && (
-                <div
-                    className="absolute left-0 right-0 z-40 px-3"
-                    style={{ bottom: BOTTOM_NAV_HEIGHT + 12 }}
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <div className="flex items-center gap-2">
-
+            {/* Always rendered (thin bar) once player is ready; full controls after start */}
+            <div
+                className="absolute left-0 right-0 z-40 px-3"
+                style={{ bottom: BOTTOM_NAV_HEIGHT + 12 }}
+                onClick={(e) => e.stopPropagation()}
+            >
+                {hasStarted && (
+                    <div className="flex items-center gap-2 mb-2">
+                        {/* Skip back */}
                         <button
                             className="text-white text-xs font-bold flex items-center justify-center rounded-full flex-shrink-0"
                             style={{
-                                width: 38,
-                                height: 38,
+                                width: 36,
+                                height: 36,
                                 background: 'rgba(255,255,255,0.15)',
                                 backdropFilter: 'blur(8px)',
                             }}
-                            onClick={(e) => handleSkip(e, 10)}
+                            onClick={(e) => handleSkip(e, -10)}
                         >
-                            +10
+                            −10
                         </button>
+
                         {/* Progress track */}
                         <div className="relative flex-1" style={{ height: 36, display: 'flex', alignItems: 'center' }}>
-                            {/* Track background */}
                             <div
                                 className="absolute left-0 right-0 rounded-full overflow-hidden"
                                 style={{ height: 4, background: 'rgba(255,255,255,0.25)' }}
                             >
-                                {/* Filled portion */}
                                 <div
                                     className="h-full rounded-full"
                                     style={{
@@ -487,7 +502,6 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
                                     }}
                                 />
                             </div>
-                            {/* Invisible range input over track */}
                             <input
                                 type="range"
                                 min={0}
@@ -500,40 +514,33 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
                             />
                         </div>
 
-                        {/* Skip back */}
+                        {/* Skip forward */}
                         <button
                             className="text-white text-xs font-bold flex items-center justify-center rounded-full flex-shrink-0"
                             style={{
-                                width: 38,
-                                height: 38,
+                                width: 36,
+                                height: 36,
                                 background: 'rgba(255,255,255,0.15)',
                                 backdropFilter: 'blur(8px)',
                             }}
-                            onClick={(e) => handleSkip(e, -10)}
+                            onClick={(e) => handleSkip(e, 10)}
                         >
-                            −10
+                            +10
                         </button>
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* ── Video info ── */}
-            <div
-                className="absolute left-3 z-40 pointer-events-none"
-                style={{
-                    right: 76,
-                    bottom: BOTTOM_NAV_HEIGHT + (hasStarted ? 64 : 20),
-                    transition: 'bottom 0.3s ease',
-                }}
-                dir="rtl"
-            >
-                <h3 className="text-white font-bold text-base mb-1 drop-shadow-lg">
-                    @{reel.author || 'اتحاد الطلاب'}
-                </h3>
-                <p className="text-white/85 text-sm line-clamp-2 leading-relaxed drop-shadow">
-                    {reel.title}
-                </p>
+                {/* ── Video info: author + title — always below progress bar ── */}
+                <div className="pointer-events-none" dir="rtl">
+                    <h3 className="text-white font-bold text-base mb-0.5 drop-shadow-lg">
+                        @{reel.author || 'اتحاد الطلاب'}
+                    </h3>
+                    <p className="text-white/85 text-sm line-clamp-2 leading-relaxed drop-shadow" style={{ paddingLeft: 56 }}>
+                        {reel.title}
+                    </p>
+                </div>
             </div>
+
             {/* ── Comments Drawer ── */}
             <Drawer.Root open={isCommentsOpen} onOpenChange={setIsCommentsOpen}>
                 <Drawer.Portal>
