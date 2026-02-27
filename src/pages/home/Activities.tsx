@@ -31,9 +31,15 @@ const HomeActivities = () => {
         setLoading(true);
         try {
             const { data } = await fetchActivities({ pageSize: 50 });
-            // Filter out non-active
-            const activeData = (data || []).filter((a: any) => a.status === 'active');
-            setActivities(activeData);
+            // Only keep active and inactive (hide draft/etc if any)
+            const validData = (data || []).filter((a: any) => a.status === 'active' || a.status === 'inactive');
+            // Sort active to top, inactive to bottom
+            validData.sort((a: any, b: any) => {
+                if (a.status === 'active' && b.status !== 'active') return -1;
+                if (a.status !== 'active' && b.status === 'active') return 1;
+                return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+            });
+            setActivities(validData);
 
             if (user) {
                 const regIds = await fetchUserRegistrations(user.id);
@@ -107,85 +113,98 @@ const HomeActivities = () => {
                             </CardContent>
                         </Card>
                     ) : (
-                        activities.map((activity) => (
-                            <Card key={activity.id} className="shadow-soft overflow-hidden group">
-                                <CardContent className="p-0">
-                                    {/* Image Header with Fallback */}
-                                    <div className="relative w-full h-48 bg-muted overflow-hidden">
-                                        {activity.image_url ? (
-                                            <img
-                                                src={activity.image_url}
-                                                alt={activity.title}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
-                                                onClick={() => setOpenImage(activity.image_url)}
-                                                onError={(e) => {
-                                                    (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 400 300" preserveAspectRatio="none"><rect width="400" height="300" fill="%23f3f4f6"/><text x="50%" y="50%" font-family="sans-serif" font-size="20" fill="%239ca3af" text-anchor="middle" dy=".3em">لا توجد صورة</text></svg>';
-                                                }}
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full gradient-primary/10 flex items-center justify-center">
-                                                <Sparkles className="h-12 w-12 text-primary/30" />
-                                            </div>
-                                        )}
-
-                                        {/* Points Badge */}
-                                        {activity.points_reward > 0 && (
-                                            <div className="absolute top-3 left-3 flex items-center gap-1 bg-white/90 backdrop-blur-sm text-yellow-600 px-3 py-1.5 rounded-full text-sm font-bold shadow-sm">
-                                                <Star className="h-3.5 w-3.5 fill-current" />
-                                                +{activity.points_reward} نقطة
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="p-4 space-y-3">
-                                        <h3 className="font-bold text-lg text-foreground">{activity.title}</h3>
-
-                                        {activity.description && (
-                                            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                                                {activity.description}
-                                            </p>
-                                        )}
-
-                                        <div className="flex flex-wrap gap-2 pt-1 text-xs text-muted-foreground font-medium">
-                                            {activity.event_date && (
-                                                <div className="flex items-center gap-1.5 bg-secondary/50 px-2.5 py-1.5 rounded-lg">
-                                                    <Calendar className="h-3.5 w-3.5 text-primary" />
-                                                    <span>{new Date(activity.event_date).toLocaleDateString("ar-SA")}</span>
-                                                </div>
-                                            )}
-                                            {activity.location && (
-                                                <div className="flex items-center gap-1.5 bg-secondary/50 px-2.5 py-1.5 rounded-lg">
-                                                    <MapPin className="h-3.5 w-3.5 text-primary" />
-                                                    <span>{activity.location}</span>
-                                                </div>
-                                            )}
-                                            {activity.max_attendees > 0 && (
-                                                <div className="flex items-center gap-1.5 bg-secondary/50 px-2.5 py-1.5 rounded-lg">
-                                                    <Users className="h-3.5 w-3.5 text-primary" />
-                                                    <span>{activity.max_attendees} مقعد</span>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <div className="pt-2">
-                                            {registeredActivities.has(activity.id) ? (
-                                                <Button disabled className="w-full bg-green-600/10 text-green-600 hover:bg-green-600/10 hover:text-green-600 border-none opacity-100 font-bold">
-                                                    تم الحجز ✅
-                                                </Button>
+                        activities.map((activity) => {
+                            const isInactive = activity.status === 'inactive';
+                            return (
+                                <Card key={activity.id} className={cn("shadow-soft overflow-hidden group", isInactive && "opacity-60 grayscale-[0.8] blur-[0.3px] hover:grayscale-0 hover:blur-0 transition-all")}>
+                                    <CardContent className="p-0">
+                                        {/* Image Header with Fallback */}
+                                        <div className="relative w-full h-48 bg-muted overflow-hidden">
+                                            {activity.image_url ? (
+                                                <img
+                                                    src={activity.image_url}
+                                                    alt={activity.title}
+                                                    className={cn("w-full h-full object-cover transition-transform duration-500", !isInactive && "group-hover:scale-105 cursor-pointer", isInactive && "grayscale")}
+                                                    onClick={() => !isInactive && setOpenImage(activity.image_url)}
+                                                    onError={(e) => {
+                                                        (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 400 300" preserveAspectRatio="none"><rect width="400" height="300" fill="%23f3f4f6"/><text x="50%" y="50%" font-family="sans-serif" font-size="20" fill="%239ca3af" text-anchor="middle" dy=".3em">لا توجد صورة</text></svg>';
+                                                    }}
+                                                />
                                             ) : (
-                                                <Button
-                                                    onClick={() => handleRegister(activity.id)}
-                                                    disabled={registeringId === activity.id}
-                                                    className="w-full gradient-primary text-white font-bold"
-                                                >
-                                                    {registeringId === activity.id ? 'جاري الحجز...' : 'احجز مقعدك الآن'}
-                                                </Button>
+                                                <div className="w-full h-full gradient-primary/10 flex items-center justify-center">
+                                                    <Sparkles className="h-12 w-12 text-primary/30" />
+                                                </div>
+                                            )}
+
+                                            {/* Inactive Badge */}
+                                            {isInactive && (
+                                                <div className="absolute top-3 right-3 flex items-center gap-1 bg-red-900/10 text-red-800 border border-red-900/20 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm">
+                                                    مؤرشف
+                                                </div>
+                                            )}
+                                            {/* Points Badge */}
+                                            {activity.points_reward > 0 && !isInactive && (
+                                                <div className="absolute top-3 left-3 flex items-center gap-1 bg-white/90 backdrop-blur-sm text-yellow-600 px-3 py-1.5 rounded-full text-sm font-bold shadow-sm">
+                                                    <Star className="h-3.5 w-3.5 fill-current" />
+                                                    +{activity.points_reward} نقطة
+                                                </div>
                                             )}
                                         </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))
+
+                                        <div className="p-4 space-y-3">
+                                            <h3 className="font-bold text-lg text-foreground">{activity.title}</h3>
+
+                                            {activity.description && (
+                                                <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                                                    {activity.description}
+                                                </p>
+                                            )}
+
+                                            <div className="flex flex-wrap gap-2 pt-1 text-xs text-muted-foreground font-medium">
+                                                {activity.event_date && (
+                                                    <div className="flex items-center gap-1.5 bg-secondary/50 px-2.5 py-1.5 rounded-lg">
+                                                        <Calendar className="h-3.5 w-3.5 text-primary" />
+                                                        <span>{new Date(activity.event_date).toLocaleDateString("ar-SA")}</span>
+                                                    </div>
+                                                )}
+                                                {activity.location && (
+                                                    <div className="flex items-center gap-1.5 bg-secondary/50 px-2.5 py-1.5 rounded-lg">
+                                                        <MapPin className="h-3.5 w-3.5 text-primary" />
+                                                        <span>{activity.location}</span>
+                                                    </div>
+                                                )}
+                                                {activity.max_attendees > 0 && (
+                                                    <div className="flex items-center gap-1.5 bg-secondary/50 px-2.5 py-1.5 rounded-lg">
+                                                        <Users className="h-3.5 w-3.5 text-primary" />
+                                                        <span>{activity.max_attendees} مقعد</span>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="pt-3">
+                                                {isInactive ? (
+                                                    <Button disabled={true} className="w-full bg-[#f3f4f6] text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#6b7280] border-none opacity-100 font-bold cursor-not-allowed">
+                                                        انتهى وقت التسجيل
+                                                    </Button>
+                                                ) : registeredActivities.has(activity.id) ? (
+                                                    <Button disabled className="w-full bg-green-600/10 text-green-600 hover:bg-green-600/10 hover:text-green-600 border-none opacity-100 font-bold">
+                                                        تم الحجز ✅
+                                                    </Button>
+                                                ) : (
+                                                    <Button
+                                                        onClick={() => handleRegister(activity.id)}
+                                                        disabled={registeringId === activity.id}
+                                                        className="w-full gradient-primary text-white font-bold shadow-sm transition-all active:scale-[0.98]"
+                                                    >
+                                                        {registeringId === activity.id ? 'جاري الحجز...' : 'احجز مقعدك الآن'}
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            );
+                        })
                     )}
                 </div>
             </div>

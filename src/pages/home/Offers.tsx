@@ -6,6 +6,8 @@ import { BottomNav } from '@/components/layout/BottomNav';
 import { fetchOffers } from '@/service/supabaseData';
 import { toast } from 'sonner';
 import { SmartTopBar } from '@/components/layout/SmartTopBar';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 
 const HomeOffers = () => {
@@ -22,9 +24,13 @@ const HomeOffers = () => {
     const loadOffers = async () => {
         try {
             const data = await fetchOffers();
-            // Only keep active offers
-            const activeOffers = (data || []).filter((o: any) => o.status === 'active');
-            setOffers(activeOffers);
+            const validOffers = (data || []).filter((o: any) => o.status === 'active' || o.status === 'inactive');
+            validOffers.sort((a: any, b: any) => {
+                if (a.status === 'active' && b.status !== 'active') return -1;
+                if (a.status !== 'active' && b.status === 'active') return 1;
+                return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+            });
+            setOffers(validOffers);
         } catch (error) {
             console.error('Error fetching offers:', error);
             toast.error('حدث خطأ في تحميل العروض');
@@ -70,69 +76,91 @@ const HomeOffers = () => {
                             </CardContent>
                         </Card>
                     ) : (
-                        offers.map((offer) => (
-                            <Card key={offer.id} className="shadow-soft overflow-hidden group border-2 border-transparent hover:border-rose-100 transition-colors">
-                                <CardContent className="p-0">
-                                    <div className="flex flex-col sm:flex-row h-full">
-                                        {/* Image Area */}
-                                        <div className="relative w-full sm:w-32 h-40 sm:h-auto bg-muted">
-                                            {offer.image_url ? (
-                                                <img
-                                                    src={offer.image_url}
-                                                    alt={offer.title}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
-                                                    onClick={() => setOpenImage(offer.image_url)}
-                                                    onError={(e) => {
-                                                        (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 200 200" preserveAspectRatio="none"><rect width="200" height="200" fill="%23f3f4f6"/><text x="50%" y="50%" font-family="sans-serif" font-size="14" fill="%239ca3af" text-anchor="middle" dy=".3em">لا توجد صورة</text></svg>';
-                                                    }}
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full bg-rose-50 flex items-center justify-center">
-                                                    <Percent className="h-10 w-10 text-rose-200" />
-                                                </div>
-                                            )}
-
-                                            {/* Discount Badge on Mobile (top left) / Desktop (bottom right of image) */}
-                                            {offer.discount_percentage > 0 && (
-                                                <div className="absolute top-2 left-2 sm:top-auto sm:bottom-2 sm:right-2 sm:left-auto bg-rose-500 text-white px-2.5 py-1 rounded-lg text-sm font-bold shadow-md flex items-center gap-1">
-                                                    <Percent className="h-3.5 w-3.5" />
-                                                    {offer.discount_percentage}%
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Content Area */}
-                                        <div className="p-4 flex-1 flex flex-col justify-between">
-                                            <div>
-                                                {offer.partners && (
-                                                    <div className="flex items-center gap-1.5 text-xs font-semibold text-rose-600 mb-1.5">
-                                                        <Store className="h-3 w-3" />
-                                                        {offer.partners.name}
-                                                    </div>
-                                                )}
-                                                <h3 className="font-bold text-base text-foreground mb-1 leading-tight">{offer.title}</h3>
-                                                {offer.description && (
-                                                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                                                        {offer.description}
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            <div className="mt-3 pt-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
-                                                {offer.expires_at ? (
-                                                    <div className="flex items-center gap-1.5">
-                                                        <Calendar className="h-3.5 w-3.5" />
-                                                        <span>ينتهي: {new Date(offer.expires_at).toLocaleDateString("ar-SA")}</span>
-                                                    </div>
+                        offers.map((offer) => {
+                            const isInactive = offer.status === 'inactive';
+                            return (
+                                <Card key={offer.id} className={cn("shadow-soft overflow-hidden group border-2 border-transparent transition-colors", !isInactive && "hover:border-rose-100", isInactive && "opacity-60 grayscale-[0.8] blur-[0.3px] hover:grayscale-0 hover:blur-0 transition-all")}>
+                                    <CardContent className="p-0">
+                                        <div className="flex flex-col sm:flex-row h-full">
+                                            {/* Image Area */}
+                                            <div className="relative w-full sm:w-[150px] shrink-0 h-40 sm:h-auto bg-muted">
+                                                {offer.image_url ? (
+                                                    <img
+                                                        src={offer.image_url}
+                                                        alt={offer.title}
+                                                        className={cn("w-full h-full object-cover transition-transform duration-500", !isInactive && "group-hover:scale-105 cursor-pointer", isInactive && "grayscale")}
+                                                        onClick={() => !isInactive && setOpenImage(offer.image_url)}
+                                                        onError={(e) => {
+                                                            (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 200 200" preserveAspectRatio="none"><rect width="200" height="200" fill="%23f3f4f6"/><text x="50%" y="50%" font-family="sans-serif" font-size="14" fill="%239ca3af" text-anchor="middle" dy=".3em">لا توجد صورة</text></svg>';
+                                                        }}
+                                                    />
                                                 ) : (
-                                                    <span className="text-secondary-foreground font-medium">ساري دائماً</span>
+                                                    <div className="w-full h-full bg-rose-50 flex items-center justify-center">
+                                                        <Percent className="h-10 w-10 text-rose-200" />
+                                                    </div>
+                                                )}
+
+                                                {/* Inactive Badge */}
+                                                {isInactive && (
+                                                    <div className="absolute top-2 right-2 flex items-center gap-1 bg-red-900/10 text-red-800 border border-red-900/20 px-3 py-1.5 rounded-full text-[11px] font-bold shadow-sm">
+                                                        مؤرشف
+                                                    </div>
+                                                )}
+
+                                                {/* Discount Badge on Mobile (top left) / Desktop (bottom right of image) */}
+                                                {offer.discount_percentage > 0 && !isInactive && (
+                                                    <div className="absolute top-2 left-2 sm:top-auto sm:bottom-2 sm:right-2 sm:left-auto bg-rose-500 text-white px-2.5 py-1 rounded-lg text-sm font-bold shadow-md flex items-center gap-1">
+                                                        <Percent className="h-3.5 w-3.5" />
+                                                        {offer.discount_percentage}%
+                                                    </div>
                                                 )}
                                             </div>
+
+                                            {/* Content Area */}
+                                            <div className="p-4 flex-1 flex flex-col justify-between">
+                                                <div>
+                                                    {offer.partners && (
+                                                        <div className="flex items-center gap-1.5 text-xs font-semibold text-rose-600 mb-1.5">
+                                                            <Store className="h-3 w-3" />
+                                                            {offer.partners.name}
+                                                        </div>
+                                                    )}
+                                                    <h3 className="font-bold text-base text-foreground mb-1 leading-tight">{offer.title}</h3>
+                                                    {offer.description && (
+                                                        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                                                            {offer.description}
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                <div className="mt-3 pt-3 flex flex-col gap-3 border-t border-border/50">
+                                                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                                        {offer.expires_at ? (
+                                                            <div className="flex items-center gap-1.5">
+                                                                <Calendar className="h-3.5 w-3.5" />
+                                                                <span>ينتهي: {new Date(offer.expires_at).toLocaleDateString("ar-SA")}</span>
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-secondary-foreground font-medium">ساري دائماً</span>
+                                                        )}
+                                                    </div>
+
+                                                    {isInactive ? (
+                                                        <Button disabled={true} className="w-full bg-[#f3f4f6] text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#6b7280] border-none opacity-100 font-bold cursor-not-allowed">
+                                                            انتهى وقت العرض
+                                                        </Button>
+                                                    ) : (
+                                                        <Button className="w-full bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white font-bold shadow-sm transition-all active:scale-[0.98]">
+                                                            استفد من العرض
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))
+                                    </CardContent>
+                                </Card>
+                            );
+                        })
                     )}
                 </div>
             </div>

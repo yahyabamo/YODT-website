@@ -7,6 +7,7 @@ import { ConfirmModal } from "./components/AdminUI";
 export default function Admin() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [confirm, setConfirm] = useState<any>(null); // Global confirmation state
   const location = useLocation();
 
   // Handle window resize for mobile check
@@ -73,13 +74,20 @@ export default function Admin() {
         <main className="flex-1 overflow-y-auto p-4 md:p-6" style={{ flex: 1, overflowY: "auto", padding: "24px" }}>
           <div className="max-w-7xl mx-auto" style={{ maxWidth: 1280, margin: "0 auto", animation: "fadeUp .25s ease" }} key={currentPageId}>
             {/* The routed child components will be injected here */}
-            {/* We use an Outlet context to pass down any global admin functions like setConfirm if needed.
-                For now, components that need confirm modals will manage their own state to keep things simple,
-                but we can pass an outlet context if we want a global confirm modal. */}
-            <Outlet />
+            {/* We use an Outlet context to pass down the global confirm function. */}
+            <Outlet context={{ setConfirm }} />
           </div>
         </main>
       </div>
+
+      {/* Global Confirmation Modal */}
+      {confirm && (
+        <ConfirmModal
+          open={!!confirm}
+          {...confirm}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
     </div>
   );
 }

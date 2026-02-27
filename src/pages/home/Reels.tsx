@@ -182,18 +182,12 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
     const handleTap = useCallback(() => {
         const now = Date.now();
 
-        // iOS first tap — start the video with sound
-        if (!hasStarted && playerReady) {
-            playerRef.current?.playVideo();
-            playerRef.current?.unMute();
-            playerRef.current?.setVolume(100);
-            setIsMuted(false);
+        // Mark that user has interacted (hides the “tap to start” overlay)
+        if (!hasStarted) {
             setHasStarted(true);
-            lastTap.current = now;
-            return;
         }
 
-        // Double tap — like
+        // Double‑tap detection
         if (now - lastTap.current < 300) {
             clearTimeout(tapTimeout.current);
             lastTap.current = 0;
@@ -203,16 +197,29 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
             return;
         }
 
-        // Single tap — pause / resume
         lastTap.current = now;
-        tapTimeout.current = setTimeout(() => {
+        clearTimeout(tapTimeout.current); // cancel any pending pause toggle
+
+        if (isMuted) {
+            // Immediate unmute + play if paused
+            playerRef.current?.unMute();
+            playerRef.current?.setVolume(100);
+            setIsMuted(false);
             if (isPaused) {
                 playerRef.current?.playVideo();
-            } else {
-                playerRef.current?.pauseVideo();
+                // `isPaused` will be updated by the player's onStateChange event
             }
-        }, 300);
-    }, [isPaused, stats.isLiked, hasStarted, playerReady]);
+        } else {
+            // Already unmuted – this tap toggles pause after a short delay
+            tapTimeout.current = setTimeout(() => {
+                if (isPaused) {
+                    playerRef.current?.playVideo();
+                } else {
+                    playerRef.current?.pauseVideo();
+                }
+            }, 300); // you can reduce this to 200ms for a snappier feel
+        }
+    }, [hasStarted, isMuted, isPaused, stats.isLiked, handleToggleLike]);
 
     const handleToggleMute = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -348,23 +355,23 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
             <div className="absolute left-4 right-20 bottom-[155px] pointer-events-none text-right z-40" dir="rtl">
                 <h3 className="text-white font-bold text-lg mb-1 drop-shadow-lg">@{reel.author || 'اتحاد الطلاب'}</h3>
                 <p className="text-white/90 text-sm line-clamp-2 mb-3 leading-relaxed">{reel.title}</p>
-                <div className="flex items-center gap-2">
+                {/* <div className="flex items-center gap-2">
                     <div className="bg-white/20 backdrop-blur-md rounded-full px-3 py-1 flex items-center gap-2">
                         <Music2 className="w-3 h-3 text-white animate-pulse" />
                         <span className="text-white text-[10px]">الصوت الأصلي - اتحاد الطلاب اليمنيين</span>
                     </div>
-                </div>
+                </div> */}
             </div>
 
             {/* Progress bar + skip — only after video starts */}
             {/* bottom-[168px] = safe above BottomNav (~80px) + action sidebar gap */}
             {hasStarted && (
-                <div className="absolute bottom-[168px] left-0 right-0 z-40 px-4">
+                <div className="absolute bottom-[140px] left-0 right-0 z-40 px-4">
                     <div className="flex items-center gap-3">
                         <button
                             className="text-white/80 text-xs font-bold bg-white/20 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0"
-                            onClick={(e) => handleSkip(e, -10)}
-                        >-10</button>
+                            onClick={(e) => handleSkip(e, 10)}
+                        >+10</button>
 
                         <div className="relative flex-1 h-2 bg-white/30 rounded-full overflow-hidden">
                             <div
@@ -378,11 +385,11 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                             />
                         </div>
-
                         <button
                             className="text-white/80 text-xs font-bold bg-white/20 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0"
-                            onClick={(e) => handleSkip(e, 10)}
-                        >+10</button>
+                            onClick={(e) => handleSkip(e, -10)}
+                        >-10</button>
+
                     </div>
                 </div>
             )}

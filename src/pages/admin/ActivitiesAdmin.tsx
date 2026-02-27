@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { fetchActivities, fetchActivityAttendees, upsertActivity, deleteActivity } from "@/service/supabaseData";
-import { supabase } from "@/integrations/supabase/client";
-import { Badge, Spinner, Inp, Sel, Tex, Modal, B, fmtDate } from "./components/AdminUI";
+import { Avatar, Badge, Spinner, Inp, Sel, Tex, Modal, B, fmtDate } from "./components/AdminUI";
+// import { uploadImage } from '@/service/cloudinary';
+import { useOutletContext } from "react-router-dom";
 
 interface Activity {
     id: string; title: string; description: string; event_date: string;
-    status: "active" | "inactive" | "draft"; points_reward: number;
-    location: string; max_attendees: number; image_url?: string;
+    location: string; max_attendees: number; points_reward: number;
+    status: "active" | "inactive" | "draft"; image_url: string;
     activity_registrations?: { count: number }[];
+}
+
+interface ActivityRegistration {
+    user_id: string; profiles?: { full_name: string }; count?: number; created_at?: string; status?: "attended" | "registered";
 }
 
 const inputStyle: React.CSSProperties = {
@@ -16,7 +21,6 @@ const inputStyle: React.CSSProperties = {
     borderRadius: 12, fontSize: 14, background: "#fff",
     boxSizing: "border-box", fontFamily: "inherit"
 };
-
 async function uploadImage(file: File): Promise<string> {
     const cloudName = "dknz5c7d0";
     const uploadPreset = "activity_unsigned";
@@ -24,6 +28,7 @@ async function uploadImage(file: File): Promise<string> {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", uploadPreset);
+    formData.append("folder", "partners");
 
     const response = await fetch(
         `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
@@ -42,8 +47,9 @@ async function uploadImage(file: File): Promise<string> {
     return data.secure_url;
 }
 
-export default function ActivitiesAdmin({ setConfirm }: { setConfirm: (v: any) => void }) {
-    const [acts, setActs] = useState<Activity[]>([]);
+export default function ActivitiesAdmin() {
+    const { setConfirm } = useOutletContext<{ setConfirm: (v: any) => void }>();
+    const [activities, setActivities] = useState<Activity[]>([]);
     const [loading, setLoading] = useState(true);
     const [modal, setModal] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -56,11 +62,11 @@ export default function ActivitiesAdmin({ setConfirm }: { setConfirm: (v: any) =
     const [loadingAttendees, setLoadingAttendees] = useState(false);
     const [openImage, setOpenImage] = useState<string | null>(null);
 
-    const load = async () => {
-        setLoading(true);
-        try { const { data } = await fetchActivities({ pageSize: 100 }); setActs(data || []); }
+    const load = async (showLoading = true) => {
+        if (showLoading) setLoading(true);
+        try { const { data } = await fetchActivities({ pageSize: 100 }); setActivities(data || []); }
         catch { toast.error("فشل تحميل الفعاليات"); }
-        finally { setLoading(false); }
+        finally { if (showLoading) setLoading(false); }
     };
 
     const loadAttendees = async (activityId: string) => {
@@ -88,26 +94,57 @@ export default function ActivitiesAdmin({ setConfirm }: { setConfirm: (v: any) =
             if (selectedImage) {
                 finalImageUrl = await uploadImage(selectedImage);
             }
-            await upsertActivity(editing ? { ...form, id: editing.id, image_url: finalImageUrl } : { ...form, image_url: finalImageUrl });
+            const cleanPayload: any = {
+                title: form.title,
+                description: form.description,
+                event_date: form.event_date || null,
+                location: form.location,
+                max_attendees: form.max_attendees,
+                points_reward: form.points_reward,
+                status: form.status,
+                image_url: finalImageUrl
+            };
+            if (editing) cleanPayload.id = editing.id;
+
+            console.log("Saving Activity Payload:", cleanPayload);
+            await upsertActivity(cleanPayload);
             toast.success(editing ? "تم التحديث" : "تم الإنشاء");
             setModal(false);
-            load();
-        } catch { toast.error("فشل الحفظ"); }
+            load(false); // Refresh without loader flash
+        } catch (err: any) { toast.error(err.message || err.details || "فشل الحفظ"); }
         finally { setSaving(false); }
     };
 
-    const del = (a: Activity) => setConfirm({
-        title: "حذف الفعالية", message: `حذف "${a.title}"؟`, danger: true,
-        onConfirm: async () => {
-            try { await deleteActivity(a.id); toast.success("تم الحذف"); load(); }
-            catch { toast.error("فشل الحذف"); }
-        }
-    });
+    const del = (e: React.MouseEvent, a: Activity) => {
+        e.stopPropagation();
+        e.preventDefault();
+        setConfirm({
+            title: "تأكيد الحذف", message: `حذف "${a.title || "الفعالية"}"؟`, danger: true,
+            onConfirm: async () => {
+                console.log("CRITICAL: Delete button clicked for ID:", a.id);
+                try { await deleteActivity(a.id); toast.success("تم الحذف"); load(false); }
+                catch (err: any) { toast.error(err.message || err.details || "فشل الحذف"); }
+            }
+        });
+    };
 
-    const toggle = async (a: Activity) => {
+    const toggle = async (e: React.MouseEvent, a: Activity) => {
+        e.stopPropagation();
         const ns = a.status === "active" ? "inactive" : "active";
-        try { await upsertActivity({ ...a, status: ns }); toast.success("تم التحديث"); load(); }
-        catch { toast.error("فشل التحديث"); }
+        const cleanPayload = {
+            id: a.id,
+            title: a.title,
+            description: a.description,
+            event_date: a.event_date || null,
+            location: a.location,
+            max_attendees: a.max_attendees,
+            points_reward: a.points_reward,
+            status: ns,
+            image_url: a.image_url
+        };
+        console.log("Toggling Activity Payload:", cleanPayload);
+        try { await upsertActivity(cleanPayload); toast.success("تم التحديث"); load(false); }
+        catch (err: any) { toast.error(err.message || err.details || "فشل التحديث"); }
     };
 
     const sColor: any = { active: "#059669", inactive: "#9ca3af", draft: "#d97706" };
@@ -118,14 +155,14 @@ export default function ActivitiesAdmin({ setConfirm }: { setConfirm: (v: any) =
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
                 <div>
                     <h2 className="m-0 text-xl font-extrabold text-[#111]">إدارة الفعاليات</h2>
-                    <p className="m-0 mt-0.5 text-[#9ca3af] text-[13px]">{acts.length} فعاليات</p>
+                    <p className="m-0 mt-0.5 text-[#9ca3af] text-[13px]">{activities.length} فعاليات</p>
                 </div>
                 <button onClick={openNew} className="px-5 py-2.5 rounded-xl border-none font-bold cursor-pointer text-sm text-white shadow-sm" style={{ background: B }}>+ إضافة فعالية</button>
             </div>
 
             {loading ? <Spinner /> : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {acts.map(a => (
+                    {activities.map(a => (
                         <div key={a.id} className="bg-white rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,.06)] border border-[#f0f0f0] overflow-hidden flex flex-col">
                             {a.image_url && (
                                 <img
@@ -146,17 +183,18 @@ export default function ActivitiesAdmin({ setConfirm }: { setConfirm: (v: any) =
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-1.5 mb-3.5 flex-1">
-                                    {[["📅", fmtDate(a.event_date)], ["📍", a.location || "—"], ["👥", `${a.max_attendees} مقعد`], ["⭐", `${a.points_reward} نقطة`], ["🎟️", `حجوزات: ${a.activity_registrations?.[0]?.count || 0}`]].map(([ic, v], i) => (
+                                    {[["📅", fmtDate(a.event_date)], ["📍", a.location || "—"], ["👥", `${a.max_attendees} مقعد`], ["⭐", `${a.points_reward} نقطة`], ["🎟️", `حجوزات: ${a.activity_registrations?.[0]?.count || 0} `]].map(([ic, v], i) => (
                                         <div key={i} className="flex items-center gap-1 text-[11px] text-[#6b7280]"><span>{ic}</span><span className="truncate">{v}</span></div>
                                     ))}
                                 </div>
 
                                 <div className="flex gap-2 flex-wrap sm:flex-nowrap mt-auto pt-2">
-                                    <button onClick={() => openEdit(a)} className="flex-1 py-2 rounded-lg border-none bg-[#f3f4f6] cursor-pointer font-semibold text-xs text-[#374151]">تعديل</button>
-                                    <button onClick={() => toggle(a)} className="flex-1 py-2 rounded-lg border-none cursor-pointer font-semibold text-xs" style={{ background: a.status === "active" ? "#fef3c7" : "#d1fae5", color: a.status === "active" ? "#d97706" : "#059669" }}>{a.status === "active" ? "تعطيل" : "تفعيل"}</button>
-                                    <button onClick={() => del(a)} className="w-[34px] h-[34px] rounded-lg border-none bg-[#fee2e2] cursor-pointer text-[#dc2626] text-sm flex items-center justify-center shrink-0">🗑</button>
+                                    <button type="button" onClick={(e) => { e.stopPropagation(); openEdit(a); }} className="flex-1 py-2 rounded-lg border-none bg-[#f3f4f6] cursor-pointer font-semibold text-xs text-[#374151]">تعديل</button>
+                                    <button type="button" onClick={(e) => toggle(e, a)} className="flex-1 py-2 rounded-lg border-none cursor-pointer font-semibold text-xs" style={{ background: a.status === "active" ? "#fef3c7" : "#d1fae5", color: a.status === "active" ? "#d97706" : "#059669" }}>{a.status === "active" ? "تعطيل" : "تفعيل"}</button>
+                                    <button type="button" onClick={(e) => del(e, a)} className="w-[34px] h-[34px] rounded-lg border-none bg-[#fee2e2] cursor-pointer text-[#dc2626] text-sm flex items-center justify-center shrink-0">🗑</button>
                                     <button
-                                        onClick={() => { setSelectedActivity(a); loadAttendees(a.id); setAttendanceModal(true); }}
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); setSelectedActivity(a); loadAttendees(a.id); setAttendanceModal(true); }}
                                         className="flex-1 text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded-lg hover:bg-blue-100 transition whitespace-nowrap"
                                     >
                                         🎟️ الحضور
@@ -165,7 +203,7 @@ export default function ActivitiesAdmin({ setConfirm }: { setConfirm: (v: any) =
                             </div>
                         </div>
                     ))}
-                    {!acts.length && <div className="text-center py-12 text-[#9ca3af] col-span-full"><div className="text-[40px] mb-2">🎯</div><p>لا توجد فعاليات بعد</p></div>}
+                    {!activities.length && <div className="text-center py-12 text-[#9ca3af] col-span-full"><div className="text-[40px] mb-2">🎯</div><p>لا توجد فعاليات بعد</p></div>}
                 </div>
             )}
 

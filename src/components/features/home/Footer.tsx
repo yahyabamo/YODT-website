@@ -1,5 +1,6 @@
 
 import React from 'react';
+import logo from '@/assets/logo.png';
 
 export const Footer = () => {
     return (
@@ -8,11 +9,7 @@ export const Footer = () => {
                 <div className="footer-brand">
                     <div className="footer-logo">
                         <div className="logo-mark">
-                            <img
-                                src="src/assets/logo.png"
-                                alt="Yemeni Students Union"
-                                className="h-8 w-auto mr-2 rtl:ml-2 rtl:mr-0"
-                            />
+                            <img src={logo} alt="الاتحاد" className="w-full h-full object-contain" />
                         </div>
                         <div className="logo-text">
                             <span className="logo-text-main ar-only">اتحاد الطلاب اليمنيين</span>

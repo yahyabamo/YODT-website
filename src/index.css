@@ -1915,7 +1915,7 @@
     color: rgba(179, 0, 31, 0.08);
     top: 10px;
     inset-inline-end: 20px;
-    line-height: 1;
+    line-height: 1.2;
     user-select: none;
   }
 

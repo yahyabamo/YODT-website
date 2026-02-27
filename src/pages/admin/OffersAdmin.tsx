@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { fetchOffers, fetchPartners, upsertOffer } from "@/service/supabaseData";
+import { fetchOffers, fetchPartners, upsertOffer, deleteOffer } from "@/service/supabaseData";
 import { supabase } from "@/integrations/supabase/client";
-import { Badge, Spinner, Inp, Sel, Tex, Modal, Field, B, fmtDate } from "./components/AdminUI";
+import { Avatar, Badge, Spinner, Inp, Sel, Tex, Modal, Field, B, fmtDate } from "./components/AdminUI";
+import { useOutletContext } from "react-router-dom";
 
 const inputStyle: React.CSSProperties = {
     width: "100%", padding: "10px 14px", border: "1px solid #e5e7eb",
@@ -36,7 +37,8 @@ async function uploadImage(file: File, folder: string): Promise<string> {
     return data.secure_url;
 }
 
-export default function OffersAdmin({ setConfirm }: { setConfirm: (v: any) => void }) {
+export default function OffersAdmin() {
+    const { setConfirm } = useOutletContext<{ setConfirm: (v: any) => void }>();
 
     const [offers, setOffers] = useState<any[]>([]);
     const [partners, setPartners] = useState<any[]>([]);
@@ -48,14 +50,14 @@ export default function OffersAdmin({ setConfirm }: { setConfirm: (v: any) => vo
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [openImage, setOpenImage] = useState<string | null>(null);
 
-    const load = async () => {
-        setLoading(true);
+    const load = async (showLoading = true) => {
+        if (showLoading) setLoading(true);
         try {
             const [offersData, partnersData] = await Promise.all([fetchOffers(), fetchPartners()]);
             setOffers(offersData || []);
             setPartners(partnersData || []);
         } catch { toast.error("فشل تحميل العروض"); }
-        finally { setLoading(false); }
+        finally { if (showLoading) setLoading(false); }
     };
 
     useEffect(() => { load(); }, []);
@@ -70,16 +72,30 @@ export default function OffersAdmin({ setConfirm }: { setConfirm: (v: any) => vo
                 finalImageUrl = await uploadImage(selectedImage, "offers");
             }
             const payload = { title: form.title, partner_id: form.partner_id, description: form.description, discount_percentage: Number(form.discount_percentage), expires_at: form.expires_at || null, status: form.status, image_url: finalImageUrl };
-            await upsertOffer(editing ? { ...payload, id: editing.id } : payload);
+            const finalPayload = editing ? { ...payload, id: editing.id } : payload;
+            console.log("Saving Offer Payload:", finalPayload);
+            await upsertOffer(finalPayload);
             toast.success(editing ? "تم التحديث" : "تم الإضافة");
-            setModal(false); load();
-        } catch { toast.error("فشل الحفظ"); }
+            setModal(false); load(false);
+        } catch (err: any) { toast.error(err.message || err.details || "فشل الحفظ"); }
         finally { setSaving(false); }
     };
 
-    const toggleOffer = async (o: any) => {
-        try { await upsertOffer({ ...o, partner_id: o.partner_id || o.partners?.id, status: o.status === "active" ? "inactive" : "active" }); toast.success("تم التحديث"); load(); }
-        catch { toast.error("فشل التحديث"); }
+    const toggleOffer = async (e: React.MouseEvent, o: any) => {
+        e.stopPropagation();
+        const cleanPayload = {
+            id: o.id,
+            title: o.title,
+            partner_id: o.partner_id || o.partners?.id,
+            description: o.description,
+            discount_percentage: o.discount_percentage,
+            expires_at: o.expires_at || null,
+            status: o.status === "active" ? "inactive" : "active",
+            image_url: o.image_url
+        };
+        console.log("Toggling Offer Payload:", cleanPayload);
+        try { await upsertOffer(cleanPayload); toast.success("تم التحديث"); load(false); }
+        catch (err: any) { toast.error(err.message || err.details || "فشل التحديث"); }
     };
 
     return (
@@ -125,10 +141,36 @@ export default function OffersAdmin({ setConfirm }: { setConfirm: (v: any) => vo
                                     <td className="p-3 md:px-4 md:py-3 whitespace-nowrap"><Badge type={o.status}>{o.status === "active" ? "نشط" : "معطل"}</Badge></td>
                                     <td className="p-3 md:px-4 md:py-3">
                                         <div className="flex gap-1.5 flex-nowrap">
-                                            <button onClick={() => { setEditing(o); setForm({ title: o.title, description: o.description || "", image_url: o.image_url || "", partner_id: o.partner_id || o.partners?.id || "", discount_percentage: o.discount_percentage, expires_at: o.expires_at?.slice(0, 10) || "", status: o.status }); setSelectedImage(null); setModal(true) }} className="w-7 h-7 rounded-lg border-none bg-[#f3f4f6] cursor-pointer text-[13px] flex items-center justify-center shrink-0 hover:bg-gray-200">✏️</button>
-                                            <button onClick={() => toggleOffer(o)} className="w-7 h-7 rounded-lg border-none cursor-pointer text-[13px] flex items-center justify-center shrink-0" style={{ background: o.status === "active" ? "#fef3c7" : "#d1fae5", color: o.status === "active" ? "#d97706" : "#059669" }}>{o.status === "active" ? "⏸" : "▶"}</button>
-                                            <button onClick={() => setConfirm({ title: "حذف العرض", message: `حذف "${o.title}"؟`, danger: true, onConfirm: async () => { try { await upsertOffer({ ...o, status: "inactive" }); toast.success("تم"); load(); } catch { toast.error("فشل"); } } })} className="w-7 h-7 rounded-lg border-none bg-[#fee2e2] text-[#dc2626] cursor-pointer text-[13px] flex items-center justify-center shrink-0 hover:bg-red-200">🗑</button>
-                                        </div>
+                                            <button type="button" onClick={(e) => { e.stopPropagation(); setEditing(o); setForm({ title: o.title, description: o.description || "", image_url: o.image_url || "", partner_id: o.partner_id || o.partners?.id || "", discount_percentage: o.discount_percentage, expires_at: o.expires_at?.slice(0, 10) || "", status: o.status }); setSelectedImage(null); setModal(true) }} className="w-7 h-7 rounded-lg border-none bg-[#f3f4f6] cursor-pointer text-[13px] flex items-center justify-center shrink-0 hover:bg-gray-200">✏️</button>
+                                            <button type="button" onClick={(e) => toggleOffer(e, o)} className="w-7 h-7 rounded-lg border-none cursor-pointer text-[13px] flex items-center justify-center shrink-0" style={{ background: o.status === "active" ? "#fef3c7" : "#d1fae5", color: o.status === "active" ? "#d97706" : "#059669" }}>{o.status === "active" ? "⏸" : "▶"}</button>
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    e.preventDefault();
+                                                    console.log("Triggering delete modal for:", o.id);
+                                                    setConfirm({
+                                                        title: "تأكيد الحذف",
+                                                        message: `حذف "${o.title}"؟`,
+                                                        danger: true,
+                                                        onConfirm: async () => {
+                                                            console.log("CRITICAL: Delete button clicked for ID:", o.id);
+                                                            try {
+                                                                await deleteOffer(o.id);
+                                                                toast.success("تم الحذف بنجاح");
+                                                                load(false);
+                                                            } catch (err: any) {
+                                                                // THIS PART IS CRUCIAL FOR DEBUGGING
+                                                                console.error("FULL DELETE ERROR:", err);
+                                                                toast.error(err.message || err.details || "فشل الحذف");
+                                                            }
+                                                        }
+                                                    })
+                                                }}
+                                                className="w-7 h-7 rounded-lg border-none bg-[#fee2e2] text-[#dc2626] cursor-pointer text-[13px] flex items-center justify-center shrink-0 hover:bg-red-200"
+                                            >
+                                                🗑
+                                            </button>                                        </div>
                                     </td>
                                 </tr>
                             ))}</tbody>

@@ -98,7 +98,7 @@ export function ConfirmModal({ open, title, message, onConfirm, onCancel, danger
     { open: boolean; title: string; message: string; onConfirm: () => void; onCancel: () => void; danger?: boolean }) {
     if (!open) return null;
     return (
-        <div style={{ position: "fixed", inset: 0, zIndex: 5000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+        <div style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
             <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.55)" }} onClick={onCancel} />
             <div style={{ position: "relative", background: "#fff", borderRadius: 20, boxShadow: "0 20px 60px rgba(0,0,0,.2)", width: "100%", maxWidth: 400, padding: 32, textAlign: "center" }}>
                 <div style={{ width: 56, height: 56, borderRadius: "50%", background: danger ? "#fee2e2" : "#fef3c7", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, margin: "0 auto 16px" }}>{danger ? "🗑️" : "⚠️"}</div>

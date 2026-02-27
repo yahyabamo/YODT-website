@@ -16,14 +16,16 @@ export function AdminHeader({ pageTitle, setSidebarOpen }: AdminHeaderProps) {
 
     const handleLogout = async () => {
         try {
+            localStorage.removeItem('registrationData');
+            localStorage.removeItem('userGender');
             await signOut();
-            navigate("/index");
+            window.location.replace("/");
         } catch (error) {
             console.error("Logout failed:", error);
-            // Fallback redirect if something fails
-            window.location.href = "/index";
+            window.location.replace("/");
         }
     };
+
 
     return (
         <header className="bg-white border-b border-gray-100 p-3 md:px-6 md:py-3 flex items-center justify-between shrink-0 shadow-sm">

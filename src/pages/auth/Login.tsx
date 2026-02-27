@@ -69,16 +69,20 @@ const Login = () => {
   // ── Case 1: user was already logged in (page refresh / revisit) ──
   // Wait for loading to finish, then redirect
   useEffect(() => {
-    if (loading) return;
-    if (!user || justLoggedIn) return;
-    if (!profile) return; // مهم جداً// justLoggedIn case handled below
-    // Already authenticated — send them where they belong
-    if (profile?.role === 'admin') {
+    if (loading) return; // Wait for initial auth check
+    if (!user) return; // Not logged in
+    if (justLoggedIn) return; // Handled separately
+
+    // If we have a user, wait specifically for the profile to load
+    if (!profile) return;
+
+    // Already authenticated and profile loaded — send them where they belong
+    if (profile.role === 'admin') {
       navigate('/admin', { replace: true });
     } else {
       navigate('/home', { replace: true });
     }
-  }, [loading, user]);
+  }, [loading, user, profile, justLoggedIn, navigate]);
 
   // ── Case 2: user JUST logged in — wait for profile to populate ───
   // profile starts as null right after signIn(), then AuthContext

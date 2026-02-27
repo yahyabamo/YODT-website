@@ -78,7 +78,7 @@ export default function Dashboard() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-                <div className="lg:col-span-2 bg-white rounded-2xl p-5 shadow-[0_1px_4px_rgba(0,0,0,.06)] border border-[#f0f0f0]">
+                {/* <div className="lg:col-span-2 bg-white rounded-2xl p-5 shadow-[0_1px_4px_rgba(0,0,0,.06)] border border-[#f0f0f0]">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="m-0 text-[15px] font-bold">الأعضاء الجدد شهرياً</h3>
                         <span className="text-[11px] text-[#9ca3af] bg-[#f3f4f6] px-2.5 py-1 rounded-lg">آخر 12 شهر</span>
@@ -91,7 +91,7 @@ export default function Dashboard() {
                     <div className="flex justify-between mt-1.5">
                         {months.map((m, i) => <span key={i} className="flex-1 text-center text-[11px] text-[#9ca3af]">{m}</span>)}
                     </div>
-                </div>
+                </div> */}
 
                 <div className="bg-white rounded-2xl p-5 shadow-[0_1px_4px_rgba(0,0,0,.06)] border border-[#f0f0f0]">
                     <h3 className="m-0 mb-4 text-[15px] font-bold">آخر المسجلين</h3>

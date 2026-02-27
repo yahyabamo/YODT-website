@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { fetchReels, upsertReel, deleteReel, fetchComments, deleteComment } from "@/service/supabaseData";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, Badge, Spinner, Inp, Sel, Tex, Modal, B, fmtDate } from "./components/AdminUI";
+import { useOutletContext } from "react-router-dom";
 
 interface Reel {
     id: string; title: string; description: string; video_url: string;
@@ -38,7 +39,8 @@ async function uploadImage(file: File): Promise<string> {
     return data.publicUrl;
 }
 
-export default function ReelsAdmin({ setConfirm }: { setConfirm: (v: any) => void }) {
+export default function ReelsAdmin() {
+    const { setConfirm } = useOutletContext<{ setConfirm: (v: any) => void }>();
     const [reels, setReels] = useState<Reel[]>([]);
     const [loading, setLoading] = useState(true);
     const [modal, setModal] = useState(false);
@@ -88,24 +90,51 @@ export default function ReelsAdmin({ setConfirm }: { setConfirm: (v: any) => voi
             if (selectedImage) {
                 finalThumbnailUrl = await uploadImage(selectedImage);
             }
-            await upsertReel(editing ? { ...form, id: editing.id, thumbnail_url: finalThumbnailUrl } : { ...form, thumbnail_url: finalThumbnailUrl });
+            const cleanPayload: any = {
+                title: form.title,
+                description: form.description,
+                video_url: form.video_url,
+                status: form.status,
+                allow_comments: form.allow_comments,
+                thumbnail_url: finalThumbnailUrl
+            };
+            if (editing) cleanPayload.id = editing.id;
+            console.log("Saving Reel Payload:", cleanPayload);
+            await upsertReel(cleanPayload);
             toast.success(editing ? "تم التحديث" : "تم الإضافة");
             setModal(false); load();
-        } catch { toast.error("فشل الحفظ"); }
+        } catch (err: any) { toast.error(err.message || err.details || "فشل الحفظ"); }
         finally { setSaving(false); }
     };
 
-    const del = (r: Reel) => setConfirm({
-        title: "حذف الريل", message: `حذف "${r.title || "الريل"}"؟`, danger: true,
-        onConfirm: async () => {
-            try { await deleteReel(r.id); toast.success("تم الحذف"); load(); }
-            catch { toast.error("فشل الحذف"); }
-        }
-    });
+    const del = (e: React.MouseEvent, r: Reel) => {
+        e.stopPropagation();
+        e.preventDefault();
+        console.log("Triggering delete modal for:", r.id);
+        setConfirm({
+            title: "تأكيد الحذف", message: `حذف "${r.title || "الريل"}"؟`, danger: true,
+            onConfirm: async () => {
+                console.log("CRITICAL: Delete button clicked for ID:", r.id);
+                try { await deleteReel(r.id); toast.success("تم الحذف"); load(); }
+                catch (err: any) { toast.error(err.message || err.details || "فشل الحذف"); }
+            }
+        });
+    };
 
-    const toggleComments = async (r: Reel) => {
-        try { await upsertReel({ ...r, allow_comments: !r.allow_comments }); toast.success("تم التحديث"); load(); }
-        catch { toast.error("فشل التحديث"); }
+    const toggleComments = async (e: React.MouseEvent, r: Reel) => {
+        e.stopPropagation();
+        const cleanPayload = {
+            id: r.id,
+            title: r.title,
+            description: r.description,
+            video_url: r.video_url,
+            status: r.status,
+            allow_comments: !r.allow_comments,
+            thumbnail_url: r.thumbnail_url
+        };
+        console.log("Toggling Reel Comments Payload:", cleanPayload);
+        try { await upsertReel(cleanPayload); toast.success("تم التحديث"); load(); }
+        catch (err: any) { toast.error(err.message || err.details || "فشل التحديث"); }
     };
 
     return (
@@ -149,10 +178,10 @@ export default function ReelsAdmin({ setConfirm }: { setConfirm: (v: any) => voi
                                 </div>
 
                                 <div className="flex gap-1.5 flex-wrap px-0.5">
-                                    <button onClick={() => { setEditing(r); setForm({ ...r }); setSelectedImage(null); setModal(true) }} className="flex-[1_min-content] py-2 rounded-lg border-none bg-[#f3f4f6] cursor-pointer font-semibold text-[11px] text-[#374151]">🛠 تعديل</button>
-                                    <button onClick={() => loadReelComments(r)} className="flex-[1_min-content] py-2 rounded-lg border-none bg-[#f3f4f6] cursor-pointer font-semibold text-[11px] text-[#374151]">💬 التعليقات</button>
-                                    <button onClick={() => toggleComments(r)} className="flex-[1.2_auto] py-2 rounded-lg border-none bg-[#e0f2fe] cursor-pointer font-semibold text-[10px] text-[#0284c7] whitespace-nowrap px-1">{r.allow_comments ? "إغلاق التعليقات" : "فتح التعليقات"}</button>
-                                    <button onClick={() => del(r)} className="w-8 h-8 rounded-lg border-none bg-[#fee2e2] text-[#dc2626] cursor-pointer text-[13px] flex items-center justify-center shrink-0">🗑</button>
+                                    <button type="button" onClick={(e) => { e.stopPropagation(); setEditing(r); setForm({ ...r }); setSelectedImage(null); setModal(true) }} className="flex-[1_min-content] py-2 rounded-lg border-none bg-[#f3f4f6] cursor-pointer font-semibold text-[11px] text-[#374151]">🛠 تعديل</button>
+                                    <button type="button" onClick={(e) => { e.stopPropagation(); loadReelComments(r) }} className="flex-[1_min-content] py-2 rounded-lg border-none bg-[#f3f4f6] cursor-pointer font-semibold text-[11px] text-[#374151]">💬 التعليقات</button>
+                                    <button type="button" onClick={(e) => toggleComments(e, r)} className="flex-[1.2_auto] py-2 rounded-lg border-none bg-[#e0f2fe] cursor-pointer font-semibold text-[10px] text-[#0284c7] whitespace-nowrap px-1">{r.allow_comments ? "إغلاق التعليقات" : "فتح التعليقات"}</button>
+                                    <button type="button" onClick={(e) => del(e, r)} className="w-8 h-8 rounded-lg border-none bg-[#fee2e2] text-[#dc2626] cursor-pointer text-[13px] flex items-center justify-center shrink-0">🗑</button>
                                 </div>
                             </div>
                         </div>
@@ -199,12 +228,16 @@ export default function ReelsAdmin({ setConfirm }: { setConfirm: (v: any) => voi
                                         <div className="text-[13px] text-[#374151] break-words whitespace-pre-wrap">{c.content}</div>
                                     </div>
                                     <button
-                                        onClick={() => setConfirm({
-                                            title: "حذف التعليق",
-                                            message: "هل أنت متأكد من حذف هذا التعليق؟ لا يمكن التراجع.",
-                                            danger: true,
-                                            onConfirm: () => handleDeleteComment(c.id)
-                                        })}
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setConfirm({
+                                                title: "حذف التعليق",
+                                                message: "هل أنت متأكد من حذف هذا التعليق؟ لا يمكن التراجع.",
+                                                danger: true,
+                                                onConfirm: () => handleDeleteComment(c.id)
+                                            })
+                                        }}
                                         className="w-8 h-8 rounded-lg border-none bg-[#fee2e2] text-[#dc2626] cursor-pointer flex items-center justify-center shrink-0 hover:bg-red-200 focus:outline-none"
                                     >
                                         🗑

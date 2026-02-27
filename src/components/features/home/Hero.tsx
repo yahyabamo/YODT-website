@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import logo from '@/assets/logo.png';
 
 // ... inside the component function
 
@@ -82,11 +83,8 @@ export const Hero: React.FC<HeroProps> = ({ onOpenModal }) => {
                     <div className="hero-card">
                         <div className="hero-card-header">
                             <div className="logo-mark">
-                                <img
-                                    src="src/assets/logo.png"
-                                    alt="Yemeni Students Union"
-                                    className="h-8 w-auto mr-2 rtl:ml-2 rtl:mr-0"
-                                />
+                                <img src={logo} alt="الاتحاد" className="w-full h-full object-contain" />
+
                             </div>
                             <div className="hero-card-title ar-only">مزايا العضوية المجانية</div>
                             <div className="hero-card-title en-only">Free Membership Benefits</div>

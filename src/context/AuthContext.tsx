@@ -79,6 +79,8 @@ export function AuthProvider({ children }) {
         setProfile(null)
         setUser(null)
         setSession(null)
+        localStorage.removeItem('registrationData')
+        localStorage.removeItem('userGender')
         const { error } = await supabase.auth.signOut()
         return { error }
     }
@@ -110,7 +112,7 @@ export function AdminGuard({ children }) {
     }
 
     if (!user) {
-        window.location.href = '/login'
+        window.location.replace('/')
         return null // let router handle
     }
 
@@ -123,6 +125,7 @@ export function AdminGuard({ children }) {
     }
 
     if (profile.role !== 'admin') {
+        window.location.replace('/')
         return null
     }
 

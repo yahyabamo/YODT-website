@@ -102,6 +102,7 @@ export async function fetchActivities({ page = 0, pageSize = 20 } = {}) {
     const { data, error, count } = await supabase
         .from('activities')
         .select('*, activity_registrations(count)', { count: 'exact' })
+        .order('status', { ascending: true })
         .order('created_at', { ascending: false })
         .range(page * pageSize, (page + 1) * pageSize - 1)
     if (error) throw error
@@ -118,7 +119,11 @@ export async function upsertActivity(activity) {
     return data
 }
 
-export async function deleteActivity(id) {
+export async function deleteActivity(id: string) {
+    console.log("Deleting ID:", id);
+    // Delete registrations first
+    await supabase.from('activity_registrations').delete().eq('activity_id', id)
+
     const { error } = await supabase.from('activities').delete().eq('id', id)
     if (error) throw error
 }
@@ -191,6 +196,7 @@ export async function fetchPartners() {
     const { data, error } = await supabase
         .from('partners')
         .select('*, offers(count)')
+        .order('status', { ascending: true })
         .order('created_at', { ascending: false })
     if (error) throw error
     return data
@@ -206,12 +212,22 @@ export async function upsertPartner(partner) {
     return data
 }
 
+export async function deletePartner(id: string) {
+    console.log("Deleting ID:", id);
+    // Delete associated offers first to prevent foreign key errors
+    await supabase.from('offers').delete().eq('partner_id', id)
+
+    const { error } = await supabase.from('partners').delete().eq('id', id)
+    if (error) throw error
+}
+
 // ── Offers ────────────────────────────────────────────────────
 
 export async function fetchOffers() {
     const { data, error } = await supabase
         .from('offers')
         .select('*, partners(name, logo_url)')
+        .order('status', { ascending: true })
         .order('created_at', { ascending: false })
     if (error) throw error
     return data
@@ -227,6 +243,24 @@ export async function upsertOffer(offer) {
     return data
 }
 
+// export async function deleteOffer(id) {
+//     const { error } = await supabase.from('offers').delete().eq('id', id)
+//     if (error) throw error
+// }
+
+export async function deleteOffer(id: string) {
+    console.log("Deleting ID:", id);
+    // Ensure 'id' is a string and matches the UUID format in Supabase
+    const { error } = await supabase
+        .from('offers')
+        .delete()
+        .eq('id', id);
+
+    if (error) {
+        console.error("Delete Error:", error);
+        throw error;
+    }
+}
 // ── Reels ─────────────────────────────────────────────────────
 
 export async function toggleLike(reelId: string, userId: string) {
