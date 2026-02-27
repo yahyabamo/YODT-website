@@ -436,33 +436,17 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
                 </button>
 
                 {/* Share */}
-                <button className="flex flex-col items-center gap-1">
+                {/* <button className="flex flex-col items-center gap-1">
                     <div
                         className="w-12 h-12 rounded-full flex items-center justify-center"
                         style={{ background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(10px)' }}
                     >
                         <Share2 className="text-white w-5 h-5" />
                     </div>
-                </button>
+                </button> */}
             </div>
 
-            {/* ── Video info ── */}
-            <div
-                className="absolute left-3 z-40 pointer-events-none"
-                style={{
-                    right: 76,
-                    bottom: BOTTOM_NAV_HEIGHT + (hasStarted ? 64 : 20),
-                    transition: 'bottom 0.3s ease',
-                }}
-                dir="rtl"
-            >
-                <h3 className="text-white font-bold text-base mb-1 drop-shadow-lg">
-                    @{reel.author || 'اتحاد الطلاب'}
-                </h3>
-                <p className="text-white/85 text-sm line-clamp-2 leading-relaxed drop-shadow">
-                    {reel.title}
-                </p>
-            </div>
+
 
             {/* ── Progress bar + skip controls ── */}
             {/* Anchored ABOVE the BottomNav, always visible when video starts */}
@@ -473,7 +457,7 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
                     onClick={(e) => e.stopPropagation()}
                 >
                     <div className="flex items-center gap-2">
-                        {/* Skip back */}
+
                         <button
                             className="text-white text-xs font-bold flex items-center justify-center rounded-full flex-shrink-0"
                             style={{
@@ -482,11 +466,10 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
                                 background: 'rgba(255,255,255,0.15)',
                                 backdropFilter: 'blur(8px)',
                             }}
-                            onClick={(e) => handleSkip(e, -10)}
+                            onClick={(e) => handleSkip(e, 10)}
                         >
-                            −10
+                            +10
                         </button>
-
                         {/* Progress track */}
                         <div className="relative flex-1" style={{ height: 36, display: 'flex', alignItems: 'center' }}>
                             {/* Track background */}
@@ -517,7 +500,7 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
                             />
                         </div>
 
-                        {/* Skip forward */}
+                        {/* Skip back */}
                         <button
                             className="text-white text-xs font-bold flex items-center justify-center rounded-full flex-shrink-0"
                             style={{
@@ -526,14 +509,31 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
                                 background: 'rgba(255,255,255,0.15)',
                                 backdropFilter: 'blur(8px)',
                             }}
-                            onClick={(e) => handleSkip(e, 10)}
+                            onClick={(e) => handleSkip(e, -10)}
                         >
-                            +10
+                            −10
                         </button>
                     </div>
                 </div>
             )}
 
+            {/* ── Video info ── */}
+            <div
+                className="absolute left-3 z-40 pointer-events-none"
+                style={{
+                    right: 76,
+                    bottom: BOTTOM_NAV_HEIGHT + (hasStarted ? 64 : 20),
+                    transition: 'bottom 0.3s ease',
+                }}
+                dir="rtl"
+            >
+                <h3 className="text-white font-bold text-base mb-1 drop-shadow-lg">
+                    @{reel.author || 'اتحاد الطلاب'}
+                </h3>
+                <p className="text-white/85 text-sm line-clamp-2 leading-relaxed drop-shadow">
+                    {reel.title}
+                </p>
+            </div>
             {/* ── Comments Drawer ── */}
             <Drawer.Root open={isCommentsOpen} onOpenChange={setIsCommentsOpen}>
                 <Drawer.Portal>
