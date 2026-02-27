@@ -73,7 +73,7 @@ export const BottomNav = () => {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-background/98 backdrop-blur-xl border-t border-border/40 z-50 bottom-safe shadow-[0_-4px_20px_hsl(var(--foreground)/0.05)]">
-      <div className="flex items-center justify-around py-2 px-3 max-w-lg mx-auto">
+      <div className="flex items-center justify-around px-3 max-w-lg mx-auto" style={{ height: 48 }}>
         {navItems.map((item) => {
           const active = isActive(item);
           return (
