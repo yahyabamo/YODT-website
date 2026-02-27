@@ -527,7 +527,7 @@ const ReelVideo = ({
                 onClick={(e) => e.stopPropagation()}
             >
                 {hasStarted && (
-                    <div className="flex items-center gap-2 mb-3">
+                    <div dir="ltr" className="flex items-center gap-2 mb-3">
                         <button
                             className="text-white text-xs font-semibold flex items-center justify-center rounded-full flex-shrink-0 w-9 h-9 active:scale-90 transition-transform"
                             style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(6px)' }}
@@ -567,11 +567,11 @@ const ReelVideo = ({
                     </div>
                 )}
 
-                <div dir="rtl" className="pointer-events-none" style={{ paddingLeft: 60 }}>
-                    <p className="text-white font-bold text-sm mb-0.5 drop-shadow-md">
+                <div className="pointer-events-none" style={{ paddingLeft: 60 }}>
+                    <p dir="rtl" className="text-white font-bold text-sm mb-0.5 drop-shadow-md">
                         @{reel.author || 'اتحاد الطلاب'}
                     </p>
-                    <p className="text-white/90 text-xs line-clamp-2 leading-relaxed drop-shadow-md">
+                    <p dir="rtl" className="text-white/90 text-xs line-clamp-2 leading-relaxed drop-shadow-md">
                         {reel.title}
                     </p>
                 </div>
