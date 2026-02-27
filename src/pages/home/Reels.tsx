@@ -261,23 +261,12 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
     };
 
     return (
-        <div
-            className="relative w-full snap-start bg-black flex items-center justify-center overflow-hidden"
-            style={{
-                height: 'calc(100dvh - 64px - 60px)', // Adjust 64 and 60 to your Top/Bottom bar heights
-                marginTop: '64px'
-            }}
-        >
+        <div className="relative h-full w-full snap-start bg-black flex items-center justify-center overflow-hidden">
             {/* YouTube player target div */}
             <div
                 id={divId}
                 className="absolute inset-0 w-full h-full"
-                style={{
-                    transform: 'scale(1.3)', // Reduced scale slightly to avoid clipping the start button
-                    transformOrigin: 'center center',
-                    pointerEvents: 'auto', // Change this to 'auto' so you can click Play
-                    zIndex: 5
-                }}
+                style={{ transform: 'scale(1.5)', transformOrigin: 'center center', pointerEvents: 'none' }}
             />
 
             {/* Thumbnail while player loads */}
@@ -376,7 +365,7 @@ const ReelVideo = ({ reel, isActive }: { reel: any; isActive: boolean }) => {
             {/* Progress bar + skip — only after video starts */}
             {/* bottom-[168px] = safe above BottomNav (~80px) + action sidebar gap */}
             {hasStarted && (
-                <div className="absolute bottom-[130px] left-0 right-0 z-40 px-4">
+                <div className="absolute bottom-6 left-0 right-0 z-40 px-4">
                     <div className="flex items-center gap-3">
                         <button
                             className="text-white/80 text-xs font-bold bg-white/20 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0"
@@ -564,11 +553,9 @@ const HomeReels = () => {
     );
 
     return (
-        <div className="h-screen w-full bg-black overflow-hidden relative">
-
+        <div className="h-[100dvh] w-full bg-black flex flex-col">
             {/* ── Search UI ── */}
-            <div className="absolute top-0 left-0 right-0 z-50">
-
+            <div className="z-50">
                 {/* Search bar row */}
                 <div className="px-4 pt-4 pb-2 flex items-center gap-3">
                     {isSearchOpen ? (
@@ -680,7 +667,7 @@ const HomeReels = () => {
             <div
                 ref={containerRef}
                 onScroll={handleScroll}
-                className="h-full w-full overflow-y-scroll snap-y snap-mandatory hide-scrollbar"
+                className="flex-1 w-full overflow-y-scroll snap-y snap-mandatory hide-scrollbar"
             >
                 {reels.map((reel, index) => (
                     <ReelVideo key={reel.id} reel={reel} isActive={index === activeIndex} />
@@ -688,7 +675,7 @@ const HomeReels = () => {
             </div>
 
             {/* Bottom Nav */}
-            <div className="absolute bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-black to-transparent">
+            <div className="z-50 bg-gradient-to-t from-black to-transparent">
                 <BottomNav />
             </div>
 
