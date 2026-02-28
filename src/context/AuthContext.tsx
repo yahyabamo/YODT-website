@@ -59,14 +59,27 @@ export function AuthProvider({ children }) {
         return () => subscription.unsubscribe()
     }, [])   // ← EMPTY array — never re-register listeners
 
-    const signUp = async (email, password, fullName, gender) => {
+    const signUp = async (email, password, fullName, gender, university, faculty, avatar_url, phone) => {
         const { data, error } = await supabase.auth.signUp({
             email, password,
             options: {
                 emailRedirectTo: `${window.location.origin}/`,
-                data: { full_name: fullName, gender },
+                data: { full_name: fullName, gender, university, faculty, avatar_url, phone },
             },
         })
+
+        if (data?.user && !error) {
+            await supabase.from('profiles').upsert({
+                id: data.user.id,
+                full_name: fullName,
+                gender: gender,
+                university: university || null,
+                faculty: faculty || null,
+                avatar_url: avatar_url || null,
+                phone: phone || null,
+            })
+        }
+
         return { data, error }
     }
 
@@ -81,7 +94,11 @@ export function AuthProvider({ children }) {
         setSession(null)
         localStorage.removeItem('registrationData')
         localStorage.removeItem('userGender')
-        const { error } = await supabase.auth.signOut()
+        const { error } = await supabase.auth.signOut({ scope: 'local' })
+        // Clear all Supabase persisted session keys from browser storage
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('sb-')) localStorage.removeItem(key)
+        })
         return { error }
     }
 

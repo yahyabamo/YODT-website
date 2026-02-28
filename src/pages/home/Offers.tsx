@@ -60,8 +60,8 @@ const HomeOffers = () => {
                     <div className="bg-gradient-to-r from-rose-500 to-rose-600 p-6 text-white relative">
                         <Gift className="absolute top-4 left-4 h-24 w-24 text-white/10 -rotate-12" />
                         <h2 className="text-xl font-bold mb-2 relative z-10">عروض صُممت لك</h2>
-                        <p className="text-sm opacity-90 relative z-10">
-                            استمتع بخصومات حصرية من شركاء الاتحاد الرائعين
+                        <p className="text-sm text-white opacity-90 relative z-10">
+                            استمتع بخصومات حصرية من شركاء الاتحاد
                         </p>
                     </div>
                 </Card>

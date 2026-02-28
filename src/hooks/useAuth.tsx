@@ -40,36 +40,7 @@ export const useAuth = () => {
                 console.error('Profile fetch error:', error.message);
                 // Don't block the app — just leave profile null
             } else {
-                let fetchedProfile = data as Profile;
-
-                // Sync registration data if it exists
-                const regDataStr = localStorage.getItem('registrationData');
-                if (regDataStr) {
-                    try {
-                        const regData = JSON.parse(regDataStr);
-                        const updatePayload: any = {};
-                        let needsUpdate = false;
-
-                        if (regData.university && !fetchedProfile.university) { updatePayload.university = regData.university; needsUpdate = true; }
-                        if (regData.faculty && !fetchedProfile.faculty) { updatePayload.faculty = regData.faculty; needsUpdate = true; }
-                        if (regData.avatar_url && !fetchedProfile.avatar_url) { updatePayload.avatar_url = regData.avatar_url; needsUpdate = true; }
-                        if (regData.phone && !(fetchedProfile as any).phone) { updatePayload.phone = regData.phone; needsUpdate = true; }
-
-                        if (needsUpdate) {
-                            const { error: updateErr } = await supabase.from('profiles').update(updatePayload).eq('id', userId);
-                            if (!updateErr) {
-                                fetchedProfile = { ...fetchedProfile, ...updatePayload };
-                            }
-                        }
-
-                        // We do not remove it immediately in case CompleteProfileSection or others need it.
-                        // Or we can remove the specific keys and keep the rest. Actually, let's keep it in localstorage.
-                    } catch (e) {
-                        console.error("Error syncing registration data:", e);
-                    }
-                }
-
-                setProfile(fetchedProfile);
+                setProfile(data as Profile);
             }
         } finally {
             setLoading(false);
@@ -127,16 +98,30 @@ export const useAuth = () => {
         gender: 'male' | 'female',
         university?: string,
         faculty?: string,
-        avatar_url?: string | null
+        avatar_url?: string | null,
+        phone?: string
     ) => {
         const { data, error } = await supabase.auth.signUp({
             email,
             password,
             options: {
                 emailRedirectTo: `${window.location.origin}/`,
-                data: { full_name: fullName, gender, university, faculty, avatar_url },
+                data: { full_name: fullName, gender, university, faculty, avatar_url, phone },
             },
         });
+
+        if (data?.user && !error) {
+            await supabase.from('profiles').upsert({
+                id: data.user.id,
+                full_name: fullName,
+                gender: gender,
+                university: university || null,
+                faculty: faculty || null,
+                avatar_url: avatar_url || null,
+                phone: phone || null,
+            });
+        }
+
         return { data, error };
     };
 

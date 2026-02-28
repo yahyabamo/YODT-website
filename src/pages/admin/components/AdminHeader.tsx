@@ -19,10 +19,14 @@ export function AdminHeader({ pageTitle, setSidebarOpen }: AdminHeaderProps) {
             localStorage.removeItem('registrationData');
             localStorage.removeItem('userGender');
             await signOut();
-            window.location.replace("/");
+            // Also clear sessionStorage in case Supabase uses it
+            sessionStorage.clear();
+            // Use href to force a full page reload, clearing any in-memory state
+            window.location.href = '/';
         } catch (error) {
             console.error("Logout failed:", error);
-            window.location.replace("/");
+            sessionStorage.clear();
+            window.location.href = '/';
         }
     };
 

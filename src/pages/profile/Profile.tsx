@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   User, Mail, Phone, GraduationCap, BookOpen, LogOut, Settings,
   ChevronLeft, Heart, CreditCard, Percent, QrCode, Edit3, Check, X,
-  Shield, Activity
+  Shield, Activity, Camera
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -48,7 +48,11 @@ const Profile = () => {
   const [editForm, setEditForm] = useState({
     full_name: '',
     phone: '',
+    university: '',
+    faculty: '',
+    avatar_url: '',
   });
+  const [avatarUploading, setAvatarUploading] = useState(false);
 
   useEffect(() => {
     // Only act if authLoading is finished
@@ -83,6 +87,9 @@ const Profile = () => {
         setEditForm({
           full_name: profileData.full_name || '',
           phone: profileData.phone || '',
+          university: profileData.university || '',
+          faculty: profileData.faculty || '',
+          avatar_url: profileData.avatar_url || '',
         });
       }
     } catch (error) {
@@ -95,6 +102,33 @@ const Profile = () => {
     }
   };
 
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', 'activity_unsigned');
+      formData.append('folder', 'avatars');
+      const res = await fetch('https://api.cloudinary.com/v1_1/dknz5c7d0/image/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setEditForm(prev => ({ ...prev, avatar_url: data.secure_url }));
+        toast.success('تم رفع الصورة بنجاح');
+      } else {
+        toast.error('فشل في رفع الصورة');
+      }
+    } catch {
+      toast.error('خطأ في الاتصال أثناء رفع الصورة');
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!user) return;
 
@@ -104,6 +138,9 @@ const Profile = () => {
         .update({
           full_name: editForm.full_name,
           phone: editForm.phone,
+          university: editForm.university,
+          faculty: editForm.faculty,
+          avatar_url: editForm.avatar_url,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
@@ -114,7 +151,10 @@ const Profile = () => {
         ...prev,
         full_name: editForm.full_name,
         phone: editForm.phone,
-      } : null);
+        university: editForm.university,
+        faculty: editForm.faculty,
+        avatar_url: editForm.avatar_url,
+      } as any : null);
 
       setIsEditing(false);
       toast.success('تم حفظ التغييرات');
@@ -173,22 +213,52 @@ const Profile = () => {
           <div className="gradient-primary h-24" />
           <CardContent className="pt-0 pb-6 -mt-12">
             <div className="flex flex-col items-center">
-              <div className="w-24 h-24 rounded-full bg-card border-4 border-card shadow-card flex items-center justify-center overflow-hidden">
-                {profile.avatar_url ? (
-                  <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-4xl">{isStudent ? '👨‍🎓' : '👩‍🎓'}</span>
+              <div className="relative w-24 h-24">
+                <div className="w-24 h-24 rounded-full bg-card border-4 border-card shadow-card flex items-center justify-center overflow-hidden">
+                  {isEditing && editForm.avatar_url ? (
+                    <img src={editForm.avatar_url} alt={editForm.full_name} className="w-full h-full object-cover" />
+                  ) : !isEditing && profile.avatar_url ? (
+                    <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-4xl">{isStudent ? '👨‍🎓' : '👩‍🎓'}</span>
+                  )}
+                </div>
+                {isEditing && (
+                  <label className="absolute bottom-0 right-0 bg-primary text-primary-foreground p-2 rounded-full cursor-pointer shadow-lg hover:bg-primary/90 transition-colors">
+                    {avatarUploading ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Camera className="w-4 h-4" />
+                    )}
+                    <input type="file" className="hidden" accept="image/*" onChange={handleAvatarFileChange} disabled={avatarUploading} />
+                  </label>
                 )}
               </div>
 
               {isEditing ? (
                 <div className="w-full mt-4 space-y-3">
                   <div>
-                    <label className="text-xs text-muted-foreground">الاسم المعروض</label>
+                    <label className="text-xs text-muted-foreground whitespace-nowrap block mb-1">الاسم المعروض</label>
                     <Input
                       value={editForm.full_name}
                       onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
-                      className="h-12 text-center font-bold"
+                      className="h-10 text-center font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground whitespace-nowrap block mb-1">الجامعة</label>
+                    <Input
+                      value={editForm.university}
+                      onChange={(e) => setEditForm({ ...editForm, university: e.target.value })}
+                      className="h-10 text-center"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground whitespace-nowrap block mb-1">التخصص</label>
+                    <Input
+                      value={editForm.faculty}
+                      onChange={(e) => setEditForm({ ...editForm, faculty: e.target.value })}
+                      className="h-10 text-center"
                     />
                   </div>
                 </div>
@@ -372,7 +442,7 @@ const Profile = () => {
 
         {/* App Version */}
         <p className="text-center text-xs text-muted-foreground pt-4">
-          الإصدار 2.0.0 • اتحاد الطلاب اليمنيين في تركيا
+          • اتحاد الطلاب اليمنيين في تركيا
         </p>
       </div>
 

@@ -1,6 +1,8 @@
 
 import React from 'react';
 import logo from '@/assets/logo.png';
+import { Facebook, Instagram, Twitter, Send, Phone, Youtube } from 'lucide-react';
+
 
 export const Footer = () => {
     return (
@@ -19,16 +21,17 @@ export const Footer = () => {
                         </div>
                     </div>
                     <p className="footer-desc">
-                        <span className="ar-only">منظومة دعم شاملة للطلاب اليمنيين في تركيا منذ عام 2014. نبني مجتمعًا طلابيًا متماسكًا يدعم كل طالب في رحلته الأكاديمية.</span>
-                        <span className="en-only">A comprehensive support system for Yemeni students in Turkey since 2014. We build a cohesive student community supporting every student in their academic journey.</span>
+                        <span className="ar-only">منظومة دعم شاملة للطلاب اليمنيين في تركيا. نبني مجتمعًا طلابيًا متماسكًا يدعم كل طالب في رحلته الأكاديمية.</span>
+                        <span className="en-only">A comprehensive support system for Yemeni students in Turkey. We build a cohesive student community supporting every student in their academic journey.</span>
                     </p>
                     <div className="footer-socials">
-                        <div className="social-btn" title="Facebook">f</div>
-                        <div className="social-btn" title="Instagram">📷</div>
-                        <div className="social-btn" title="Twitter/X">𝕏</div>
-                        <div className="social-btn" title="Telegram">✈</div>
-                        <div className="social-btn" title="WhatsApp">📱</div>
-                        <div className="social-btn" title="YouTube">▶</div>
+
+                        <div className="social-btn" title="Facebook"><Facebook size={18} /></div>
+                        <div className="social-btn" title="Instagram"><Instagram size={18} /></div>
+                        <div className="social-btn" title="Twitter/X"><Twitter size={18} /></div>
+                        <div className="social-btn" title="Telegram"><Send size={18} /></div>
+                        <div className="social-btn" title="WhatsApp"><Phone size={18} /></div>
+                        <div className="social-btn" title="YouTube"><Youtube size={18} /></div>
                     </div>
                 </div>
 
@@ -49,7 +52,6 @@ export const Footer = () => {
                     <div className="footer-col-title en-only">Student Guide</div>
                     <div className="footer-links">
                         <a href="#guide"><span className="ar-only">أسئلة وأجوبة</span><span className="en-only">Q&A</span></a>
-                        <a href="#guide"><span className="ar-only">دليل السكن</span><span className="en-only">Housing Guide</span></a>
                         <a href="#guide"><span className="ar-only">دليل الجامعات</span><span className="en-only">Universities Guide</span></a>
                         <a href="#guide"><span className="ar-only">إجراءات الإقامة</span><span className="en-only">Residence Procedures</span></a>
                         <a href="#guide"><span className="ar-only">نصائح الحياة اليومية</span><span className="en-only">Daily Life Tips</span></a>

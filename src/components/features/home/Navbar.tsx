@@ -53,7 +53,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <li><a href="#guide" className="ar-only">الدليل الطلابي</a><a href="#guide" className="en-only">Student Guide</a></li>
                         <li><a href="#activities" className="ar-only">الأنشطة</a><a href="#activities" className="en-only">Activities</a></li>
                         <li><a href="#discounts" className="ar-only">العروض الخاصة</a><a href="#discounts" className="en-only">Discounts</a></li>
-                        <li><a href="#stats" className="ar-only">الإحصائيات</a><a href="#stats" className="en-only">Stats</a></li>
                     </ul>
 
                     {/* Controls */}

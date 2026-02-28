@@ -58,7 +58,7 @@ const academyLinks: QuickLink[] = [
 const quickLinks: QuickLink[] = [
   { icon: Briefcase, label: 'الوظائف', path: '/jobs' },
   // { icon: Heart, label: 'الداعمون', path: '/partners' },
-  { icon: '🎁', label: 'الخصومات', path: '/offers' },
+  { icon: '🎁', label: 'الخصومات', path: '/home/offers' },
   // { icon: Calendar, label: 'الفعاليات', path: '/events' },
   { icon: Map, label: 'الخريطة', path: '/map' },
   // { icon: Globe, label: 'الترجمة', path: '/translate' },
@@ -286,14 +286,14 @@ export const SmartTopBar = ({ onOpenAI, onOpenSearch }: SmartTopBarProps) => {
 
       {/* Right Actions */}
       <div className="flex items-center gap-1.5 ">
-        <Button
+        {/* <Button
           variant="ghost"
           size="icon"
           className="rounded-xl h-9 w-9 hover:bg-secondary hidden sm:flex"
           onClick={onOpenSearch}
         >
           <Search className="w-4 h-4 text-muted-foreground" />
-        </Button>
+        </Button> */}
         <Button
           variant="ghost"
           size="icon"

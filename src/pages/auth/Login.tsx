@@ -184,7 +184,7 @@ const Login = () => {
       if (avatarFile) {
         const formData = new FormData();
         formData.append('file', avatarFile);
-        formData.append('upload_preset', 'avatar_unsigned');
+        formData.append('upload_preset', 'activity_unsigned');
         formData.append('folder', 'avatars');
 
         try {
@@ -197,18 +197,16 @@ const Login = () => {
             const uploadData = await uploadRes.json();
             avatar_url = uploadData.secure_url;
           } else {
-            toast.error('فشل في رفع الصورة الشخصية');
+            // Upload failed but we continue registration without avatar
+            console.warn('Avatar upload failed, continuing without avatar');
           }
         } catch (uploadError) {
           console.error("Cloudinary upload failed", uploadError);
-          toast.error('خطأ في الاتصال أثناء رفع الصورة');
+          // Continue registration without avatar — don't show toast here
         }
       }
 
-      localStorage.setItem('registrationData', JSON.stringify({
-        phone, userType: 'student', firstName, lastName, university, faculty, avatar_url
-      }));
-      const { error } = await signUp(email, password, `${firstName} ${lastName}`, gender, university, faculty, avatar_url);
+      const { error } = await signUp(email, password, `${firstName} ${lastName}`, gender, university, faculty, avatar_url, phone);
       if (error) {
         toast.error(
           error.message.includes('User already registered')
@@ -217,7 +215,6 @@ const Login = () => {
         );
         return;
       }
-      localStorage.setItem('userGender', gender);
       toast.success('تم إنشاء الحساب بنجاح');
       // useEffect will redirect once profile loads
     } catch {
@@ -428,7 +425,7 @@ const Login = () => {
         </Card>
 
         <p className="text-center text-muted-foreground text-xs mt-8">
-          © 2025 اتحاد الطلاب اليمنيين في تركيا
+          © 2026 اتحاد الطلاب اليمنيين في تركيا
         </p>
       </div>
     </div>

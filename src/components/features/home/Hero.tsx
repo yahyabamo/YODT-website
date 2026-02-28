@@ -79,7 +79,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenModal }) => {
                     </div>
                 </div>
 
-                <div className="hero-visual">
+                {/* <div className="hero-visual">
                     <div className="hero-card">
                         <div className="hero-card-header">
                             <div className="logo-mark">
@@ -119,9 +119,9 @@ export const Hero: React.FC<HeroProps> = ({ onOpenModal }) => {
                                 <span className="en-only">Register Now</span>
                             </button>
                         </div>
-                    </div>
-                    {/* Floating badge */}
-                    {/* <div className="hero-badge-float">
+                    </div> */}
+                {/* Floating badge */}
+                {/* <div className="hero-badge-float">
                         <div className="badge-icon">🏆</div>
                         <div className="badge-info">
                             <div className="badge-num">+100</div>
@@ -130,7 +130,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenModal }) => {
                         </div>
                     </div> */}
 
-                </div>
+                {/* </div> */}
             </div>
 
 

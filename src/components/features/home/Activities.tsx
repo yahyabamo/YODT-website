@@ -18,7 +18,7 @@ export const Activities = () => {
                         <div className="activity-img">
                             <div className="img-placeholder">
                                 <div className="placeholder-content">
-                                    <div className="placeholder-icon">🎭</div>
+                                    <div className="placeholder-icon">📖</div>
                                     <div className="placeholder-text ar-only">الفعاليات الثقافية</div>
                                     <div className="placeholder-text en-only">Cultural Events</div>
                                 </div>
@@ -70,7 +70,7 @@ export const Activities = () => {
                         <div className="activity-img">
                             <div className="img-placeholder">
                                 <div className="placeholder-content">
-                                    <div className="placeholder-icon">🏆</div>
+                                    <div className="placeholder-icon">🏅</div>
                                 </div>
                             </div>
                         </div>
