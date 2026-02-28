@@ -4,6 +4,7 @@ import { fetchUsers, updateUserStatus, updateUserPoints } from "@/service/supaba
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar, Badge, Spinner, Inp, Sel, Modal, B } from "./components/AdminUI";
+import { useOutletContext } from "react-router-dom";
 
 interface User {
     id: string; full_name: string; email: string;
@@ -17,8 +18,10 @@ const inputStyle: React.CSSProperties = {
     boxSizing: "border-box", fontFamily: "inherit"
 };
 
-export default function UsersAdmin({ setConfirm }: { setConfirm: (v: any) => void }) {
-    const { user: adminUser } = useAuth();
+export default function UsersAdmin() {
+    const { setConfirm } = useOutletContext<{ setConfirm: (v: any) => void }>();
+    const { user: adminUser, profile } = useAuth(); // Assuming profile is available in your AuthContext
+    // ... rest of your states    const { user: adminUser } = useAuth();
     const [users, setUsers] = useState<User[]>([]);
     const [count, setCount] = useState(0);
     const [page, setPage] = useState(0);
