@@ -197,14 +197,22 @@ const ReelVideo = ({
     const tryPlay = () => {
         if (!playerRef.current) return;
         try {
-            if (globalMuted) {
-                playerRef.current.mute();
-            } else {
-                playerRef.current.unMute();
-                playerRef.current.setVolume(100);
-            }
+            // Always start muted first (bypasses autoplay policy)
+            playerRef.current.mute();
             playerRef.current.playVideo();
-            setIsMuted(globalMuted);
+
+            // Then unmute after a tiny delay if user wants sound
+            if (!globalMuted) {
+                setTimeout(() => {
+                    try {
+                        playerRef.current?.unMute();
+                        playerRef.current?.setVolume(100);
+                        setIsMuted(false);
+                    } catch (e) { }
+                }, 500);
+            } else {
+                setIsMuted(true);
+            }
         } catch (e) {
             console.error('Play failed:', e);
         }
