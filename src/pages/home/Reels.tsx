@@ -55,10 +55,12 @@ const getVideoId = (url: string): string => {
 // ─────────────────────────────────────────────
 const ReelVideo = ({
     reel,
+    reelIndex,
     isActive,
     onFirstInteraction
 }: {
     reel: any;
+    reelIndex: number;
     isActive: boolean;
     onFirstInteraction: () => void;
 }) => {
@@ -196,23 +198,25 @@ const ReelVideo = ({
 
     const tryPlay = () => {
         if (!playerRef.current) return;
+
         try {
-            // Always start muted first (bypasses autoplay policy)
+            // ALWAYS start muted to satisfy autoplay policy
             playerRef.current.mute();
             playerRef.current.playVideo();
 
-            // Then unmute after a tiny delay if user wants sound
-            if (!globalMuted) {
+            // If user already unlocked sound before
+            if (iosUnlocked && reelIndex !== 0) {
                 setTimeout(() => {
                     try {
                         playerRef.current?.unMute();
                         playerRef.current?.setVolume(100);
                         setIsMuted(false);
-                    } catch (e) { }
-                }, 500);
+                    } catch (_) { }
+                }, 150);
             } else {
                 setIsMuted(true);
             }
+
         } catch (e) {
             console.error('Play failed:', e);
         }
@@ -835,6 +839,7 @@ const HomeReels = () => {
                     >
                         <ReelVideo
                             reel={reel}
+                            reelIndex={index}
                             isActive={index === activeIndex}
                             onFirstInteraction={() => {
                                 // Ensure scroll works after first interaction
