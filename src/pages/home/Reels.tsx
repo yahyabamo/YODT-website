@@ -198,21 +198,42 @@ const ReelVideo = ({
         if (!playerRef.current) return;
 
         try {
-            if (hasUserUnmuted) {
-                // User has unmuted before, play with sound
-                playerRef.current.unMute();
-                playerRef.current.setVolume(100);
-                setIsMuted(false);
-            } else {
-                // First video or user never unmuted, play muted
-                playerRef.current.mute();
-                setIsMuted(true);
-            }
+            // Always start muted to ensure autoplay works
+            playerRef.current.mute();
             playerRef.current.playVideo();
+
+            // If user has unmuted before, try to unmute after a short delay
+            // (gives player time to start playing)
+            if (hasUserUnmuted) {
+                setTimeout(() => {
+                    try {
+                        if (playerRef.current && isActiveRef.current) {
+                            playerRef.current.unMute();
+                            playerRef.current.setVolume(100);
+                            setIsMuted(false);
+                        }
+                    } catch (e) {
+                        // If unmute fails, stay muted but keep playing
+                        console.log('Auto-unmute failed, staying muted');
+                    }
+                }, 500);
+            }
         } catch (e) {
             console.error('Play failed:', e);
         }
-    };
+    };// ── Handle unmute state change ──
+    useEffect(() => {
+        if (!playerRef.current || !isActive) return;
+
+        // If user has unmuted globally and we're active but still muted, try to unmute
+        if (hasUserUnmuted && isMuted && hasStarted) {
+            try {
+                playerRef.current.unMute();
+                playerRef.current.setVolume(100);
+                setIsMuted(false);
+            } catch (e) { }
+        }
+    }, [hasUserUnmuted, isActive, isMuted, hasStarted]);
 
     const startProgress = () => {
         stopProgress();
