@@ -171,9 +171,8 @@ const ReelVideo = ({
             stopProgress();
             setProgress(0);
             setIsPaused(false);
-            setHasStarted(false);  // ← add this line
+            setHasStarted(false);
             setIsMuted(true);
-
         }
     }, [isActive, playerReady, reel.id]);
 
@@ -181,16 +180,19 @@ const ReelVideo = ({
     useEffect(() => {
         const handleUnlock = () => {
             if (isActiveRef.current && playerRef.current) {
-                playerRef.current.playVideo();
-                if (!isMuted) {
-                    playerRef.current.unMute();
-                    playerRef.current.setVolume(100);
-                }
+                try {
+                    if (!globalMuted) {
+                        playerRef.current.unMute();
+                        playerRef.current.setVolume(100);
+                        setIsMuted(false);
+                    }
+                    playerRef.current.playVideo();
+                } catch (e) { }
             }
         };
         window.addEventListener('ios-unlocked', handleUnlock);
         return () => window.removeEventListener('ios-unlocked', handleUnlock);
-    }, [isMuted]);
+    }, []);
 
     const tryPlay = () => {
         if (!playerRef.current) return;
