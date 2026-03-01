@@ -82,15 +82,16 @@ const ReelVideo = ({
     const divId = useMemo(() => `yt-${reel.id}`, [reel.id]);
     const videoId = useMemo(() => getVideoId(reel.video_url), [reel.video_url]);
     const isActiveRef = useRef(isActive);
-    const hasInteracted = useRef(false);
 
     useEffect(() => { isActiveRef.current = isActive; }, [isActive]);
 
-    // ── Init YT player ──
+    // ── LAZY YT PLAYER CREATION (only when reel becomes active) ──
     useEffect(() => {
+        if (!isActive || playerRef.current || !videoId) return;
+
         let destroyed = false;
 
-        loadYouTubeAPI(() => {
+        const createPlayer = () => {
             if (destroyed || playerRef.current) return;
 
             playerRef.current = new (window as any).YT.Player(divId, {
@@ -112,10 +113,7 @@ const ReelVideo = ({
                     onReady: (event: any) => {
                         if (destroyed) return;
                         setPlayerReady(true);
-                        // If already active when ready, try to play
-                        if (isActiveRef.current) {
-                            tryPlay();
-                        }
+                        if (isActiveRef.current) tryPlay();
                     },
                     onStateChange: (e: any) => {
                         if (destroyed) return;
@@ -137,21 +135,25 @@ const ReelVideo = ({
                             playerRef.current?.playVideo();
                         }
                     },
-                    onError: (e: any) => {
-                        console.error('YT error', e.data);
-                    },
+                    onError: (e: any) => console.error('YT error', e.data),
                 },
             });
-        });
+        };
 
+        loadYouTubeAPI(createPlayer);
+
+        return () => { destroyed = true; };
+    }, [isActive, videoId, divId]);
+
+    // ── Unmount cleanup (destroy player when component leaves) ──
+    useEffect(() => {
         return () => {
-            destroyed = true;
             stopProgress();
             clearTimeout(tapTimeout.current);
             try { playerRef.current?.destroy(); } catch (_) { }
             playerRef.current = null;
         };
-    }, [reel.id, videoId, divId]);
+    }, []);
 
     // ── Handle active state changes ──
     useEffect(() => {
@@ -169,13 +171,12 @@ const ReelVideo = ({
             stopProgress();
             setProgress(0);
             setIsPaused(false);
-            setHasStarted(false);  // ← add this line
+            setHasStarted(false);
             setIsMuted(true);
-
         }
     }, [isActive, playerReady, reel.id]);
 
-    // ── Listen for iOS unlock ──
+    // ── iOS unlock listener ──
     useEffect(() => {
         const handleUnlock = () => {
             if (isActiveRef.current && playerRef.current) {
@@ -190,10 +191,22 @@ const ReelVideo = ({
         return () => window.removeEventListener('ios-unlocked', handleUnlock);
     }, [isMuted]);
 
+    // ── UPDATED: tryPlay — respects global "sound enabled" flag ──
     const tryPlay = () => {
         if (!playerRef.current) return;
+
         try {
-            playerRef.current.mute(); // always muted = bypasses autoplay policy on all browsers
+            // After the user unmuted the FIRST video once → all future reels auto-unmute
+            if (iosUnlocked) {
+                playerRef.current.unMute();
+                playerRef.current.setVolume(100);
+                setIsMuted(false);
+            } else {
+                // First reel (or before any unmute) → start muted (required by mobile policy)
+                playerRef.current.mute();
+                setIsMuted(true);
+            }
+
             playerRef.current.playVideo();
         } catch (e) {
             console.error('Play failed:', e);
@@ -245,16 +258,12 @@ const ReelVideo = ({
     const handleInteraction = useCallback((e?: React.MouseEvent | React.TouchEvent) => {
         e?.stopPropagation();
 
-        // Mark global iOS unlock on first interaction anywhere
         if (!iosUnlocked) {
             markIosUnlocked();
             onFirstInteraction();
         }
 
-        hasInteracted.current = true;
-
         if (!hasStarted) {
-            // First tap — unmute and ensure playing
             try {
                 playerRef.current?.unMute();
                 playerRef.current?.setVolume(100);
@@ -264,7 +273,7 @@ const ReelVideo = ({
             return;
         }
 
-        // Check for double tap
+        // double-tap like
         const now = Date.now();
         if (now - lastTap.current < 300) {
             clearTimeout(tapTimeout.current);
@@ -278,7 +287,6 @@ const ReelVideo = ({
         lastTap.current = now;
         clearTimeout(tapTimeout.current);
 
-        // Single tap - toggle mute or play/pause
         if (isMuted) {
             try {
                 playerRef.current?.unMute();
@@ -289,11 +297,7 @@ const ReelVideo = ({
         } else {
             tapTimeout.current = setTimeout(() => {
                 try {
-                    if (isPaused) {
-                        playerRef.current?.playVideo();
-                    } else {
-                        playerRef.current?.pauseVideo();
-                    }
+                    isPaused ? playerRef.current?.playVideo() : playerRef.current?.pauseVideo();
                 } catch (e) { }
             }, 300);
         }
@@ -352,17 +356,14 @@ const ReelVideo = ({
 
     return (
         <div ref={containerRef} className="relative w-full h-full bg-black overflow-hidden">
-            {/* YouTube iframe */}
+            {/* YouTube container */}
             <div
                 id={divId}
                 className="absolute inset-0 w-full h-full pointer-events-none"
-                style={{
-                    transform: 'scale(1.35)',
-                    transformOrigin: 'center',
-                }}
+                style={{ transform: 'scale(1.35)', transformOrigin: 'center' }}
             />
 
-            {/* Thumbnail while loading */}
+            {/* Thumbnail while player is loading (now only for lazy reels) */}
             {!playerReady && reel.thumbnail_url && (
                 <img
                     src={reel.thumbnail_url}
@@ -396,14 +397,14 @@ const ReelVideo = ({
             />
 
             {/* Tap to start overlay */}
-            {!hasStarted && playerReady && (
+            {!hasStarted && playerReady && !iosUnlocked && (
                 <div
                     className="absolute inset-0 z-40 flex flex-col items-center justify-center gap-3 pointer-events-none"
                     style={{
                         background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, transparent 70%)'
                     }}
                 >
-                    <div
+                    {/* <div
                         className="w-20 h-20 rounded-full flex items-center justify-center animate-pulse"
                         style={{
                             background: 'rgba(255,255,255,0.2)',
@@ -412,8 +413,8 @@ const ReelVideo = ({
                         }}
                     >
                         <Play className="text-white w-10 h-10 fill-white ml-1" />
-                    </div>
-                    <span
+                    </div> */}
+                    {/* <span
                         className="text-white text-sm font-medium px-5 py-2 rounded-full"
                         style={{
                             background: 'rgba(0,0,0,0.6)',
@@ -421,7 +422,7 @@ const ReelVideo = ({
                         }}
                     >
                         اضغط للتشغيل
-                    </span>
+                    </span> */}
                 </div>
             )}
 
