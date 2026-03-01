@@ -61,7 +61,6 @@ const Login = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   // Track whether the user just logged in (vs already was logged in)
-  const [justLoggedIn, setJustLoggedIn] = useState(false);
 
   const navigate = useNavigate();
   const { user, profile, loading, signUp, signIn } = useAuth();
@@ -69,36 +68,18 @@ const Login = () => {
   // ── Case 1: user was already logged in (page refresh / revisit) ──
   // Wait for loading to finish, then redirect
   useEffect(() => {
-    if (loading) return; // Wait for initial auth check
-    if (!user) return; // Not logged in
-    if (justLoggedIn) return; // Handled separately
-
-    // If we have a user, wait specifically for the profile to load
-    if (!profile) return;
-
-    // Already authenticated and profile loaded — send them where they belong
-    if (profile.role === 'admin') {
-      navigate('/admin', { replace: true });
-    } else {
-      navigate('/home', { replace: true });
-    }
-  }, [loading, user, profile, justLoggedIn, navigate]);
-
-  // ── Case 2: user JUST logged in — wait for profile to populate ───
-  // profile starts as null right after signIn(), then AuthContext
-  // loads it async. This effect watches for when it arrives.
-  useEffect(() => {
-    if (!justLoggedIn) return;
     if (loading) return;
     if (!user) return;
-    if (!profile) return; // ← هذا هو الفرق المهم
+    if (!profile) return;
 
     if (profile.role === 'admin') {
       navigate('/admin', { replace: true });
     } else {
       navigate('/home', { replace: true });
     }
-  }, [justLoggedIn, loading, profile, user]);
+  }, [loading, user, profile, navigate]);
+
+
 
   const handleUniversityChange = (value: string) => {
     setUniversity(value);
@@ -153,8 +134,6 @@ const Login = () => {
         return;
       }
       toast.success('تم تسجيل الدخول بنجاح');
-      // Signal that we're waiting for profile to load before redirecting
-      setJustLoggedIn(true);
     } catch {
       toast.error('حدث خطأ غير متوقع');
     } finally {
@@ -176,8 +155,11 @@ const Login = () => {
     }
     if (!gender) { toast.error('يرجى اختيار النوع'); return; }
     if (!university.trim()) { toast.error('يرجى إدخال الجامعة'); return; }
-    if (!faculty.trim()) { toast.error('يرجى إدخال الكلية/التخصص'); return; }
-
+    if (!faculty.trim()) { toast.error('يرجى إدخال التخصص'); return; }
+    if (gender === 'male' && !avatarFile) {
+      toast.error('يجب رفع صورة شخصية');
+      return;
+    }
     setIsLoading(true);
     try {
       let avatar_url = null;
@@ -205,7 +187,10 @@ const Login = () => {
           // Continue registration without avatar — don't show toast here
         }
       }
-
+      if (gender === 'male' && !avatar_url) {
+        toast.error('فشل رفع الصورة، يرجى المحاولة مرة أخرى');
+        return;
+      }
       const { error } = await signUp(email, password, `${firstName} ${lastName}`, gender, university, faculty, avatar_url, phone);
       if (error) {
         toast.error(
@@ -280,13 +265,13 @@ const Login = () => {
                   />
                 </div>
 
-                <button
+                {/* <button
                   type="button"
                   className="text-sm text-primary hover:underline block w-full text-left"
                   onClick={() => setShowForgotPassword(true)}
                 >
                   نسيت كلمة المرور؟
-                </button>
+                </button> */}
 
                 <Button type="submit" className="w-full h-14 mt-4 text-lg font-semibold rounded-xl" disabled={isLoading}>
                   {isLoading ? 'جاري التحميل...' : 'دخول'}
@@ -304,9 +289,9 @@ const Login = () => {
             </CardContent>
           </Card>
 
-          <p className="text-center text-muted-foreground text-xs mt-8">
+          {/* <p className="text-center text-muted-foreground text-xs mt-8">
             © 2025 اتحاد الطلاب اليمنيين في تركيا
-          </p>
+          </p> */}
         </div>
 
         <ForgotPasswordDialog open={showForgotPassword} onOpenChange={setShowForgotPassword} />
@@ -369,8 +354,8 @@ const Login = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">الكلية / التخصص</label>
-                <Input placeholder="الكلية أو التخصص" value={faculty} onChange={(e) => setFaculty(e.target.value)} className="h-12 bg-secondary border-0 rounded-xl" />
+                <label className="text-sm font-medium">التخصص</label>
+                <Input placeholder="التخصص" value={faculty} onChange={(e) => setFaculty(e.target.value)} className="h-12 bg-secondary border-0 rounded-xl" />
               </div>
 
               <div className="space-y-2">
@@ -424,9 +409,9 @@ const Login = () => {
           </CardContent>
         </Card>
 
-        <p className="text-center text-muted-foreground text-xs mt-8">
+        {/* <p className="text-center text-muted-foreground text-xs mt-8">
           © 2026 اتحاد الطلاب اليمنيين في تركيا
-        </p>
+        </p> */}
       </div>
     </div>
   );

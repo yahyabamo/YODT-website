@@ -101,7 +101,7 @@ export default function PartnersAdmin() {
             title: "تأكيد الحذف", message: `حذف "${p.name || "الشريك"}"؟`, danger: true,
             onConfirm: async () => {
                 console.log("CRITICAL: Delete button clicked for ID:", p.id);
-                try { await deletePartner(p.id); toast.success("تم الحذف"); load(false); }
+                try { await deletePartner(p.id); setConfirm(null); toast.success("تم الحذف"); load(false); }
                 catch (err: any) { toast.error(err.message || err.details || "فشل الحذف"); }
             }
         });

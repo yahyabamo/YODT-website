@@ -60,6 +60,7 @@ const Activities = () => {
           ))}
         </div>
 
+
         {/* Activities List */}
         <div className="space-y-4">
           {filteredActivities.map((activity, index) => {
@@ -68,8 +69,8 @@ const Activities = () => {
             const isFull = activity.attendees >= activity.maxAttendees;
 
             return (
-              <Card 
-                key={activity.id} 
+              <Card
+                key={activity.id}
                 className={cn(
                   "shadow-soft animate-slide-up overflow-hidden",
                   isCompleted && "opacity-75"
@@ -81,11 +82,11 @@ const Activities = () => {
                   <div className={cn(
                     "px-4 py-2 text-xs font-medium",
                     activity.status === 'upcoming' ? "gradient-primary text-primary-foreground" :
-                    activity.status === 'ongoing' ? "bg-accent text-accent-foreground" :
-                    "bg-muted text-muted-foreground"
+                      activity.status === 'ongoing' ? "bg-accent text-accent-foreground" :
+                        "bg-muted text-muted-foreground"
                   )}>
                     {activity.status === 'upcoming' ? 'قادم' :
-                     activity.status === 'ongoing' ? 'جاري الآن' : 'مكتمل'}
+                      activity.status === 'ongoing' ? 'جاري الآن' : 'مكتمل'}
                   </div>
 
                   <div className="p-4 space-y-3">
@@ -118,7 +119,7 @@ const Activities = () => {
 
                     {/* Progress Bar */}
                     <div className="w-full bg-muted rounded-full h-2">
-                      <div 
+                      <div
                         className="gradient-primary h-2 rounded-full transition-all duration-500"
                         style={{ width: `${(activity.attendees / activity.maxAttendees) * 100}%` }}
                       />

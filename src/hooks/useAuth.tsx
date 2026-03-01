@@ -106,20 +106,28 @@ export const useAuth = () => {
             password,
             options: {
                 emailRedirectTo: `${window.location.origin}/`,
+                // This stores it in Auth Metadata as a backup
                 data: { full_name: fullName, gender, university, faculty, avatar_url, phone },
             },
         });
 
         if (data?.user && !error) {
-            await supabase.from('profiles').upsert({
-                id: data.user.id,
-                full_name: fullName,
-                gender: gender,
-                university: university || null,
-                faculty: faculty || null,
-                avatar_url: avatar_url || null,
-                phone: phone || null,
-            });
+            // We use a small delay to allow the Auth trigger to create the profile row
+            await new Promise(resolve => setTimeout(resolve, 800));
+
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .update({ // Use update instead of upsert to target the existing trigger-created row
+                    full_name: fullName,
+                    gender: gender,
+                    university: university || null,
+                    faculty: faculty || null,
+                    avatar_url: avatar_url || null,
+                    phone: phone || null,
+                })
+                .eq('id', data.user.id);
+
+            if (profileError) console.error("Profile sync error:", profileError);
         }
 
         return { data, error };

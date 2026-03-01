@@ -157,6 +157,7 @@ export default function OffersAdmin() {
                                                             console.log("CRITICAL: Delete button clicked for ID:", o.id);
                                                             try {
                                                                 await deleteOffer(o.id);
+                                                                setConfirm(null);
                                                                 toast.success("تم الحذف بنجاح");
                                                                 load(false);
                                                             } catch (err: any) {

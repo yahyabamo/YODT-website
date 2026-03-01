@@ -56,7 +56,7 @@ export default function UsersAdmin() {
         message: `هل تريد تغيير حالة ${u.full_name}؟`,
         danger: ns === "banned",
         onConfirm: async () => {
-            try { await updateUserStatus(u.id, ns); toast.success("تم تحديث الحالة"); load(false); }
+            try { await updateUserStatus(u.id, ns); setConfirm(null); toast.success("تم تحديث الحالة"); load(false); }
             catch (err: any) { toast.error("فشل تحديث الحالة: " + (err?.message || "")); console.error(err); }
         }
     });
@@ -70,6 +70,7 @@ export default function UsersAdmin() {
                 console.log("Updating user role to:", nr);
                 const { error } = await supabase.from('profiles').update({ role: nr }).eq('id', u.id);
                 if (error) throw error;
+                setConfirm(null);
                 toast.success("تم تحديث الصلاحية");
                 load(false);
             }
@@ -86,6 +87,7 @@ export default function UsersAdmin() {
                 console.log("User Deleted:", u.id);
                 const { error } = await supabase.from('profiles').delete().eq('id', u.id);
                 if (error) throw error;
+                setConfirm(null);
                 toast.success("تم حذف المستخدم بنجاح");
                 load(false);
             }

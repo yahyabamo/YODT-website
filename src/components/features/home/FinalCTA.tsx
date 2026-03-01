@@ -20,8 +20,8 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ onOpenModal }) => {
                     <span className="en-only">Join Today and Be Part of a<br />Student Community That Makes a Difference</span>
                 </h2>
                 <p className="cta-desc">
-                    <span className="ar-only">   انضم إلينا مجانًا واستفد من دعم لا محدود، خصومات حصرية، وشبكة علاقات قوية تبدأ اليوم.</span>
-                    <span className="en-only">Join us for free and benefit from unlimited support, exclusive discounts, and a powerful network starting today.</span>
+                    <span className="ar-only">   استفد من دعم لا محدود، خصومات حصرية، وشبكة علاقات قوية تبدأ اليوم.</span>
+                    <span className="en-only">Benefit from unlimited support, exclusive discounts, and a powerful network starting today.</span>
                 </p>
                 <div className="cta-actions">
                     <button className="btn btn-primary" onClick={() => navigate('/login')}>

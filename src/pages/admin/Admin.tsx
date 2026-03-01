@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { AdminSidebar, navItems } from "./components/AdminSidebar";
 import { AdminHeader } from "./components/AdminHeader";
-import { ConfirmModal } from "./components/AdminUI";
+import { ConfirmModal, AdminStyles } from "./components/AdminUI";
 
 export default function Admin() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -45,6 +45,7 @@ export default function Admin() {
 
   return (
     <div style={{ display: "flex", height: "100vh", background: "#f8fafc", fontFamily: "'Segoe UI',Tahoma,Geneva,Verdana,sans-serif", direction: "rtl" }}>
+      <AdminStyles />
       <style>{`
         @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
         @keyframes spin{to{transform:rotate(360deg)}}

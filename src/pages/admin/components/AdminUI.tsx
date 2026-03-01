@@ -2,6 +2,28 @@ import React from "react";
 
 export const B = "#8B1A2A";
 
+// Global admin styles injected once — fixes iOS Safari / Vercel text colour overrides
+export function AdminStyles() {
+    return (
+        <style>{`
+            .admin-input, .admin-select, .admin-textarea {
+                color: #111827 !important;
+                -webkit-text-fill-color: #111827 !important;
+                opacity: 1 !important;
+                background: #fff !important;
+                -webkit-appearance: none;
+                appearance: none;
+            }
+            .admin-input::placeholder,
+            .admin-textarea::placeholder {
+                color: #6b7280 !important;
+                -webkit-text-fill-color: #6b7280 !important;
+                opacity: 1 !important;
+            }
+        `}</style>
+    );
+}
+
 // Reusable Basic Input Components for Admin forms
 const inputStyle: React.CSSProperties = {
     width: "100%",
@@ -10,6 +32,10 @@ const inputStyle: React.CSSProperties = {
     borderRadius: 12,
     fontSize: 14,
     background: "#fff",
+    color: "#111827",
+    WebkitTextFillColor: "currentColor",
+    WebkitAppearance: "none",
+    opacity: 1,
     boxSizing: "border-box",
     fontFamily: "inherit"
 };
@@ -19,15 +45,15 @@ export function Field({ label, children }: { label?: string; children: React.Rea
 }
 
 export function Inp({ label, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { label?: string }) {
-    return <Field label={label}><input {...props} style={inputStyle} /></Field>;
+    return <Field label={label}><input {...props} className={`admin-input ${props.className ?? ""}`} style={inputStyle} /></Field>;
 }
 
 export function Sel({ label, children, ...props }: React.SelectHTMLAttributes<HTMLSelectElement> & { label?: string }) {
-    return <Field label={label}><select {...props} style={inputStyle}>{children}</select></Field>;
+    return <Field label={label}><select {...props} className={`admin-select ${props.className ?? ""}`} style={inputStyle}>{children}</select></Field>;
 }
 
 export function Tex({ label, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label?: string }) {
-    return <Field label={label}><textarea {...props} rows={3} style={{ ...inputStyle, resize: "none" }} /></Field>;
+    return <Field label={label}><textarea {...props} rows={3} className={`admin-textarea ${props.className ?? ""}`} style={{ ...inputStyle, resize: "none" }} /></Field>;
 }
 
 export function Badge({ children, type }: { children: React.ReactNode; type: string }) {

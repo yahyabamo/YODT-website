@@ -12,11 +12,8 @@ export function AuthProvider({ children }) {
 
     // Prevent double-loading profile when both initAuth +
     // onAuthStateChange fire for the same userId on startup
-    const loadingRef = useRef(false)
 
     async function loadProfile(userId) {
-        if (loadingRef.current) return   // already in flight
-        loadingRef.current = true
         try {
             const data = await getProfile(userId)
             setProfile(data ?? null)
@@ -24,8 +21,7 @@ export function AuthProvider({ children }) {
             console.error('loadProfile error:', err)
             setProfile(null)
         } finally {
-            loadingRef.current = false
-            setLoading(false)            // always unblocks
+            setLoading(false)
         }
     }
 
@@ -69,15 +65,19 @@ export function AuthProvider({ children }) {
         })
 
         if (data?.user && !error) {
-            await supabase.from('profiles').upsert({
-                id: data.user.id,
-                full_name: fullName,
-                gender: gender,
-                university: university || null,
-                faculty: faculty || null,
-                avatar_url: avatar_url || null,
-                phone: phone || null,
-            })
+            const { data: updateData, error: updateError } = await supabase
+                .from('profiles')
+                .update({
+                    full_name: fullName,
+                    gender: gender,
+                    university: university || null,
+                    faculty: faculty || null,
+                    avatar_url: avatar_url || null,
+                    phone: phone || null,
+                })
+                .eq('id', data.user.id)
+            console.log('update result:', updateData, updateError)  // ← add this
+
         }
 
         return { data, error }

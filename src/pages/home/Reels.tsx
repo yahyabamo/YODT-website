@@ -169,6 +169,8 @@ const ReelVideo = ({
             stopProgress();
             setProgress(0);
             setIsPaused(false);
+            setHasStarted(false);  // ← add this line
+            setIsMuted(true);
         }
     }, [isActive, playerReady, reel.id]);
 
@@ -189,17 +191,9 @@ const ReelVideo = ({
 
     const tryPlay = () => {
         if (!playerRef.current) return;
-
         try {
-            // Always muted first (autoplay policy compliance)
-            playerRef.current.mute();
+            playerRef.current.mute(); // always muted = bypasses autoplay policy on all browsers
             playerRef.current.playVideo();
-
-            // If iOS already unlocked and we want sound, unmute
-            if (iosUnlocked && !isMuted) {
-                playerRef.current.unMute();
-                playerRef.current.setVolume(100);
-            }
         } catch (e) {
             console.error('Play failed:', e);
         }
@@ -259,13 +253,12 @@ const ReelVideo = ({
         hasInteracted.current = true;
 
         if (!hasStarted) {
-            // First tap - start playing with sound
+            // First tap — unmute and ensure playing
             try {
                 playerRef.current?.unMute();
                 playerRef.current?.setVolume(100);
                 playerRef.current?.playVideo();
                 setIsMuted(false);
-                setHasStarted(true);
             } catch (e) { }
             return;
         }

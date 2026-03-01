@@ -122,7 +122,7 @@ export default function ActivitiesAdmin() {
             title: "تأكيد الحذف", message: `حذف "${a.title || "الفعالية"}"؟`, danger: true,
             onConfirm: async () => {
                 console.log("CRITICAL: Delete button clicked for ID:", a.id);
-                try { await deleteActivity(a.id); toast.success("تم الحذف"); load(false); }
+                try { await deleteActivity(a.id); setConfirm(null); toast.success("تم الحذف"); load(false); }
                 catch (err: any) { toast.error(err.message || err.details || "فشل الحذف"); }
             }
         });

@@ -264,11 +264,11 @@ export const SmartTopBar = ({ onOpenAI, onOpenSearch }: SmartTopBarProps) => {
             </div>
 
             {/* Footer */}
-            <div className="p-3 border-t border-border/50 bg-secondary/30">
+            {/* <div className="p-3 border-t border-border/50 bg-secondary/30">
               <p className="text-[10px] text-center text-muted-foreground">
                 اتحاد الطلاب اليمنيين في تركيا © 2025
               </p>
-            </div>
+            </div> */}
           </div>
         </SheetContent>
       </Sheet>

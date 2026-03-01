@@ -115,7 +115,7 @@ export default function ReelsAdmin() {
             title: "تأكيد الحذف", message: `حذف "${r.title || "الريل"}"؟`, danger: true,
             onConfirm: async () => {
                 console.log("CRITICAL: Delete button clicked for ID:", r.id);
-                try { await deleteReel(r.id); toast.success("تم الحذف"); load(); }
+                try { await deleteReel(r.id); setConfirm(null); toast.success("تم الحذف"); load(); }
                 catch (err: any) { toast.error(err.message || err.details || "فشل الحذف"); }
             }
         });
@@ -235,7 +235,7 @@ export default function ReelsAdmin() {
                                                 title: "حذف التعليق",
                                                 message: "هل أنت متأكد من حذف هذا التعليق؟ لا يمكن التراجع.",
                                                 danger: true,
-                                                onConfirm: () => handleDeleteComment(c.id)
+                                                onConfirm: () => { handleDeleteComment(c.id); setConfirm(null); }
                                             })
                                         }}
                                         className="w-8 h-8 rounded-lg border-none bg-[#fee2e2] text-[#dc2626] cursor-pointer flex items-center justify-center shrink-0 hover:bg-red-200 focus:outline-none"
