@@ -54,11 +54,15 @@ const getVideoId = (url: string): string => {
 const ReelVideo = ({
     reel,
     isActive,
-    onFirstInteraction
+    onFirstInteraction,
+    hasUserUnmuted,
+    onUserUnmute
 }: {
     reel: any;
     isActive: boolean;
     onFirstInteraction: () => void;
+    hasUserUnmuted: boolean;
+    onUserUnmute: () => void;
 }) => {
     const { user } = useAuth();
     const [stats, setStats] = useState({ likes: 0, comments: 0, isLiked: false });
@@ -171,6 +175,7 @@ const ReelVideo = ({
             setIsPaused(false);
             setHasStarted(false);  // ← add this line
             setIsMuted(true);
+
         }
     }, [isActive, playerReady, reel.id]);
 
@@ -191,8 +196,18 @@ const ReelVideo = ({
 
     const tryPlay = () => {
         if (!playerRef.current) return;
+
         try {
-            playerRef.current.mute(); // always muted = bypasses autoplay policy on all browsers
+            if (hasUserUnmuted) {
+                // User has unmuted before, play with sound
+                playerRef.current.unMute();
+                playerRef.current.setVolume(100);
+                setIsMuted(false);
+            } else {
+                // First video or user never unmuted, play muted
+                playerRef.current.mute();
+                setIsMuted(true);
+            }
             playerRef.current.playVideo();
         } catch (e) {
             console.error('Play failed:', e);
@@ -244,28 +259,16 @@ const ReelVideo = ({
     const handleInteraction = useCallback((e?: React.MouseEvent | React.TouchEvent) => {
         e?.stopPropagation();
 
-        // Mark global iOS unlock on first interaction anywhere
         if (!iosUnlocked) {
             markIosUnlocked();
             onFirstInteraction();
         }
 
-        hasInteracted.current = true;
-
-        if (!hasStarted) {
-            // First tap — unmute and ensure playing
-            try {
-                playerRef.current?.unMute();
-                playerRef.current?.setVolume(100);
-                playerRef.current?.playVideo();
-                setIsMuted(false);
-            } catch (e) { }
-            return;
-        }
-
-        // Check for double tap
+        // Check for double tap first (for like)
         const now = Date.now();
-        if (now - lastTap.current < 300) {
+        const isDoubleTap = now - lastTap.current < 300;
+
+        if (isDoubleTap) {
             clearTimeout(tapTimeout.current);
             lastTap.current = 0;
             if (!stats.isLiked) handleToggleLike();
@@ -277,16 +280,18 @@ const ReelVideo = ({
         lastTap.current = now;
         clearTimeout(tapTimeout.current);
 
-        // Single tap - toggle mute or play/pause
-        if (isMuted) {
-            try {
-                playerRef.current?.unMute();
-                playerRef.current?.setVolume(100);
-                setIsMuted(false);
-                if (isPaused) playerRef.current?.playVideo();
-            } catch (e) { }
-        } else {
-            tapTimeout.current = setTimeout(() => {
+        // Single tap - handle mute/unmute only
+        tapTimeout.current = setTimeout(() => {
+            if (isMuted) {
+                // First time unmuting
+                onUserUnmute();
+                try {
+                    playerRef.current?.unMute();
+                    playerRef.current?.setVolume(100);
+                    setIsMuted(false);
+                } catch (e) { }
+            } else {
+                // Toggle play/pause if already unmuted
                 try {
                     if (isPaused) {
                         playerRef.current?.playVideo();
@@ -294,9 +299,9 @@ const ReelVideo = ({
                         playerRef.current?.pauseVideo();
                     }
                 } catch (e) { }
-            }, 300);
-        }
-    }, [hasStarted, isMuted, isPaused, stats.isLiked, handleToggleLike, onFirstInteraction]);
+            }
+        }, 300);
+    }, [isMuted, isPaused, stats.isLiked, handleToggleLike, onFirstInteraction]);
 
     const toggleMute = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -665,6 +670,7 @@ const HomeReels = () => {
     const [loading, setLoading] = useState(true);
     const [activeIndex, setActiveIndex] = useState(0);
     const [navHeight, setNavHeight] = useState(64);
+    const [hasUserUnmuted, setHasUserUnmuted] = useState(false);
 
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -814,11 +820,12 @@ const HomeReels = () => {
                             reel={reel}
                             isActive={index === activeIndex}
                             onFirstInteraction={() => {
-                                // Ensure scroll works after first interaction
                                 if (containerRef.current) {
                                     containerRef.current.style.overflow = 'auto';
                                 }
                             }}
+                            hasUserUnmuted={hasUserUnmuted}
+                            onUserUnmute={() => setHasUserUnmuted(true)}  // ← pass it here
                         />
                     </div>
                 ))}
