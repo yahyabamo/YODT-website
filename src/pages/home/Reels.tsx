@@ -131,6 +131,16 @@ const ReelVideo = ({
                             setIsBuffering(false);
                             setHasStarted(true);
                             startProgress();
+                            // Unmute after playing starts if user wants sound
+                            if (iosUnlocked && !globalMuted) {
+                                setTimeout(() => {
+                                    try {
+                                        playerRef.current?.unMute();
+                                        playerRef.current?.setVolume(100);
+                                        setIsMuted(false);
+                                    } catch (_) { }
+                                }, 500);
+                            }
                         } else if (e.data === S.PAUSED) {
                             setIsPaused(true);
                             stopProgress();
@@ -140,9 +150,6 @@ const ReelVideo = ({
                             playerRef.current?.seekTo(0, true);
                             playerRef.current?.playVideo();
                         }
-                    },
-                    onError: (e: any) => {
-                        console.error('YT error', e.data);
                     },
                 },
             });
@@ -200,23 +207,9 @@ const ReelVideo = ({
         if (!playerRef.current) return;
 
         try {
-            // ALWAYS start muted to satisfy autoplay policy
             playerRef.current.mute();
             playerRef.current.playVideo();
-
-            // If user already unlocked sound before
-            if (iosUnlocked && reelIndex !== 0) {
-                setTimeout(() => {
-                    try {
-                        playerRef.current?.unMute();
-                        playerRef.current?.setVolume(100);
-                        setIsMuted(false);
-                    } catch (_) { }
-                }, 150);
-            } else {
-                setIsMuted(true);
-            }
-
+            setIsMuted(true);
         } catch (e) {
             console.error('Play failed:', e);
         }
