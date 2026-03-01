@@ -73,6 +73,7 @@ const ReelVideo = ({
     const [playerReady, setPlayerReady] = useState(false);
     const [hasStarted, setHasStarted] = useState(false);
     const [isBuffering, setIsBuffering] = useState(false);
+    const [showUnmuteHint, setShowUnmuteHint] = useState(true);
 
     const playerRef = useRef<any>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -191,27 +192,15 @@ const ReelVideo = ({
         return () => window.removeEventListener('ios-unlocked', handleUnlock);
     }, [isMuted]);
 
-    // ── UPDATED: tryPlay — respects global "sound enabled" flag ──
-    const tryPlay = () => {
+    const tryPlay = useCallback(() => {
         if (!playerRef.current) return;
-
         try {
-            // After the user unmuted the FIRST video once → all future reels auto-unmute
-            if (iosUnlocked) {
-                playerRef.current.unMute();
-                playerRef.current.setVolume(100);
-                setIsMuted(false);
-            } else {
-                // First reel (or before any unmute) → start muted (required by mobile policy)
-                playerRef.current.mute();
-                setIsMuted(true);
-            }
-
+            playerRef.current.mute();           // ← critical for mobile autoplay policy
             playerRef.current.playVideo();
         } catch (e) {
             console.error('Play failed:', e);
         }
-    };
+    }, []);
 
     const startProgress = () => {
         stopProgress();
@@ -269,6 +258,7 @@ const ReelVideo = ({
                 playerRef.current?.setVolume(100);
                 playerRef.current?.playVideo();
                 setIsMuted(false);
+                setShowUnmuteHint(false);
             } catch (e) { }
             return;
         }
@@ -292,6 +282,7 @@ const ReelVideo = ({
                 playerRef.current?.unMute();
                 playerRef.current?.setVolume(100);
                 setIsMuted(false);
+                setShowUnmuteHint(false);
                 if (isPaused) playerRef.current?.playVideo();
             } catch (e) { }
         } else {
@@ -312,6 +303,7 @@ const ReelVideo = ({
                 playerRef.current?.unMute();
                 playerRef.current?.setVolume(100);
                 setIsMuted(false);
+                setShowUnmuteHint(false);
             } else {
                 playerRef.current?.mute();
                 setIsMuted(true);
@@ -397,14 +389,14 @@ const ReelVideo = ({
             />
 
             {/* Tap to start overlay */}
-            {!hasStarted && playerReady && !iosUnlocked && (
+            {/* {!hasStarted && playerReady && (
                 <div
                     className="absolute inset-0 z-40 flex flex-col items-center justify-center gap-3 pointer-events-none"
                     style={{
                         background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, transparent 70%)'
                     }}
                 >
-                    {/* <div
+                    <div
                         className="w-20 h-20 rounded-full flex items-center justify-center animate-pulse"
                         style={{
                             background: 'rgba(255,255,255,0.2)',
@@ -413,8 +405,8 @@ const ReelVideo = ({
                         }}
                     >
                         <Play className="text-white w-10 h-10 fill-white ml-1" />
-                    </div> */}
-                    {/* <span
+                    </div>
+                    <span
                         className="text-white text-sm font-medium px-5 py-2 rounded-full"
                         style={{
                             background: 'rgba(0,0,0,0.6)',
@@ -422,9 +414,9 @@ const ReelVideo = ({
                         }}
                     >
                         اضغط للتشغيل
-                    </span> */}
+                    </span>
                 </div>
-            )}
+            )} */}
 
             {/* Pause indicator */}
             {hasStarted && isPaused && !isBuffering && (
@@ -452,6 +444,21 @@ const ReelVideo = ({
                             animation: 'heartPop 0.8s ease-out forwards'
                         }}
                     />
+                </div>
+            )}
+
+            {isMuted && showUnmuteHint && hasStarted && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-45">
+                    <div
+                        className="px-4 py-2 rounded-full text-white text-sm font-medium animate-pulse"
+                        style={{
+                            background: 'rgba(0,0,0,0.6)',
+                            backdropFilter: 'blur(6px)',
+                            border: '1px solid rgba(255,255,255,0.2)'
+                        }}
+                    >
+                        اضغط لتشغيل الصوت 🔊
+                    </div>
                 </div>
             )}
 
@@ -815,6 +822,7 @@ const HomeReels = () => {
                         <ReelVideo
                             reel={reel}
                             isActive={index === activeIndex}
+
                             onFirstInteraction={() => {
                                 // Ensure scroll works after first interaction
                                 if (containerRef.current) {
