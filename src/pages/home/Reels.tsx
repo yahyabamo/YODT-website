@@ -24,13 +24,15 @@ const markIosUnlocked = () => {
     window.dispatchEvent(new Event('ios-unlocked'));
 };
 
+let globalMuted = true; // tracks user's mute preference across videos
+
 const loadYouTubeAPI = (onReady: () => void) => {
     if (ytApiState === 'ready') { onReady(); return; }
     ytReadyCallbacks.push(onReady);
     if (ytApiState === 'loading') return;
     ytApiState = 'loading';
     const tag = document.createElement('script');
-    tag.src = 'https://www.youtube.com/iframe_api';
+    tag.src = 'https://www.youtube.com/iframe_api ';
     tag.async = true;
     document.head.appendChild(tag);
     (window as any).onYouTubeIframeAPIReady = () => {
@@ -54,15 +56,11 @@ const getVideoId = (url: string): string => {
 const ReelVideo = ({
     reel,
     isActive,
-    onFirstInteraction,
-    hasUserUnmuted,
-    onUserUnmute
+    onFirstInteraction
 }: {
     reel: any;
     isActive: boolean;
     onFirstInteraction: () => void;
-    hasUserUnmuted: boolean;
-    onUserUnmute: () => void;
 }) => {
     const { user } = useAuth();
     const [stats, setStats] = useState({ likes: 0, comments: 0, isLiked: false });
@@ -196,44 +194,19 @@ const ReelVideo = ({
 
     const tryPlay = () => {
         if (!playerRef.current) return;
-
         try {
-            // Always start muted to ensure autoplay works
-            playerRef.current.mute();
-            playerRef.current.playVideo();
-
-            // If user has unmuted before, try to unmute after a short delay
-            // (gives player time to start playing)
-            if (hasUserUnmuted) {
-                setTimeout(() => {
-                    try {
-                        if (playerRef.current && isActiveRef.current) {
-                            playerRef.current.unMute();
-                            playerRef.current.setVolume(100);
-                            setIsMuted(false);
-                        }
-                    } catch (e) {
-                        // If unmute fails, stay muted but keep playing
-                        console.log('Auto-unmute failed, staying muted');
-                    }
-                }, 500);
+            if (globalMuted) {
+                playerRef.current.mute();
+            } else {
+                playerRef.current.unMute();
+                playerRef.current.setVolume(100);
             }
+            playerRef.current.playVideo();
+            setIsMuted(globalMuted);
         } catch (e) {
             console.error('Play failed:', e);
         }
-    };// ── Handle unmute state change ──
-    useEffect(() => {
-        if (!playerRef.current || !isActive) return;
-
-        // If user has unmuted globally and we're active but still muted, try to unmute
-        if (hasUserUnmuted && isMuted && hasStarted) {
-            try {
-                playerRef.current.unMute();
-                playerRef.current.setVolume(100);
-                setIsMuted(false);
-            } catch (e) { }
-        }
-    }, [hasUserUnmuted, isActive, isMuted, hasStarted]);
+    };
 
     const startProgress = () => {
         stopProgress();
@@ -277,7 +250,7 @@ const ReelVideo = ({
         } catch { toast.error('فشل تحديث الإعجاب'); }
     };
 
-    const handleInteraction = useCallback((e?: React.MouseEvent | React.TouchEvent) => {
+    const handleInteraction = useCallback((e?: React.MouseEvent) => {
         e?.stopPropagation();
 
         if (!iosUnlocked) {
@@ -285,11 +258,21 @@ const ReelVideo = ({
             onFirstInteraction();
         }
 
-        // Check for double tap first (for like)
-        const now = Date.now();
-        const isDoubleTap = now - lastTap.current < 300;
+        if (!hasStarted) {
+            // First tap on this video — unmute and play
+            try {
+                playerRef.current?.unMute();
+                playerRef.current?.setVolume(100);
+                playerRef.current?.playVideo();
+                setIsMuted(false);
+                globalMuted = false; // remember user wants sound
+            } catch (e) { }
+            return;
+        }
 
-        if (isDoubleTap) {
+        // Double tap detection
+        const now = Date.now();
+        if (now - lastTap.current < 300) {
             clearTimeout(tapTimeout.current);
             lastTap.current = 0;
             if (!stats.isLiked) handleToggleLike();
@@ -301,28 +284,25 @@ const ReelVideo = ({
         lastTap.current = now;
         clearTimeout(tapTimeout.current);
 
-        // Single tap - handle mute/unmute only
+        // Single tap — toggle pause only (mute handled by mute button)
+        // Single tap — unmute first, then pause/resume
         tapTimeout.current = setTimeout(() => {
-            if (isMuted) {
-                // First time unmuting
-                onUserUnmute();
-                try {
+            try {
+                if (isMuted) {
                     playerRef.current?.unMute();
                     playerRef.current?.setVolume(100);
                     setIsMuted(false);
-                } catch (e) { }
-            } else {
-                // Toggle play/pause if already unmuted
-                try {
+                    globalMuted = false;
+                } else {
                     if (isPaused) {
                         playerRef.current?.playVideo();
                     } else {
                         playerRef.current?.pauseVideo();
                     }
-                } catch (e) { }
-            }
+                }
+            } catch (e) { }
         }, 300);
-    }, [isMuted, isPaused, stats.isLiked, handleToggleLike, onFirstInteraction]);
+    }, [hasStarted, isPaused, stats.isLiked, handleToggleLike, onFirstInteraction]);
 
     const toggleMute = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -414,14 +394,10 @@ const ReelVideo = ({
             <div
                 className="absolute inset-0 z-30 cursor-pointer"
                 onClick={handleInteraction}
-                onTouchStart={(e) => {
-                    e.preventDefault();
-                    handleInteraction(e);
-                }}
             />
 
             {/* Tap to start overlay */}
-            {!hasStarted && playerReady && (
+            {/* {!hasStarted && playerReady && (
                 <div
                     className="absolute inset-0 z-40 flex flex-col items-center justify-center gap-3 pointer-events-none"
                     style={{
@@ -448,8 +424,19 @@ const ReelVideo = ({
                         اضغط للتشغيل
                     </span>
                 </div>
+            )} */}
+            {/* Unmute hint — shows when playing but muted */}
+            {hasStarted && isMuted && !isPaused && (
+                <div className="absolute bottom-32 left-0 right-0 flex justify-center pointer-events-none z-40">
+                    <div
+                        className="flex items-center gap-2 px-4 py-2 rounded-full"
+                        style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}
+                    >
+                        <VolumeX className="text-white w-4 h-4" />
+                        <span className="text-white text-sm font-medium">اضغط لتشغيل الصوت</span>
+                    </div>
+                </div>
             )}
-
             {/* Pause indicator */}
             {hasStarted && isPaused && !isBuffering && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-40">
@@ -691,7 +678,6 @@ const HomeReels = () => {
     const [loading, setLoading] = useState(true);
     const [activeIndex, setActiveIndex] = useState(0);
     const [navHeight, setNavHeight] = useState(64);
-    const [hasUserUnmuted, setHasUserUnmuted] = useState(false);
 
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -841,12 +827,11 @@ const HomeReels = () => {
                             reel={reel}
                             isActive={index === activeIndex}
                             onFirstInteraction={() => {
+                                // Ensure scroll works after first interaction
                                 if (containerRef.current) {
                                     containerRef.current.style.overflow = 'auto';
                                 }
                             }}
-                            hasUserUnmuted={hasUserUnmuted}
-                            onUserUnmute={() => setHasUserUnmuted(true)}  // ← pass it here
                         />
                     </div>
                 ))}
