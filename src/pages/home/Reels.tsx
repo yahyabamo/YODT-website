@@ -562,7 +562,7 @@ const ReelVideo = ({
             </div>
 
             {/* ── RIGHT SIDEBAR: Actions ── */}
-            <div className="absolute right-3 z-40 flex flex-col items-center gap-4" style={{ bottom: 140 }}>
+            <div className="absolute right-3 z-40 flex flex-col items-center gap-4" style={{ bottom: 200 }}>
                 {/* Like */}
                 <button
                     className="flex flex-col items-center gap-1.5 group"
@@ -623,7 +623,7 @@ const ReelVideo = ({
             {/* ── BOTTOM: Info + Progress ── */}
             <div
                 className="absolute left-0 right-0 z-40 px-4"
-                style={{ bottom: 20 }}
+                style={{ bottom: 70 }}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Progress bar + skip controls */}
