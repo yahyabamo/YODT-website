@@ -380,12 +380,9 @@ const ReelVideo = ({
 
             {/* Touch/Click area - CRITICAL: must be pointer-events-auto to capture touches */}
             <div
-                className="absolute inset-0 z-30 cursor-pointer"
+                className="absolute inset-0 z-30 cursor-pointer touch-manipulation"
                 onClick={handleInteraction}
-                onTouchStart={(e) => {
-                    e.preventDefault();
-                    handleInteraction(e);
-                }}
+                onTouchStart={handleInteraction}
             />
 
             {/* Tap to start overlay */}
