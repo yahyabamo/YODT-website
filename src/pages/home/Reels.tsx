@@ -145,8 +145,12 @@ const ReelVideo = ({
     const videoId = useMemo(() => getVideoId(reel.video_url), [reel.video_url]);
     const isActiveRef = useRef(isActive);
     const createRipple = useRipple();
+    const [containerHeight, setContainerHeight] = useState(0);
+    const [navHeight, setNavHeight] = useState(64);
+
 
     useEffect(() => { isActiveRef.current = isActive; }, [isActive]);
+
 
     // ── Init YT player ──
     useEffect(() => {
@@ -227,6 +231,9 @@ const ReelVideo = ({
         }
     }, [isActive, playerReady, reel.id]);
 
+
+
+
     // ── iOS unlock ──
     useEffect(() => {
         const handleUnlock = () => {
@@ -241,6 +248,7 @@ const ReelVideo = ({
         window.addEventListener('ios-unlocked', handleUnlock);
         return () => window.removeEventListener('ios-unlocked', handleUnlock);
     }, [isMuted]);
+
 
     const tryPlay = () => {
         if (!playerRef.current) return;
@@ -501,7 +509,7 @@ const ReelVideo = ({
             />
 
             {/* ── Tap to start overlay ── */}
-            {!hasStarted && playerReady && (
+            {/* {!hasStarted && playerReady && (
                 <div className="absolute inset-0 z-40 flex flex-col items-center justify-center gap-4 pointer-events-none"
                     style={{ background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.55) 0%, transparent 70%)' }}
                 >
@@ -514,7 +522,7 @@ const ReelVideo = ({
                         اضغط للتشغيل
                     </span>
                 </div>
-            )}
+            )} */}
 
             {/* ── Pause flash icon ── */}
             {showPauseIcon && (
@@ -620,7 +628,7 @@ const ReelVideo = ({
             >
                 {/* Progress bar + skip controls */}
                 {hasStarted && (
-                    <div dir="ltr" className="flex items-center gap-2 mb-4">
+                    <div dir="ltr" className="flex items-center gap-2 mb-8" style={{ marginBottom: 0 }}>
                         <button
                             className="skip-btn text-white text-xs font-bold"
                             onClick={(e) => skip(e, -10)}
@@ -814,10 +822,16 @@ const HomeReels = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const navRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
+    const [containerHeight, setContainerHeight] = useState(0);
 
+
+    // NEW
     useEffect(() => {
         if (!navRef.current) return;
-        const update = () => setNavHeight(navRef.current?.getBoundingClientRect().height ?? 64);
+        const update = () => {
+            setNavHeight(navRef.current?.getBoundingClientRect().height ?? 64);
+            setContainerHeight(containerRef.current?.clientHeight ?? 0);
+        };
         update();
         const observer = new ResizeObserver(update);
         observer.observe(navRef.current);
@@ -935,8 +949,12 @@ const HomeReels = () => {
                         key={reel.id}
                         className="w-full"
                         style={{
-                            height: `calc(100dvh - ${navHeight}px)`,
-                            minHeight: `calc(100dvh - ${navHeight}px)`,
+                            height: containerRef.current?.clientHeight
+                                ? `${containerRef.current.clientHeight}px`
+                                : `calc(100dvh - ${navHeight}px)`,
+                            minHeight: containerRef.current?.clientHeight
+                                ? `${containerRef.current.clientHeight}px`
+                                : `calc(100dvh - ${navHeight}px)`,
                             scrollSnapAlign: 'start',
                             scrollSnapStop: 'always',
                         }}
