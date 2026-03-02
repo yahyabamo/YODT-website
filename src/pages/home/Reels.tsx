@@ -497,8 +497,7 @@ const ReelVideo = ({
             <div
                 className="absolute inset-0 z-30 cursor-pointer"
                 onClick={handleInteraction}
-                onTouchStart={handleTouchStart}
-                onTouchEnd={(e) => { handleTouchEnd(e); handleInteraction(e); }}
+                onTouchEnd={(e) => { e.preventDefault(); handleInteraction(e); }}
             />
 
             {/* ── Tap to start overlay ── */}
@@ -585,7 +584,7 @@ const ReelVideo = ({
                 </button>
 
                 {/* Save */}
-                <button
+                {/* <button
                     className="flex flex-col items-center gap-1.5"
                     onClick={(e) => { e.stopPropagation(); handleSave(); }}
                     style={{ touchAction: 'manipulation' }}
@@ -596,7 +595,7 @@ const ReelVideo = ({
                     <span className="text-white text-xs font-bold drop-shadow-lg action-count">
                         حفظ
                     </span>
-                </button>
+                </button> */}
 
                 {/* Share */}
                 <button
@@ -627,7 +626,7 @@ const ReelVideo = ({
                             onClick={(e) => skip(e, -10)}
                             style={{ touchAction: 'manipulation' }}
                         >
-                            ↩ 10
+                            -10
                         </button>
 
                         <div className="relative flex-1 h-8 flex items-center">
@@ -657,7 +656,7 @@ const ReelVideo = ({
                             onClick={(e) => skip(e, 10)}
                             style={{ touchAction: 'manipulation' }}
                         >
-                            10 ↪
+                            +10
                         </button>
                     </div>
                 )}
@@ -782,6 +781,20 @@ const ReelVideo = ({
                     </Drawer.Content>
                 </Drawer.Portal>
             </Drawer.Root>
+            {/* Unmute hint — shown when playing but still muted */}
+            {hasStarted && isMuted && (
+                <div
+                    className="absolute z-40 pointer-events-none"
+                    style={{ bottom: 170, left: 16 }}
+                >
+                    <div
+                        className="flex items-center gap-2 px-3 py-2 rounded-full unmute-hint"
+                    >
+                        <VolumeX className="text-white w-3.5 h-3.5 flex-shrink-0" />
+                        <span className="text-white text-xs font-medium">اضغط لتشغيل الصوت</span>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -1016,8 +1029,10 @@ const HomeReels = () => {
                                 <ChevronDown className="text-white/20 w-4 h-4 flex-shrink-0 -rotate-90" />
                             </button>
                         ))}
+
                     </div>
                 )}
+
             </div>
 
             <style>{`
@@ -1128,6 +1143,16 @@ const HomeReels = () => {
                     border: 1px solid rgba(255,255,255,0.06);
                     border-bottom: none;
                 }
+                    .unmute-hint {
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.15);
+    animation: fadeInUp 0.4s ease-out, hintPulse 2.5s ease-in-out 0.5s infinite;
+}
+@keyframes hintPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
 
                 /* ── Animations ── */
                 @keyframes spin { to { transform: rotate(360deg); } }
