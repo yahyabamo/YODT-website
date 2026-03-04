@@ -39,6 +39,7 @@ const MembershipCard = () => {
   const [qrToken, setQrToken] = useState('');
   const [expirySeconds, setExpirySeconds] = useState(60);
   const [showSearch, setShowSearch] = useState(false);
+  const verifyUrl = `${window.location.origin}/verify/${qrToken}`;
 
   // Fetch profile when user is available
   useEffect(() => {
@@ -201,9 +202,7 @@ const MembershipCard = () => {
               {/* Dynamic QR Code */}
               <div className="mt-6 p-4 bg-white rounded-xl shadow-inner relative">
                 <QRCodeSVG
-                  // This is the magic line: it creates a link for the camera 
-                  // but keeps the rotating token for the Admin scanner.
-                  value={`${window.location.origin}/verify/${profile.id}?t=${qrToken}`}
+                  value={verifyUrl} // Now the camera sees a clickable link
                   size={180}
                   level="H"
                   includeMargin={true}

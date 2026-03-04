@@ -66,7 +66,15 @@ export default function ScannerAdmin() {
 
                     try {
                         scannerRef.current?.pause();
-                        const result = await recordAttendance(decodedText, selectedActivity);
+
+                        // NEW: Extract the ID from the URL if it's a link
+                        // This works even if decodedText is just the ID (fallback)
+                        const id = decodedText.includes('/verify/')
+                            ? decodedText.split('/verify/').pop()
+                            : decodedText;
+
+                        // Use the extracted 'id' instead of 'decodedText'
+                        const result = await recordAttendance(id, selectedActivity);
 
                         if (result.error) {
                             let friendlyMessage = '❌ الكود غير صحيح';
