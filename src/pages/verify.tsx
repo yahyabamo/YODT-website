@@ -13,21 +13,35 @@ export default function Verify() {
         const fetchProfile = async () => {
             if (!id) return;
 
-            console.log("Verifying ID from URL:", id);
+            try {
+                // 1. Decode the Base64 string from the URL
+                // atob() converts Base64 back to a plain string
+                const decodedString = atob(id);
 
-            const { data, error } = await supabase
-                .from("profiles")
-                .select("full_name, university, faculty, status, role")
-                .eq("id", id) // Ensure 'id' here matches the column name in Supabase
-                .single();
+                // 2. Extract the actual UUID
+                // If your token looks like "UUID|Timestamp|Hash", we split by "|"
+                // Based on your string, it looks like it might be separated by "|"
+                const actualId = decodedString.includes('|')
+                    ? decodedString.split('|')[0]
+                    : decodedString;
 
-            if (error) {
-                console.error("Supabase Error:", error);
-                setProfile(null);
-            } else {
+                console.log("Searching for actual UUID:", actualId);
+
+                // 3. Query Supabase with the CLEAN UUID
+                const { data, error } = await supabase
+                    .from("profiles")
+                    .select("full_name, university, faculty, status, role")
+                    .eq("id", actualId)
+                    .single();
+
+                if (error) throw error;
                 setProfile(data);
+            } catch (err) {
+                console.error("Verification failed:", err);
+                setProfile(null);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
         fetchProfile();
     }, [id]);

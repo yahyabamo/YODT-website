@@ -67,15 +67,25 @@ export default function ScannerAdmin() {
                     try {
                         scannerRef.current?.pause();
 
-                        // CLEANING LOGIC:
-                        // If the scan is a URL, grab the part after the last slash
-                        // If it's just an ID, use it as is
-                        const cleanId = decodedText.includes('/')
+                        // 1. Get the last part of the URL (the MDI0NzVh... part)
+                        const token = decodedText.includes('/')
                             ? decodedText.split('/').pop()
                             : decodedText;
 
-                        console.log("Processing ID:", cleanId); // Check your console to see if this is the correct UUID
+                        // 2. Decode it from Base64 (MDI0NzVh... -> UUID|timestamp|etc)
+                        // 3. Take only the UUID part
+                        let cleanId;
+                        try {
+                            const decoded = atob(token || "");
+                            cleanId = decoded.includes('|') ? decoded.split('|')[0] : decoded;
+                        } catch (e) {
+                            // Fallback: if it's not base64, just use the token as is
+                            cleanId = token;
+                        }
 
+                        console.log("Admin scanning decoded ID:", cleanId);
+
+                        // 4. Send the REAL ID to your database
                         const result = await recordAttendance(cleanId, selectedActivity);
 
                         if (result.error) {
