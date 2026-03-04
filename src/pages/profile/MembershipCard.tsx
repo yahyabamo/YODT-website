@@ -201,7 +201,9 @@ const MembershipCard = () => {
               {/* Dynamic QR Code */}
               <div className="mt-6 p-4 bg-white rounded-xl shadow-inner relative">
                 <QRCodeSVG
-                  value={qrToken}
+                  // This is the magic line: it creates a link for the camera 
+                  // but keeps the rotating token for the Admin scanner.
+                  value={`${window.location.origin}/verify/${profile.id}?t=${qrToken}`}
                   size={180}
                   level="H"
                   includeMargin={true}

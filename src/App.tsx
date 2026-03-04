@@ -74,6 +74,7 @@ import VerifyCertificate from "./pages/VerifyCertificate";
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
 import AwnAdmin from "./pages/admin/3wnAdmin";
+import Verify from "./pages/verify";
 
 const queryClient = new QueryClient();
 
@@ -169,6 +170,7 @@ const App = () => (
                 {/* <Route path="/orbit" element={<Orbit />} /> */}
                 {/* <Route path="/orbit/brief" element={<OrbitBrief />} /> */}
                 {/* <Route path="/orbit/podium" element={<OrbitPodium />} /> */}
+                <Route path="/verify/:id" element={<Verify />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

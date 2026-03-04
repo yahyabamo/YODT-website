@@ -109,11 +109,11 @@ function RequestModal({ service, onClose }: { service: Service; onClose: () => v
 
                         <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-muted-foreground">الكلية *</label>
-                                <select value={form.college} onChange={e => f("college", e.target.value)} className="w-full h-11 bg-secondary border-none rounded-xl px-4 text-sm text-foreground outline-none">
-                                    <option value="">اختر</option>
-                                    {COLLEGES.map(c => <option key={c}>{c}</option>)}
-                                </select>
+                                <label className="text-xs font-bold text-muted-foreground">التخصص *</label>
+                                <input value={form.college} onChange={e => f("college", e.target.value)} className="w-full h-11 bg-secondary border-none rounded-xl px-4 text-sm text-foreground focus:ring-1 focus:ring-primary outline-none" />
+                                {/* <option value="">اختر</option>
+                                    {COLLEGES.map(c => <option key={c}>{c}</option>)} */}
+                                {/* </select> */}
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-xs font-bold text-muted-foreground">السنة الدراسية</label>
@@ -125,7 +125,7 @@ function RequestModal({ service, onClose }: { service: Service; onClose: () => v
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-muted-foreground">سبب الطلب / ملاحظات</label>
+                            <label className="text-xs font-bold text-muted-foreground">ملاحظات</label>
                             <textarea value={form.notes} onChange={e => f("notes", e.target.value)} placeholder="أي تفاصيل إضافية..." rows={3} className="w-full bg-secondary border-none rounded-xl px-4 py-3 text-sm text-foreground outline-none resize-none" />
                         </div>
 
@@ -140,7 +140,7 @@ function RequestModal({ service, onClose }: { service: Service; onClose: () => v
                             ) : (
                                 <div className="text-center text-muted-foreground">
                                     <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                                    <p className="font-bold text-sm m-0">ارفع بطاقة الطالب</p>
+                                    <p className="font-bold text-sm m-0"> öğrenci belgesi </p>
                                 </div>
                             )}
                         </label>
