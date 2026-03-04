@@ -12,13 +12,21 @@ export default function Verify() {
     useEffect(() => {
         const fetchProfile = async () => {
             if (!id) return;
-            // Publicly fetch only essential verification data
-            const { data } = await supabase
+
+            console.log("Verifying ID from URL:", id);
+
+            const { data, error } = await supabase
                 .from("profiles")
                 .select("full_name, university, faculty, status, role")
-                .eq("id", id)
+                .eq("id", id) // Ensure 'id' here matches the column name in Supabase
                 .single();
-            setProfile(data);
+
+            if (error) {
+                console.error("Supabase Error:", error);
+                setProfile(null);
+            } else {
+                setProfile(data);
+            }
             setLoading(false);
         };
         fetchProfile();

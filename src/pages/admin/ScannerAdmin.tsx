@@ -67,14 +67,16 @@ export default function ScannerAdmin() {
                     try {
                         scannerRef.current?.pause();
 
-                        // NEW: Extract the ID from the URL if it's a link
-                        // This works even if decodedText is just the ID (fallback)
-                        const id = decodedText.includes('/verify/')
-                            ? decodedText.split('/verify/').pop()
+                        // CLEANING LOGIC:
+                        // If the scan is a URL, grab the part after the last slash
+                        // If it's just an ID, use it as is
+                        const cleanId = decodedText.includes('/')
+                            ? decodedText.split('/').pop()
                             : decodedText;
 
-                        // Use the extracted 'id' instead of 'decodedText'
-                        const result = await recordAttendance(id, selectedActivity);
+                        console.log("Processing ID:", cleanId); // Check your console to see if this is the correct UUID
+
+                        const result = await recordAttendance(cleanId, selectedActivity);
 
                         if (result.error) {
                             let friendlyMessage = '❌ الكود غير صحيح';
