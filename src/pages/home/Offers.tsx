@@ -145,7 +145,7 @@ const HomeOffers = () => {
                                                         )}
                                                     </div>
 
-                                                    {isInactive ? (
+                                                    {/* {isInactive ? (
                                                         <Button disabled={true} className="w-full bg-[#f3f4f6] text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#6b7280] border-none opacity-100 font-bold cursor-not-allowed">
                                                             انتهى وقت العرض
                                                         </Button>
@@ -153,7 +153,7 @@ const HomeOffers = () => {
                                                         <Button className="w-full bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white font-bold shadow-sm transition-all active:scale-[0.98]">
                                                             استفد من العرض
                                                         </Button>
-                                                    )}
+                                                    )} */}
                                                 </div>
                                             </div>
                                         </div>

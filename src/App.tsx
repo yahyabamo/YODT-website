@@ -55,6 +55,7 @@ import TurkeyApps from "./pages/TurkeyApps";
 // import Doctors from "./pages/hidden/Doctors";
 import Corps from "./pages/Corps";
 import Partners from "./pages/Partners";
+import Awn from "./pages/3wn";
 // import MedicalHub from "./pages/MedicalHub";
 // import MedicalCommunity from "./pages/MedicalCommunity";
 // import DoctorsDirectory from "./pages/DoctorsDirectory";
@@ -72,6 +73,7 @@ import VerifyCertificate from "./pages/VerifyCertificate";
 
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
+import AwnAdmin from "./pages/admin/3wnAdmin";
 
 const queryClient = new QueryClient();
 
@@ -103,12 +105,14 @@ const App = () => (
                   <Route index element={<DashboardAdmin />} />
                   <Route path="dashboard" element={<DashboardAdmin />} />
                   <Route path="scanner" element={<ScannerAdmin />} />
-                  <Route path="users" element={<UsersAdmin setConfirm={() => { }} />} />
-                  <Route path="activities" element={<ActivitiesAdmin setConfirm={() => { }} />} />
-                  <Route path="partners" element={<PartnersAdmin setConfirm={() => { }} />} />
-                  <Route path="offers" element={<OffersAdmin setConfirm={() => { }} />} />
-                  <Route path="reels" element={<ReelsAdmin setConfirm={() => { }} />} />
+                  <Route path="users" element={<UsersAdmin />} />
+                  <Route path="activities" element={<ActivitiesAdmin />} />
+                  <Route path="partners" element={<PartnersAdmin />} />
+                  <Route path="offers" element={<OffersAdmin />} />
+                  <Route path="reels" element={<ReelsAdmin />} />
                   <Route path="points" element={<PointsHistoryAdmin />} />
+                  <Route path="3wnAdmin" element={<AwnAdmin />} />
+
                 </Route>
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
@@ -139,6 +143,7 @@ const App = () => (
                 {/* <Route path="/videos" element={<Videos />} /> */}
                 <Route path="/community" element={<Community />} />
                 <Route path="/transparency" element={<Transparency />} />
+                <Route path="/3wn" element={<Awn />} />
                 <Route path="/notes" element={<Notes />} />
                 {/* <Route path="/yemen-reels" element={<YemenReels />} /> */}
                 {/* <Route path="/news" element={<News />} /> */}

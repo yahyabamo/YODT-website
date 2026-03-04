@@ -465,3 +465,132 @@ export async function fetchLatestUpdates() {
 
     return combined.slice(0, 3);
 }
+
+// ==========================================
+// 3WN SERVICES (عون) - ADMIN FUNCTIONS
+// ==========================================
+
+/** Fetch all services ordered by sort_order */
+export async function fetchServices() {
+    const { data, error } = await supabase
+        .from("services")
+        .select("*")
+        .order("sort_order", { ascending: true });
+    if (error) throw error;
+    return data;
+}
+
+/** Fetch only active/available services (for student page) */
+export async function fetchActiveServices() {
+    const { data, error } = await supabase
+        .from("services")
+        .select("*")
+        .eq("is_available", true)
+        .order("sort_order", { ascending: true });
+    if (error) throw error;
+    return data;
+}
+
+/**
+ * Insert or update a service.
+ * Pass `id` to update, omit to insert.
+ */
+export async function upsertService(payload: {
+    id?: string;
+    title: string;
+    description?: string;
+    icon?: string;
+    color?: string;
+    category?: string;
+    is_available?: boolean;
+    sort_order?: number;
+}) {
+    const { id, ...fields } = payload;
+    if (id) {
+        const { data, error } = await supabase
+            .from("services")
+            .update(fields)
+            .eq("id", id)
+            .select()
+            .single();
+        if (error) throw error;
+        return data;
+    } else {
+        const { data, error } = await supabase
+            .from("services")
+            .insert(fields)
+            .select()
+            .single();
+        if (error) throw error;
+        return data;
+    }
+}
+
+/** Delete a service (cascades to its requests) */
+export async function deleteService(id: string) {
+    const { error } = await supabase
+        .from("services")
+        .delete()
+        .eq("id", id);
+    if (error) throw error;
+}
+
+// ══════════════════════════════════════════════════════
+// SERVICE REQUESTS  (for admin: 3wnAdmin.tsx)
+// ══════════════════════════════════════════════════════
+
+/**
+ * Fetch all service requests, joined with the parent service's title, icon, color.
+ * Ordered newest first.
+ */
+export async function fetchServiceRequests() {
+    const { data, error } = await supabase
+        .from("service_requests")
+        .select("*, services(title, icon, color)")
+        .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data;
+}
+
+/**
+ * Update status (and optional admin_notes) on a request.
+ * Used by the admin when reviewing a student's application.
+ */
+export async function updateServiceRequestStatus(
+    id: string,
+    status: "pending" | "approved" | "rejected" | "completed",
+    admin_notes?: string
+) {
+    const { data, error } = await supabase
+        .from("service_requests")
+        .update({ status, admin_notes: admin_notes ?? null })
+        .eq("id", id)
+        .select()
+        .single();
+    if (error) throw error;
+    return data;
+}
+
+/**
+ * Submit a new service request.
+ * Called from the student-facing page (3wn.tsx) after Cloudinary upload.
+ */
+export async function submitServiceRequest(payload: {
+    service_id: string;
+    student_name: string;
+    student_id_number: string;
+    phone: string;
+    email?: string;
+    college?: string;
+    academic_year?: string;
+    notes?: string;
+    student_card_url?: string;
+}) {
+    const { data, error } = await supabase
+        .from("service_requests")
+        .insert({ ...payload, status: "pending" })
+        .select()
+        .single();
+    if (error) throw error;
+    return data;
+}

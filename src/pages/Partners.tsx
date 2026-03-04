@@ -218,7 +218,7 @@ const Partners = () => {
         </div>
 
         {/* CTA for becoming a partner */}
-        <Card className="shadow-soft bg-primary/5 border-primary/20">
+        {/* <Card className="shadow-soft bg-primary/5 border-primary/20">
           <CardContent className="p-4 text-center">
             <h4 className="font-semibold mb-2">هل تريد أن تصبح داعماً؟</h4>
             <p className="text-sm text-muted-foreground mb-3">
@@ -228,7 +228,7 @@ const Partners = () => {
               تقدم كداعم
             </Button>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
 
       <BottomNav />

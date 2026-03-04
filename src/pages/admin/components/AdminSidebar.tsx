@@ -12,6 +12,7 @@ export const navItems = [
     { id: "offers", path: "/admin/offers", label: "العروض", icon: "🏷️" },
     { id: "reels", path: "/admin/reels", label: "الريلز", icon: "🎥" },
     { id: "points", path: "/admin/points", label: "سجل النقاط", icon: "⭐" },
+    { id: "3wn-admin", path: "/admin/3wnAdmin", label: "عون-إدارة", icon: "⭐" },
 ];
 
 interface AdminSidebarProps {
