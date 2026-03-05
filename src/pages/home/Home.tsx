@@ -12,6 +12,8 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useLanguage } from '@/context/LanguageContext';
+import { QuickServicesSection } from '@/components/QuickServicesSection';
+
 
 /**
  * Home Page - Institutional Dashboard Redesign
@@ -100,15 +102,9 @@ const Home = () => {
   ];
 
   const quickServices = [
-    // { label: language === 'ar' ? 'الشهادات' : 'Certificates', path: '/certificates', icon: '📜' },
-    // { label: language === 'ar' ? 'الخريطة' : 'Map', path: '/map', icon: MapPin, color: 'text-blue-500' },
-    // { label: language === 'ar' ? 'الفعاليات' : 'Events', path: '/events', icon: Calendar, color: 'text-orange-500' },
-    // { label: language === 'ar' ? 'تطبيقات' : 'Apps', path: '/turkey-apps', icon: '📱' },
-    { label: language === 'ar' ? 'الوظائف' : 'Jobs', path: '/jobs', icon: Briefcase, color: 'text-violet-500' },
-    { label: language === 'ar' ? 'الخصومات' : 'Discounts', path: '/home/offers', icon: Gift, color: 'text-rose-500' },
-    // { label: language === 'ar' ? 'تطوع' : 'Volunteer', path: '/volunteers', icon: '🤝' },
+    { label: language === 'ar' ? 'تطبيقات تركيا' : 'Turkey Apps', path: '/turkey-apps', icon: Briefcase, color: 'text-violet-500' },
+    { label: language === 'ar' ? 'الخريطة' : 'Map', path: '/map', icon: MapPin, color: 'text-rose-500' },
     { label: language === 'ar' ? 'الدليل' : 'Guide', path: '/guide', icon: '📋' },
-    // { label: language === 'ar' ? 'القرآن' : 'Quran', path: '/quran-life', icon: BookOpen, color: 'text-emerald-600' },
   ];
 
   const getGreeting = () => {
@@ -240,6 +236,9 @@ const Home = () => {
             </div>
           </div>
         </section>
+
+        <QuickServicesSection />
+
 
         {/* Section 4: Quick Services */}
         <section className="animate-slide-up" style={{ animationDelay: '0.3s' }}>
