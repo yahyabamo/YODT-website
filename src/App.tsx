@@ -68,7 +68,7 @@ import QuranLife from "./pages/QuranLife";
 // import Orbit from "./pages/hidden/Orbit";
 // import OrbitBrief from "./pages/hidden/OrbitBrief";
 // import OrbitPodium from "./pages/hidden/OrbitPodium";
-import VerifyCertificate from "./pages/VerifyCertificate";
+// import VerifyCertificate from "./pages/VerifyCertificate";
 // import InstructorDashboard from "./pages/hidden/InstructorDashboard";
 
 import { ThemeProvider } from './context/ThemeContext';
@@ -133,7 +133,7 @@ const App = () => (
                 {/* <Route path="/academy/:courseId" element={<CourseDetailNew />} /> */}
                 {/* <Route path="/academy-old/:courseId" element={<CourseDetail />} /> */}
                 <Route path="/certificates" element={<Certificates />} />
-                <Route path="/verify/:certificateId" element={<VerifyCertificate />} />
+                {/* <Route path="/verify/:certificateId" element={<VerifyCertificate />} /> */}
                 {/* <Route path="/instructor-dashboard" element={<InstructorDashboard />} /> */}
                 <Route path="/jobs" element={<Jobs />} />
                 <Route path="/volunteers" element={<Volunteers />} />
