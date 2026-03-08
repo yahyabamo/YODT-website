@@ -39,8 +39,9 @@ export default function GuideAdmin() {
     return (
         <div className="p-2">
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-black">إدارة الدليل والأسئلة</h2>
-                <button onClick={() => { setEditing(null); setForm({ type: activeTab, title: '', content: '', icon: '📚', sort_order: 0 }); setModal(true); }}
+                <h2 className="text-xl font-black text-gray-900 dark:text-white">
+                    إدارة الدليل والأسئلة
+                </h2>                <button onClick={() => { setEditing(null); setForm({ type: activeTab, title: '', content: '', icon: '📚', sort_order: 0 }); setModal(true); }}
                     className="px-5 py-2.5 rounded-xl text-white font-bold border-none" style={{ background: B }}>
                     + إضافة جديد
                 </button>
