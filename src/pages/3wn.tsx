@@ -32,14 +32,14 @@ const YEARS = ["السنة الأولى", "السنة الثانية", "السن
 
 // ─── Request Modal ────────────────────────────────────────────────────────────
 function RequestModal({ service, onClose }: { service: Service; onClose: () => void }) {
-    const [form, setForm] = useState({ student_name: "", student_id_number: "", phone: "", email: "", college: "", academic_year: "", notes: "" });
+    const [form, setForm] = useState({ student_name: "", phone: "", email: "", university: "", academic_year: "", notes: "" });
     const [cardFile, setCardFile] = useState<File | null>(null);
     const [submitting, setSubmitting] = useState(false);
     const [done, setDone] = useState(false);
     const f = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
 
     const submit = async () => {
-        if (!form.student_name || !form.student_id_number || !form.phone || !form.college) {
+        if (!form.student_name || !form.phone || !form.university) {
             toast.error("يرجى تعبئة جميع الحقول الإلزامية"); return;
         }
         if (!cardFile) { toast.error("يرجى رفع صورة الهوية الجامعية"); return; }
@@ -90,10 +90,10 @@ function RequestModal({ service, onClose }: { service: Service; onClose: () => v
                                 <label className="text-xs font-bold text-muted-foreground">الاسم الكامل *</label>
                                 <input value={form.student_name} onChange={e => f("student_name", e.target.value)} placeholder="الاسم" className="w-full h-11 bg-secondary border-none rounded-xl px-4 text-sm text-foreground focus:ring-1 focus:ring-primary outline-none" />
                             </div>
-                            <div className="space-y-1.5">
+                            {/* <div className="space-y-1.5">
                                 <label className="text-xs font-bold text-muted-foreground">رقم الطالب *</label>
                                 <input value={form.student_id_number} onChange={e => f("student_id_number", e.target.value)} className="w-full h-11 bg-secondary border-none rounded-xl px-4 text-sm text-foreground focus:ring-1 focus:ring-primary outline-none" />
-                            </div>
+                            </div> */}
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
@@ -109,8 +109,8 @@ function RequestModal({ service, onClose }: { service: Service; onClose: () => v
 
                         <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-muted-foreground">التخصص *</label>
-                                <input value={form.college} onChange={e => f("college", e.target.value)} className="w-full h-11 bg-secondary border-none rounded-xl px-4 text-sm text-foreground focus:ring-1 focus:ring-primary outline-none" />
+                                <label className="text-xs font-bold text-muted-foreground">الجامعة *</label>
+                                <input value={form.university} onChange={e => f("university", e.target.value)} className="w-full h-11 bg-secondary border-none rounded-xl px-4 text-sm text-foreground focus:ring-1 focus:ring-primary outline-none" />
                                 {/* <option value="">اختر</option>
                                     {COLLEGES.map(c => <option key={c}>{c}</option>)} */}
                                 {/* </select> */}

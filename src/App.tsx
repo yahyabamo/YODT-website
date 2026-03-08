@@ -75,6 +75,9 @@ import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
 import AwnAdmin from "./pages/admin/3wnAdmin";
 import Verify from "./pages/verify";
+import JobAdmin from "./pages/admin/jobadmin";
+import GuideAdmin from "./pages/admin/GuideAdmin";
+
 
 const queryClient = new QueryClient();
 
@@ -113,6 +116,8 @@ const App = () => (
                   <Route path="reels" element={<ReelsAdmin />} />
                   <Route path="points" element={<PointsHistoryAdmin />} />
                   <Route path="3wnAdmin" element={<AwnAdmin />} />
+                  <Route path="jobadmin" element={<JobAdmin />} />
+                  <Route path="guideadmin" element={<GuideAdmin />} />
 
                 </Route>
                 <Route path="/" element={<Index />} />

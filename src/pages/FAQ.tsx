@@ -1,4 +1,6 @@
 ﻿import { HelpCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Accordion,
   AccordionContent,
@@ -8,42 +10,30 @@ import {
 import { PageHeader } from '@/components/layout/PageHeader';
 import { BottomNav } from '@/components/layout/BottomNav';
 
-const faqs = [
-  {
-    question: 'كيف أسجل في الاتحاد؟',
-    answer: 'يمكنك التسجيل من خلال التطبيق بإدخال بياناتك الشخصية، أو زيارة مقر الاتحاد في إسطنبول. ستحتاج إلى صورة من جواز السفر وإثبات القيد الجامعي.',
-  },
-  {
-    question: 'كيف أحصل على النقاط؟',
-    answer: 'تحصل على النقاط من خلال حضور الأنشطة والفعاليات، المشاركة في الورش التدريبية، التطوع في أنشطة الاتحاد، والمشاركة في المسابقات الثقافية.',
-  },
-  {
-    question: 'ما فائدة النقاط؟',
-    answer: 'النقاط تحدد ترتيبك بين الطلاب، وتؤهلك للحصول على جوائز ومكافآت، وأولوية في بعض الأنشطة المميزة، وشهادات تقدير من الاتحاد.',
-  },
-  {
-    question: 'كيف أسجل حضوري في نشاط؟',
-    answer: 'اذهب إلى صفحة الأنشطة، اختر النشاط المطلوب، واضغط على زر "تسجيل الحضور". تأكد من التسجيل قبل الموعد المحدد.',
-  },
-  {
-    question: 'هل يمكنني إلغاء تسجيلي في نشاط؟',
-    answer: 'نعم، يمكنك إلغاء التسجيل قبل 24 ساعة من موعد النشاط من خلال صفحة الأنشطة.',
-  },
-  {
-    question: 'كيف أتواصل مع الاتحاد؟',
-    answer: 'يمكنك التواصل معنا عبر البريد الإلكتروني: info@ysu-istanbul.org أو عبر حساباتنا على وسائل التواصل الاجتماعي، أو زيارة مقر الاتحاد.',
-  },
-  {
-    question: 'هل العضوية مجانية؟',
-    answer: 'نعم، العضوية في الاتحاد مجانية تماماً لجميع الطلاب اليمنيين في تركيا.',
-  },
-  {
-    question: 'كيف أصبح متطوعاً في الاتحاد؟',
-    answer: 'يمكنك التقدم للتطوع من خلال ملء استمارة التطوع المتاحة في مقر الاتحاد أو التواصل معنا عبر البريد الإلكتروني.',
-  },
-];
-
 const FAQ = () => {
+  const [faqs, setFaqs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // جلب الأسئلة من قاعدة البيانات
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      const { data, error } = await supabase
+        .from('knowledge_base')
+        .select('*')
+        .eq('type', 'faq') // جلب البيانات من نوع الأسئلة فقط
+        .order('sort_order', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching FAQs:', error);
+      } else {
+        setFaqs(data || []);
+      }
+      setLoading(false);
+    };
+
+    fetchFaqs();
+  }, []);
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <PageHeader title="الأسئلة الشائعة" />
@@ -60,24 +50,37 @@ const FAQ = () => {
           </p>
         </div>
 
-        {/* FAQ Accordion */}
-        <Accordion type="single" collapsible className="space-y-3">
-          {faqs.map((faq, index) => (
-            <AccordionItem
-              key={index}
-              value={`item-${index}`}
-              className="bg-card rounded-xl border border-border/50 shadow-soft px-4 animate-slide-up overflow-hidden"
-              style={{ animationDelay: `${index * 0.05}s` }}
-            >
-              <AccordionTrigger className="text-right py-4 hover:no-underline">
-                <span className="font-medium text-sm">{faq.question}</span>
-              </AccordionTrigger>
-              <AccordionContent className="text-sm text-muted-foreground pb-4 leading-relaxed">
-                {faq.answer}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+        {/* FAQ Accordion - الآن يقرأ من قاعدة البيانات */}
+        {loading ? (
+          <div className="flex justify-center py-10">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : (
+          <Accordion type="single" collapsible className="space-y-3">
+            {faqs.map((faq, index) => (
+              <AccordionItem
+                key={faq.id}
+                value={`item-${index}`}
+                className="bg-card rounded-xl border border-border/50 shadow-soft px-4 animate-slide-up overflow-hidden"
+                style={{ animationDelay: `${index * 0.05}s` }}
+              >
+                <AccordionTrigger className="text-right py-4 hover:no-underline">
+                  <span className="font-medium text-sm">{faq.title}</span> {/* title هو السؤال */}
+                </AccordionTrigger>
+                <AccordionContent className="text-sm text-muted-foreground pb-4 leading-relaxed">
+                  {faq.content} {/* content هي الإجابة */}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        )}
+
+        {/* إذا لم تكن هناك أسئلة */}
+        {!loading && faqs.length === 0 && (
+          <div className="text-center py-10 text-muted-foreground">
+            لا توجد أسئلة حالياً.
+          </div>
+        )}
 
         {/* Contact Section */}
         <div className="mt-8 p-6 bg-primary/5 rounded-2xl text-center animate-slide-up" style={{ animationDelay: '0.4s' }}>

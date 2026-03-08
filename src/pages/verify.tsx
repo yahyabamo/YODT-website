@@ -31,7 +31,7 @@ export default function Verify() {
             // Step 2: Query Supabase using the real UUID from the token
             const { data, error: dbError } = await supabase
                 .from("profiles")
-                .select("full_name, university, faculty, status, role, created_at")
+                .select("full_name, university, faculty, status, role, avatar_url,created_at")
                 .eq("id", memberId)
                 .single();
 
@@ -185,7 +185,7 @@ export default function Verify() {
                             {isValid ? "عضوية موثّقة" : "عضوية غير صالحة"}
                         </h1>
                         <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, margin: 0 }}>
-                            اتحاد الطلاب اليمني في تركيا
+                            اتحاد الطلاب اليمنيين في اسطنبول
                         </p>
                     </div>
 
@@ -243,13 +243,13 @@ export default function Verify() {
                             )}
                         </div>
 
-                        <div style={{ textAlign: "center", paddingTop: 20, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                        {/* <div style={{ textAlign: "center", paddingTop: 20, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
                             <img src={logo} alt="YODT Logo"
                                 style={{ height: 36, width: "auto", opacity: 0.35, filter: "grayscale(1) brightness(2)" }} />
                             <p style={{ fontSize: 10, color: "rgba(255,255,255,0.2)", marginTop: 8 }}>
                                 تم التحقق بواسطة المنظومة الرقمية
                             </p>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
 

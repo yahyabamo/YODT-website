@@ -13,7 +13,7 @@ interface Service {
 
 interface ServiceRequest {
     id: string; service_id: string; student_name: string; student_id_number: string;
-    phone: string; email: string; college: string; academic_year: string;
+    phone: string; email: string; university: string; academic_year: string;
     notes: string; student_card_url: string; status: string; admin_notes: string;
     created_at: string; services?: { title: string; icon: string; color: string };
 }
@@ -86,10 +86,10 @@ function RequestDetailModal({ req, onClose, onUpdate }: { req: ServiceRequest; o
                     {/* Student Info Grid */}
                     <div className="grid grid-cols-2 gap-3">
                         {[
-                            { label: "رقم الطالب", value: req.student_id_number, icon: "🎓" },
+                            // { label: "رقم الطالب", value: req.student_id_number, icon: "🎓" },
                             { label: "الجوال", value: req.phone, icon: "📱" },
                             { label: "البريد", value: req.email || "—", icon: "📧" },
-                            { label: "الكلية", value: req.college, icon: "🏛️" },
+                            { label: "الجامعة", value: req.university, icon: "🏛️" },
                             { label: "السنة", value: req.academic_year || "—", icon: "📅" },
                             { label: "تاريخ الطلب", value: fmtDate(req.created_at), icon: "📆" },
                         ].map(item => (
@@ -249,7 +249,7 @@ export default function AwnAdmin() {
             {/* ── Page Header ── */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div>
-                    <h2 className="m-0 text-xl font-extrabold text-[#111]">إدارة برنامج عون 🤝</h2>
+                    <h2 className="m-0 text-xl font-extrabold text-[#111]">إدارة برنامج عون </h2>
                     <p className="m-0 mt-0.5 text-[#9ca3af] text-[13px]">{services.length} خدمة · {requests.length} طلب</p>
                 </div>
                 {tab === "services" && (
@@ -352,7 +352,7 @@ export default function AwnAdmin() {
                                         <table className="w-full border-collapse text-[13px] text-right">
                                             <thead>
                                                 <tr className="border-b border-gray-100 bg-gray-50">
-                                                    {["الطالب", "الخدمة", "الكلية", "الجوال", "تاريخ الطلب", "الحالة", "إجراءات"].map(h => (
+                                                    {["الطالب", "الخدمة", "الجامعة", "الجوال", "تاريخ الطلب", "الحالة", "إجراءات"].map(h => (
                                                         <th key={h} className="px-4 py-3 font-bold text-[#6b7280] text-right whitespace-nowrap">{h}</th>
                                                     ))}
                                                 </tr>
@@ -370,7 +370,7 @@ export default function AwnAdmin() {
                                                                 <span className="font-bold text-gray-700">{r.services?.title || "—"}</span>
                                                             </span>
                                                         </td>
-                                                        <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{r.college || "—"}</td>
+                                                        <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{r.university || "—"}</td>
                                                         <td className="px-4 py-3 text-gray-500 whitespace-nowrap" dir="ltr">{r.phone}</td>
                                                         <td className="px-4 py-3 text-gray-400 text-[12px] whitespace-nowrap">{fmtDate(r.created_at)}</td>
                                                         <td className="px-4 py-3 whitespace-nowrap"><StatusBadge status={r.status} /></td>

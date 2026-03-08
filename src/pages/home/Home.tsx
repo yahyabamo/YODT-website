@@ -13,6 +13,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useLanguage } from '@/context/LanguageContext';
 import { QuickServicesSection } from '@/components/QuickServicesSection';
+import ReelsShelf from '@/pages/home/ReelsShelf';
+
 
 
 /**
@@ -268,25 +270,8 @@ const Home = () => {
 
 
 
-        {/* Section 3: Wisdom of the Day */}
-        <section className="px-4 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-          <div className="relative rounded-3xl overflow-hidden border border-border/30 bg-card shadow-soft p-1">
-            <div className="absolute inset-0 bg-gradient-to-br from-secondary/40 via-transparent to-primary/5"></div>
-            <div className="relative bg-background/50 backdrop-blur-md rounded-[20px] p-6 lg:p-8">
-              <div className="flex flex-col items-center justify-center space-y-4 text-center">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
-                  <Sparkles className="w-6 h-6 animate-pulse" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-bold tracking-widest text-primary/80 uppercase mb-3">{t('home.wisdom')}</h3>
-                  <p className="text-lg lg:text-xl text-foreground font-medium leading-relaxed max-w-md mx-auto">
-                    "{t('home.wisdom.text')}"
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        <ReelsShelf />
+
 
 
       </main>

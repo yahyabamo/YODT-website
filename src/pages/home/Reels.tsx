@@ -9,6 +9,8 @@ import { BottomNav } from '@/components/layout/BottomNav';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useLocation } from 'react-router-dom';
+
 
 // ─────────────────────────────────────────────
 // YouTube IFrame API — loaded ONCE globally
@@ -810,18 +812,22 @@ const ReelVideo = ({
 // HomeReels — Main
 // ─────────────────────────────────────────────
 const HomeReels = () => {
-    const [reels, setReels] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeIndex, setActiveIndex] = useState(0);
     const [navHeight, setNavHeight] = useState(64);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [suggestions, setSuggestions] = useState<any[]>([]);
+    const location = useLocation();
+    const startIndex = (location.state as any)?.startIndex ?? 0;
+
+    const [reels, setReels] = useState<any[]>([]);
 
     const containerRef = useRef<HTMLDivElement>(null);
     const navRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const [containerHeight, setContainerHeight] = useState(0);
+    const [activeIndex, setActiveIndex] = useState(startIndex); // 👈 change 0 to startIndex
+
 
 
     // NEW
@@ -842,7 +848,12 @@ const HomeReels = () => {
     const loadReels = async () => {
         try {
             const { data } = await fetchReels({ pageSize: 50 });
-            setReels((data || []).filter((r: any) => r.status === 'active'));
+            const active = (data || []).filter((r: any) => r.status === 'active');
+            setReels(active);
+            // Scroll to starting index after reels load
+            if (startIndex > 0) {
+                setTimeout(() => scrollToIndex(startIndex), 100);
+            }
         } catch {
             toast.error('حدث خطأ في تحميل الريلز');
         } finally {
