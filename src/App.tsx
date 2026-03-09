@@ -77,6 +77,7 @@ import AwnAdmin from "./pages/admin/3wnAdmin";
 import Verify from "./pages/verify";
 import JobAdmin from "./pages/admin/jobadmin";
 import GuideAdmin from "./pages/admin/GuideAdmin";
+import TeamAdmin from "./pages/admin/TeamAdmin";
 
 
 const queryClient = new QueryClient();
@@ -118,6 +119,7 @@ const App = () => (
                   <Route path="3wnAdmin" element={<AwnAdmin />} />
                   <Route path="jobadmin" element={<JobAdmin />} />
                   <Route path="guideadmin" element={<GuideAdmin />} />
+                  <Route path="teamadmin" element={<TeamAdmin />} />
 
                 </Route>
                 <Route path="/" element={<Index />} />

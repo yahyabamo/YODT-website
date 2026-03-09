@@ -5,11 +5,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar, Badge, Spinner, Inp, Sel, Modal, B } from "./components/AdminUI";
 import { useOutletContext } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+
 
 interface User {
-    id: string; full_name: string; email: string;
-    role: "admin" | "user"; status: "active" | "inactive" | "banned";
-    total_points: number; university: string; faculty: string; avatar_url: string; created_at: string;
+    id: string;
+    full_name: string;
+    email: string;
+    role: "admin" | "staff" | "user"; // Updated roles
+    status: "active" | "inactive" | "banned";
+    total_points: number;
+    university: string;
+    faculty: string;
+    avatar_url: string;
+    created_at: string;
 }
 
 const inputStyle: React.CSSProperties = {
@@ -32,6 +41,15 @@ export default function UsersAdmin() {
     const [pf, setPf] = useState({ amount: "", reason: "", type: "manual" });
     const debRef = useRef<any>();
 
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (profile?.role !== 'admin') {
+            toast.error("عذراً، ليس لديك صلاحية الوصول لهذه الصفحة");
+            navigate('/admin/dashboard');
+        }
+    }, [profile]);
+
     const load = useCallback(async (showLoader: boolean = true) => {
         if (showLoader) setLoading(true);
         try {
@@ -51,32 +69,48 @@ export default function UsersAdmin() {
 
     const filtered = filter === "all" ? users : users.filter(u => u.status === filter);
 
-    const handleStatus = (u: User, ns: "active" | "inactive" | "banned") => setConfirm({
-        title: ns === "banned" ? "حظر المستخدم" : "تغيير الحالة",
-        message: `هل تريد تغيير حالة ${u.full_name}؟`,
-        danger: ns === "banned",
-        onConfirm: async () => {
-            try { await updateUserStatus(u.id, ns); setConfirm(null); toast.success("تم تحديث الحالة"); load(false); }
-            catch (err: any) { toast.error("فشل تحديث الحالة: " + (err?.message || "")); console.error(err); }
-        }
-    });
+    // const handleStatus = (u: User, ns: "active" | "inactive" | "banned") => setConfirm({
+    //     title: ns === "banned" ? "حظر المستخدم" : "تغيير الحالة",
+    //     message: `هل تريد تغيير حالة ${u.full_name}؟`,
+    //     danger: ns === "banned",
+    //     onConfirm: async () => {
+    //         try { await updateUserStatus(u.id, ns); setConfirm(null); toast.success("تم تحديث الحالة"); load(false); }
+    //         catch (err: any) { toast.error("فشل تحديث الحالة: " + (err?.message || "")); console.error(err); }
+    //     }
+    // });
 
-    const handleRole = (u: User, nr: "admin" | "user") => setConfirm({
-        title: "تغيير الصلاحية",
-        message: `تغيير صلاحية ${u.full_name} إلى ${nr === "admin" ? "مدير" : "عضو"}؟`,
-        danger: false,
-        onConfirm: async () => {
-            try {
-                console.log("Updating user role to:", nr);
-                const { error } = await supabase.from('profiles').update({ role: nr }).eq('id', u.id);
-                if (error) throw error;
-                setConfirm(null);
-                toast.success("تم تحديث الصلاحية");
-                load(false);
+    const handleRole = (u: User) => {
+        // Simple logic: Toggle between User -> Staff -> Super Admin
+        const roles: User['role'][] = ["user", "staff", "admin"];
+        const currentIndex = roles.indexOf(u.role);
+        const nextRole = roles[(currentIndex + 1) % roles.length];
+
+        const roleLabels = { user: "عضو", staff: "موظف", admin: "مسؤول رئيسي" };
+
+        setConfirm({
+            title: "تغيير الصلاحية",
+            message: `هل تريد تغيير صلاحية ${u.full_name} إلى ${roleLabels[nextRole]}؟`,
+            danger: nextRole === "admin", // Warning if making someone a full admin
+            onConfirm: async () => {
+                try {
+                    // Update in Supabase using the 'admin' string
+                    const { error } = await supabase
+                        .from('profiles')
+                        .update({ role: nextRole })
+                        .eq('id', u.id);
+
+                    if (error) throw error;
+                    setConfirm(null);
+                    toast.success(`تم تغيير الدور إلى ${roleLabels[nextRole]}`);
+                    load(false);
+                }
+                catch (err: any) {
+                    toast.error("فشل تحديث الصلاحية");
+                    console.error(err);
+                }
             }
-            catch (err: any) { toast.error("فشل تحديث الصلاحية: " + (err?.message || "")); console.error(err); }
-        }
-    });
+        });
+    };
 
     const handleDelete = (u: User) => setConfirm({
         title: "حذف المستخدم",
@@ -166,14 +200,17 @@ export default function UsersAdmin() {
                                         <td className="p-3 md:px-4 md:py-3 text-[#6b7280] whitespace-nowrap">{u.university || "—"}</td>
                                         <td className="p-3 md:px-4 md:py-3 text-[#6b7280] whitespace-nowrap">{u.faculty || "—"}</td>
                                         <td className="p-3 md:px-4 md:py-3"><span className="font-extrabold text-[15px]" style={{ color: B }}>{(u.total_points || 0).toLocaleString()}</span></td>
-                                        <td className="p-3 md:px-4 md:py-3 whitespace-nowrap"><Badge type={u.status}>{u.status === "active" ? "نشط" : u.status === "inactive" ? "غير نشط" : "محظور"}</Badge></td>
-                                        <td className="p-3 md:px-4 md:py-3 whitespace-nowrap"><Badge type={u.role}>{u.role === "admin" ? "مدير" : "عضو"}</Badge></td>
+                                        <td className="p-3 md:px-4 md:py-3 whitespace-nowrap">
+                                            <Badge type={u.role}>
+                                                {u.role === "admin" ? "مسؤول (Admin)" : u.role === "staff" ? "موظف" : "عضو"}
+                                            </Badge>
+                                        </td>
                                         <td className="p-3 md:px-4 md:py-3">
                                             <div className="flex gap-1.5 flex-wrap">
                                                 {[
                                                     { icon: "⭐", bg: "#fef3c7", c: "#d97706", title: "إدارة النقاط", fn: () => setPointsModal(u), disabled: false },
-                                                    { icon: "🔑", bg: "#dbeafe", c: "#2563eb", title: "تغيير الدور", fn: () => handleRole(u, u.role === "admin" ? "user" : "admin"), disabled: adminUser?.id === u.id },
-                                                    { icon: "🚫", bg: "#fee2e2", c: "#dc2626", title: "حظر", fn: () => handleStatus(u, "banned"), disabled: adminUser?.id === u.id },
+                                                    { icon: "🔑", bg: "#dbeafe", c: "#2563eb", title: "تغيير الدور", fn: () => handleRole(u), disabled: adminUser?.id === u.id },
+                                                    // { icon: "🚫", bg: "#fee2e2", c: "#dc2626", title: "حظر", fn: () => handleStatus(u, "banned"), disabled: adminUser?.id === u.id },
                                                     { icon: "🗑️", bg: "#fee2e2", c: "#dc2626", title: "حذف", fn: () => handleDelete(u), disabled: adminUser?.id === u.id },
                                                 ].map((btn, i) => (
                                                     <button key={i} type="button" title={btn.title} onClick={(e) => { e.stopPropagation(); btn.fn(); }} disabled={btn.disabled} className={`w-[30px] h-[30px] rounded-lg border-none flex items-center justify-center shrink-0 text-sm transition-opacity ${btn.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:opacity-80 active:scale-95'}`} style={{ background: btn.bg, color: btn.c }}>{btn.icon}</button>

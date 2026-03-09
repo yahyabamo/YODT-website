@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useRef } from 'react'
 import { supabase } from "@/integrations/supabase/client";
 import { getProfile } from "@/service/supabaseData";
+import { Navigate } from 'react-router-dom';
 
 const AuthContext = createContext(null)
 
@@ -116,36 +117,40 @@ export function useAuth() {
     if (!ctx) throw new Error('useAuth must be used inside AuthProvider')
     return ctx
 }
+export function AdminGuard({ children }: { children: React.ReactNode }) {
+    const { profile, loading, user } = useAuth();
 
-export function AdminGuard({ children }) {
-    const { profile, loading, user } = useAuth()
-
+    // 1. Wait for the data to load first
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
             </div>
-        )
+        );
     }
 
+    // 2. If no user is logged in, send to login
     if (!user) {
-        window.location.replace('/')
-        return null // let router handle
+        return <Navigate to="/login" replace />;
     }
 
+    // 3. If profile doesn't exist yet, show loading
     if (!profile) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
             </div>
-        )
+        );
     }
 
-    if (profile.role !== 'admin') {
-        window.location.replace('/')
-        return null
+    // 4. Check for the NEW roles
+    const hasAccess = profile.role === 'admin' || profile.role === 'staff';
+
+    if (!hasAccess) {
+        // If they are just a 'user', send them to the home page
+        return <Navigate to="/home" replace />;
     }
 
-    return children
+    // 5. If everything passes, show the admin page
+    return <>{children}</>;
 }
-

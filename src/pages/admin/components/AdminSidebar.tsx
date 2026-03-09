@@ -1,8 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 
 const B = "#8B1A2A";
 
+// The full list of items
 export const navItems = [
     { id: "dashboard", path: "/admin", label: "الرئيسية", icon: "⊞" },
     { id: "scanner", path: "/admin/scanner", label: "الماسح الضوئي", icon: "📹" },
@@ -14,7 +16,8 @@ export const navItems = [
     { id: "points", path: "/admin/points", label: "سجل النقاط", icon: "⭐" },
     { id: "3wn-admin", path: "/admin/3wnAdmin", label: "عون-إدارة", icon: "⊞" },
     { id: "jobadmin", path: "/admin/jobadmin", label: "الوظائف", icon: "💼" },
-    { id: "guideadmin", path: "/admin/guideadmin", label: "الدليل", icon: "📚" },
+    { id: "guideadmin", path: "/admin/guideadmin", label: "الدليل - الأسئلة الشائعة", icon: "📚" },
+    { id: "teamadmin", path: "/admin/teamadmin", label: "فريق الاتحاد", icon: "👥" },
 ];
 
 interface AdminSidebarProps {
@@ -25,12 +28,22 @@ interface AdminSidebarProps {
 }
 
 export function AdminSidebar({ currentPageId, sidebarOpen, setSidebarOpen, isMobile }: AdminSidebarProps) {
+    const { profile } = useAuth(); // Get the user profile to check the role
 
     const handleLinkClick = () => {
         if (isMobile) {
             setSidebarOpen(false);
         }
     };
+
+    // Filter items based on the user's role
+    const filteredNavItems = navItems.filter(item => {
+        // Only super_admin can see the Users and Team Admin pages
+        if (item.id === "users" || item.id === "teamadmin") {
+            return profile?.role === "admin";
+        }
+        return true;
+    });
 
     return (
         <>
@@ -44,7 +57,8 @@ export function AdminSidebar({ currentPageId, sidebarOpen, setSidebarOpen, isMob
 
             {/* Sidebar */}
             <aside
-                className={`fixed md:relative flex flex-col h-full bg-white border-l border-gray-100 z-50 transition-all duration-300 ease-in-out ${sidebarOpen ? "w-64 translate-x-0" : "w-64 md:w-[72px] translate-x-full md:translate-x-0"}`}
+                className={`fixed md:relative flex flex-col h-full bg-white border-l border-gray-100 z-50 transition-all duration-300 ease-in-out ${sidebarOpen ? "w-64 translate-x-0" : "w-64 md:w-[72px] translate-x-full md:translate-x-0"
+                    }`}
                 style={{ boxShadow: "2px 0 8px rgba(0,0,0,.04)" }}
             >
                 <div className="p-4 border-b border-gray-100 flex items-center justify-between">
@@ -58,31 +72,33 @@ export function AdminSidebar({ currentPageId, sidebarOpen, setSidebarOpen, isMob
                         )}
                     </div>
                     {isMobile && (
-                        <button onClick={() => setSidebarOpen(false)} className="text-gray-500 hover:text-gray-700 md:hidden pb-1 ps-1">
+                        <button onClick={() => setSidebarOpen(false)} className="text-gray-500 hover:text-gray-700 md:hidden pb-1 ps-1 border-none bg-transparent cursor-pointer">
                             ✕
                         </button>
                     )}
                 </div>
 
                 <nav className="flex-1 p-2 overflow-y-auto">
-                    {navItems.map(item => {
+                    {filteredNavItems.map(item => {
                         const isActive = currentPageId === item.id || (item.id === "dashboard" && currentPageId === "");
                         return (
                             <Link
                                 to={item.path}
                                 key={item.id}
                                 onClick={handleLinkClick}
-                                className={`w-full flex items-center gap-3 p-2.5 rounded-xl border-none cursor-pointer text-sm mb-1 transition-all duration-150 ${sidebarOpen || isMobile ? "justify-start" : "justify-center"}`}
+                                className={`w-full flex items-center gap-3 p-2.5 rounded-xl border-none cursor-pointer text-sm mb-1 transition-all duration-150 ${sidebarOpen || isMobile ? "justify-start" : "justify-center"
+                                    }`}
                                 style={{
                                     fontWeight: isActive ? 700 : 500,
                                     background: isActive ? `${B}14` : "transparent",
-                                    color: isActive ? B : "#6b7280"
+                                    color: isActive ? B : "#6b7280",
+                                    textDecoration: "none"
                                 }}
                             >
                                 <span className="text-lg shrink-0">{item.icon}</span>
                                 {(sidebarOpen || isMobile) && <span className="whitespace-nowrap">{item.label}</span>}
                             </Link>
-                        )
+                        );
                     })}
                 </nav>
             </aside>

@@ -5,11 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Onboarding } from '@/components/features/onboarding/Onboarding';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/context/AuthContext';
 import { ForgotPasswordDialog } from '@/components/auth/ForgotPasswordDialog';
 import logo from '@/assets/logo.png';
 import { z } from 'zod';
 import { User, Check, ArrowRight, Camera } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client'
 
 const TURKISH_UNIVERSITIES = [
   'Istanbul University',
@@ -72,14 +73,15 @@ const Login = () => {
     if (!user) return;
     if (!profile) return;
 
-    if (profile.role === 'admin') {
+    // 🛡️ Updated logic to include both new admin roles
+    const isAdmin = profile.role === 'admin' || profile.role === 'staff';
+
+    if (isAdmin) {
       navigate('/admin', { replace: true });
     } else {
       navigate('/home', { replace: true });
     }
   }, [loading, user, profile, navigate]);
-
-
 
   const handleUniversityChange = (value: string) => {
     setUniversity(value);

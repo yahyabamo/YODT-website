@@ -55,7 +55,7 @@ const quickLinks: QuickLink[] = [
   { icon: Briefcase, label: 'الوظائف', path: '/jobs' },
   { icon: '🎁', label: 'الخصومات', path: '/home/offers' },
   { icon: Map, label: 'الخريطة', path: '/map' },
-  { icon: Users, label: 'الكوادر', path: '/corps' },
+  { icon: Users, label: 'طاقم الاتحاد', path: '/corps' },
   { icon: '📱', label: 'تطبيقات تركيا', path: '/turkey-apps' },
   { icon: BookOpen, label: 'القرآن الكريم', path: '/quran-life' },
   { icon: '📋', label: 'دليل الطالب', path: '/guide' },

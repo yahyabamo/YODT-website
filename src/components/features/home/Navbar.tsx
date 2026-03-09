@@ -102,7 +102,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <a href="#activities" onClick={closeMobileMenu}><span className="ar-only">الأنشطة</span><span className="en-only">Activities</span></a>
                 <a href="#discounts" onClick={closeMobileMenu}><span className="ar-only">العروض الخاصة</span><span className="en-only">Discounts</span></a>
                 <a href="#stats" onClick={closeMobileMenu}><span className="ar-only">الإحصائيات</span><span className="en-only">Stats</span></a>
-                <button className="btn btn-primary" onClick={() => { onOpenModal(); closeMobileMenu(); }}>
+                <button
+                    className="btn btn-primary"
+                    onClick={() => {
+                        navigate('/login');
+                        closeMobileMenu();
+                    }}
+                >
                     <span className="ar-only">سجل واحصل على عضويتك الآن</span>
                     <span className="en-only">Register Free Membership</span>
                 </button>

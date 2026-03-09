@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   ChevronLeft, Sparkles, BookOpen, Heart, MapPin, Calendar,
-  Briefcase, Gift, Play, QrCode, Zap, User, ArrowLeft, ArrowUpRight
+  Briefcase, Gift, Play, QrCode, Zap, Users, ArrowLeft, ArrowUpRight
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -105,7 +105,7 @@ const Home = () => {
 
   const quickServices = [
     { label: language === 'ar' ? 'تطبيقات تركيا' : 'Turkey Apps', path: '/turkey-apps', icon: Briefcase, color: 'text-violet-500' },
-    { label: language === 'ar' ? 'الخريطة' : 'Map', path: '/map', icon: MapPin, color: 'text-rose-500' },
+    { label: language === 'ar' ? 'طاقم الاتحاد' : 'Corps', path: '/corps', icon: Users, color: 'text-rose-500' },
     { label: language === 'ar' ? 'الدليل' : 'Guide', path: '/guide', icon: '📋' },
   ];
 
