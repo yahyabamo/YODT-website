@@ -78,6 +78,7 @@ import Verify from "./pages/verify";
 import JobAdmin from "./pages/admin/jobadmin";
 import GuideAdmin from "./pages/admin/GuideAdmin";
 import TeamAdmin from "./pages/admin/TeamAdmin";
+import AppsMapAdmin from "./pages/admin/AppsMapAdmin";
 
 
 const queryClient = new QueryClient();
@@ -120,6 +121,7 @@ const App = () => (
                   <Route path="jobadmin" element={<JobAdmin />} />
                   <Route path="guideadmin" element={<GuideAdmin />} />
                   <Route path="teamadmin" element={<TeamAdmin />} />
+                  <Route path="appsmapadmin" element={<AppsMapAdmin />} />
 
                 </Route>
                 <Route path="/" element={<Index />} />

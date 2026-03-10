@@ -6,10 +6,10 @@ export const Partners = () => {
         <section id="partners">
             <div className="container">
                 <div className="section-header center-line reveal" style={{ marginBottom: '60px' }}>
-                    <div className="tag" style={{ display: 'inline-flex', margin: '0 auto 20px' }}>
-                        <span className="dot"></span>
-                        <span className="ar-only">شركاء النجاح</span>
-                        <span className="en-only">Partners of Success</span>
+                    <div className="hero-eyebrow">
+                        <div className="eyebrow-line"></div>
+                        <span className="eyebrow-text ar-only">شركاء النجاح</span>
+                        <span className="eyebrow-text en-only">Partners of Success</span>
                     </div>
 
                     {/* <h2 className="heading-lg">

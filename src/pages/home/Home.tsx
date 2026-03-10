@@ -214,7 +214,7 @@ const Home = () => {
         </section>
 
         {/* Section 5: Points Card */}
-        <section className="px-4 animate-slide-up" style={{ animationDelay: '0.4s' }}>
+        {/* <section className="px-4 animate-slide-up" style={{ animationDelay: '0.4s' }}>
           <div className="relative overflow-hidden rounded-3xl bg-foreground shadow-elevated group cursor-pointer" onClick={() => navigate('/points')}>
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
             <div className="absolute bottom-0 left-0 w-40 h-40 bg-accent/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
@@ -237,12 +237,12 @@ const Home = () => {
               </div>
             </div>
           </div>
-        </section>
+        </section> */}
 
         <QuickServicesSection />
 
 
-        {/* Section 4: Quick Services */}
+        {/* Section 4: Quick Services
         <section className="animate-slide-up" style={{ animationDelay: '0.3s' }}>
           <div className="px-4 mb-4">
             <h2 className="text-h3 font-bold text-foreground tracking-tight">{t('home.services.title')}</h2>
@@ -266,7 +266,7 @@ const Home = () => {
             ))}
             <div className="w-4 flex-shrink-0"></div>
           </div>
-        </section>
+        </section> */}
 
 
 

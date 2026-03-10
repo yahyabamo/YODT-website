@@ -18,6 +18,7 @@ export const navItems = [
     { id: "jobadmin", path: "/admin/jobadmin", label: "الوظائف", icon: "💼" },
     { id: "guideadmin", path: "/admin/guideadmin", label: "الدليل - الأسئلة الشائعة", icon: "📚" },
     { id: "teamadmin", path: "/admin/teamadmin", label: "فريق الاتحاد", icon: "👥" },
+    { id: "appsmapadmin", path: "/admin/appsmapadmin", label: "تطبيقات - خرائط", icon: "📱" },
 ];
 
 interface AdminSidebarProps {

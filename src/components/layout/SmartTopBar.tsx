@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   Menu, Search, Bell,
   Home, GraduationCap, Stethoscope, Radio, User,
   BookOpen, Briefcase, Map, Users, Building2, Settings, HelpCircle,
   Heart, Calendar, Globe, ChevronLeft, Play, Gift, Sparkles,
-  FolderOpen, ChevronDown
+  FolderOpen, ChevronDown, Shield
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useTheme } from '@/context/ThemeContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { Sun, Moon } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 interface MainSection {
   icon: React.ElementType;
@@ -74,6 +75,7 @@ export const SmartTopBar = ({ onOpenAI, onOpenSearch }: SmartTopBarProps) => {
   const [projectsExpanded, setProjectsExpanded] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
+
   const handleNavigate = (path: string) => {
     setIsOpen(false);
     setProjectsExpanded(false);
@@ -84,6 +86,10 @@ export const SmartTopBar = ({ onOpenAI, onOpenSearch }: SmartTopBarProps) => {
     location.pathname === path || location.pathname.startsWith(path + '/');
 
   const anyProjectActive = unionProjects.some(p => isActivePath(p.path));
+
+  const { profile } = useAuth();
+  const isAdminOrStaff = profile?.role === 'admin' || profile?.role === 'staff';
+
 
   return (
     <header className="flex items-center justify-between gap-3">
@@ -312,6 +318,11 @@ export const SmartTopBar = ({ onOpenAI, onOpenSearch }: SmartTopBarProps) => {
           )}
         </Button>
         <NotificationBell />
+        {isAdminOrStaff && (
+          <Link to="/admin">
+            <Shield size={24} />
+          </Link>
+        )}
       </div>
     </header>
   );

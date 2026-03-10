@@ -6,9 +6,10 @@ export const Discounts = () => {
         <section id="discounts" className="section-pad">
             <div className="container">
                 <div className="guide-intro reveal" style={{ textAlign: 'center' }}>
-                    <div className="tag" style={{ display: 'inline-flex', margin: '0 auto 20px' }}><span className="dot"></span>
-                        <span className="ar-only">تخفيضات الأعضاء</span>
-                        <span className="en-only">Member Discounts</span>
+                    <div className="hero-eyebrow">
+                        <div className="eyebrow-line"></div>
+                        <span className="eyebrow-text ar-only">تخفيضات الأعضاء</span>
+                        <span className="eyebrow-text en-only">Member Discounts</span>
                     </div>
 
                     <div className="divider-line" style={{ margin: '20px auto' }}></div>

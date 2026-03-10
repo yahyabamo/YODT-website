@@ -2,6 +2,8 @@ import React from "react";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { Link } from 'react-router-dom';
+import { HomeIcon } from 'lucide-react';
 
 const B = "#8B1A2A";
 
@@ -47,8 +49,9 @@ export function AdminHeader({ pageTitle, setSidebarOpen }: AdminHeaderProps) {
             </div>
 
             <div className="flex items-center gap-2 md:gap-3">
-                <NotificationBell />
-
+                <Link to="/home">
+                    <HomeIcon size={24} />  {/* you can adjust size/color as needed */}
+                </Link>
                 <div className="text-right mr-1 md:mr-2 hidden sm:block">
                     <div className="text-[13px] font-bold text-[#111]">{profile?.full_name || "المدير"}</div>
                     <div className="text-[11px] text-[#9ca3af]">مدير النظام</div>

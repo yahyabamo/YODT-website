@@ -6,9 +6,10 @@ export const Guide = () => {
         <section id="guide">
             <div className="container section-pad">
                 <div className="guide-intro reveal">
-                    <div className="tag" style={{ margin: '0 auto 20px' }}><span className="dot"></span>
-                        <span className="ar-only">الدليل الطلابي</span>
-                        <span className="en-only">Student Guide</span>
+                    <div className="hero-eyebrow">
+                        <div className="eyebrow-line"></div>
+                        <span className="eyebrow-text ar-only">الدليل الطلابي</span>
+                        <span className="eyebrow-text en-only">Student Guide</span>
                     </div>
                     <h2 className="heading-lg" style={{ marginBottom: '18px' }}>
                         <span className="ar-only">دليلك الشامل للدراسة<br />والحياة في تركيا</span>

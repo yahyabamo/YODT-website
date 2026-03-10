@@ -158,7 +158,7 @@ const MembershipCard = () => {
             hsl(var(--primary)) 0%,
             hsl(var(--primary) / 0.82) 100%
           );
-          padding: 20px 20px 64px;   /* extra bottom padding so avatar is centered on edge */
+          padding: 20px 20px 80px;   /* extra bottom padding so avatar is centered on edge */
           position: relative;
           overflow: hidden;
         }
@@ -216,14 +216,14 @@ const MembershipCard = () => {
           display: flex;
           justify-content: center;
           /* pull it up so avatar overlaps header bottom */
-          margin-top: -56px;
+          margin-top: -76px;
           position: relative;
           z-index: 10;
         }
         .mc-avatar-shell {
           position: relative;
-          width: 116px;
-          height: 116px;
+          width: 160px;
+          height: 160px;
         }
         /* The spinning ring — only this element rotates */
         .mc-ring-svg {
@@ -240,7 +240,7 @@ const MembershipCard = () => {
         /* Photo container — absolutely positioned, transform: none! */
         .mc-photo {
           position: absolute;
-          inset: 5px;          /* 5px breathing room from ring stroke */
+          inset: 6px;
           border-radius: 50%;
           overflow: hidden;
           background: var(--muted);
@@ -249,7 +249,7 @@ const MembershipCard = () => {
           justify-content: center;
           /* Critically: no transform, no animation */
           transform: none !important;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+          box-shadow: 0 6px 28px rgba(0,0,0,0.18);
         }
         .mc-photo img {
           width: 100%;
@@ -432,27 +432,27 @@ const MembershipCard = () => {
             <div className="mc-avatar-area">
               <div className="mc-avatar-shell">
                 {/* Spinning ring only */}
-                <svg className="mc-ring-svg" viewBox="0 0 116 116">
-                  <defs>
+                <svg className="mc-ring-svg" viewBox="0 0 160 160">
+                  {/* <defs>
                     <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="1" />
                       <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="0.5" />
                       <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.1" />
                     </linearGradient>
-                  </defs>
-                  <circle cx="58" cy="58" r="53"
+                  </defs> */}
+                  <circle cx="80" cy="80" r="74"
                     fill="none"
                     stroke="url(#rg)"
-                    strokeWidth="4"
+                    strokeWidth="4.5"
                     strokeLinecap="round"
-                    strokeDasharray="200 133"
+                    strokeDasharray="260 205"
                   />
                 </svg>
                 {/* Static photo — absolutely positioned, NEVER rotates */}
                 <div className="mc-photo">
                   {profile.avatar_url
                     ? <img src={profile.avatar_url} alt={profile.full_name} />
-                    : <User className="w-12 h-12 text-muted-foreground" />
+                    : <User className="w-16 h-16 text-muted-foreground" />
                   }
                 </div>
               </div>
@@ -480,7 +480,7 @@ const MembershipCard = () => {
                 <div className="mc-c mc-c-bl" />
                 <div className="mc-c mc-c-br" />
                 <div className="mc-scan" />
-                <QRCodeSVG value={verifyUrl} size={195} level="H" includeMargin={false} className="relative z-10 block" />
+                <QRCodeSVG value={verifyUrl} size={145} level="H" includeMargin={false} className="relative z-10 block" />
               </div>
 
               {/* Timer + note */}
@@ -495,7 +495,9 @@ const MembershipCard = () => {
               </div>
 
               {/* Verification code */}
-              <div className="mc-chip mt-3">{verificationCode}</div>
+              <div className="mc-chip mt-3">  <p className="text-muted-foreground text-[11px] text-center">
+                رقم العضوية
+              </p> {verificationCode}</div>
 
               <div className="mc-divider" />
 

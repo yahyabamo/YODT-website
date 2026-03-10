@@ -7,9 +7,10 @@ export const About = () => {
             <div className="container">
                 <div className="about-grid">
                     <div className="about-left reveal-left">
-                        <div className="tag"><span className="dot"></span>
-                            <span className="ar-only">من نحن</span>
-                            <span className="en-only">About Us</span>
+                        <div className="hero-eyebrow">
+                            <div className="eyebrow-line"></div>
+                            <span className="eyebrow-text ar-only">من نحن</span>
+                            <span className="eyebrow-text en-only">About Us</span>
                         </div>
                         <h2 className="heading-lg" style={{ marginBottom: '20px' }}>
                             <span className="ar-only">اتحاد يبني جسورًا<br />بين الطلاب</span>

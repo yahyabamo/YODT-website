@@ -6,9 +6,10 @@ export const Activities = () => {
         <section id="activities" className="section-pad" style={{ background: 'var(--bg-2)' }}>
             <div className="container">
                 <div className="section-header center-line reveal" style={{ marginBottom: '60px', textAlign: 'center' }}>
-                    <div className="tag" style={{ display: 'inline-flex', margin: '0 auto 20px' }}><span className="dot"></span>
-                        <span className="ar-only">الأنشطة والفعاليات</span>
-                        <span className="en-only">Activities & Events</span>
+                    <div className="hero-eyebrow">
+                        <div className="eyebrow-line"></div>
+                        <span className="eyebrow-text ar-only">الأنشطة والفعاليات</span>
+                        <span className="eyebrow-text en-only">Activities & Events</span>
                     </div>
                 </div>
 
