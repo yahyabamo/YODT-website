@@ -19,6 +19,9 @@ export const navItems = [
     { id: "guideadmin", path: "/admin/guideadmin", label: "الدليل - الأسئلة الشائعة", icon: "📚" },
     { id: "teamadmin", path: "/admin/teamadmin", label: "فريق الاتحاد", icon: "👥" },
     { id: "appsmapadmin", path: "/admin/appsmapadmin", label: "تطبيقات - خرائط", icon: "📱" },
+    { id: "elections", path: "/admin/elections", label: "الانتخابات", icon: "🗳️" },
+    { id: "academy", path: "/admin/academy", label: "الأكاديمية", icon: "🎓" },
+
 ];
 
 interface AdminSidebarProps {

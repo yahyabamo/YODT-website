@@ -70,6 +70,16 @@ import QuranLife from "./pages/QuranLife";
 // import OrbitPodium from "./pages/hidden/OrbitPodium";
 // import VerifyCertificate from "./pages/VerifyCertificate";
 // import InstructorDashboard from "./pages/hidden/InstructorDashboard";
+import AcademyPage from "./pages/academy/AcademyPage";
+import CoursePage from "./pages/academy/Coursepage";
+import Mylearningpage from "./pages/academy/Mylearningpage";
+import CertificatePage from "./pages/academy/Certificatepage";
+
+
+import ResultsPage from './pages/election/Resultspage'
+import VotingPage from './pages/election/Votingpage'
+import CandidatePage from './pages/election/Candidatespage'
+import CandidateProfilePage from "./pages/election/Candidateprofilepage";
 
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
@@ -79,7 +89,18 @@ import JobAdmin from "./pages/admin/jobadmin";
 import GuideAdmin from "./pages/admin/GuideAdmin";
 import TeamAdmin from "./pages/admin/TeamAdmin";
 import AppsMapAdmin from "./pages/admin/AppsMapAdmin";
-
+import ElectionsPage from './pages/election/Electionspage'
+import ElectionDetailPage from './pages/election/Electiondetailpage'
+import NominationPage from './pages/election/Nominationpage'
+import AdminCandidatesPage from './pages/admin/Admincandidatespage'
+import AdminElectionsPage from './pages/admin/Adminelectionspage'
+import AdminCreateElectionPage from "./pages/admin/Admincreateelectionpage";
+import AdminMonitorPage from "./pages/admin/Adminelectionspage";
+import AdminEditElectionPage from "./pages/admin/Adminelectionspage";
+import AdminCourseFormPage from "./pages/admin/Admincourseformpage";
+import AdminCoursesPage from "./pages/admin/Adminacademypage";
+import AdminAcademyPage from "./pages/admin/Adminacademypage";
+import AdminCourseStudentsPage from "./pages/admin/Admincoursestudentspage";
 
 const queryClient = new QueryClient();
 
@@ -122,6 +143,17 @@ const App = () => (
                   <Route path="guideadmin" element={<GuideAdmin />} />
                   <Route path="teamadmin" element={<TeamAdmin />} />
                   <Route path="appsmapadmin" element={<AppsMapAdmin />} />
+                  <Route path="/admin/elections/:electionId/candidates" element={<AdminCandidatesPage />} />
+                  <Route path="/admin/elections" element={<AdminElectionsPage />} />
+                  <Route path="/admin/elections/new" element={<AdminCreateElectionPage />} />
+                  <Route path="/admin/elections/:electionId/monitor" element={<AdminMonitorPage />} />
+                  <Route path="/admin/elections/:electionId/edit" element={<AdminEditElectionPage />} />
+                  <Route path="/admin/academy" element={<AdminAcademyPage />} />
+                  <Route path="/admin/academy/:id" element={<AdminCourseFormPage />} />
+                  <Route path="/admin/academy/new" element={<AdminCourseFormPage />} />
+                  <Route path="/admin/academy/:id/students" element={<AdminCourseStudentsPage />} />
+
+
 
                 </Route>
                 <Route path="/" element={<Index />} />
@@ -179,6 +211,20 @@ const App = () => (
                 {/* <Route path="/orbit" element={<Orbit />} /> */}
                 {/* <Route path="/orbit/brief" element={<OrbitBrief />} /> */}
                 {/* <Route path="/orbit/podium" element={<OrbitPodium />} /> */}
+                <Route path="/elections" element={<ElectionsPage />} />
+                <Route path="/elections/:electionId" element={<ElectionDetailPage />} />
+                <Route path="/elections/:electionId/nominate" element={<NominationPage />} />
+                <Route path="/admin/elections/:electionId/candidates" element={<AdminCandidatesPage />} />
+                <Route path="/elections/:electionId/results" element={<ResultsPage />} />
+                <Route path="/elections/:electionId/voting" element={<VotingPage />} />
+                <Route path="/elections/:electionId/candidates/:candidateId" element={<CandidatePage />} />
+                <Route path="/elections/:electionId/candidates/:candidateId/profile" element={<CandidateProfilePage />} />
+                <Route path="/academy" element={<AcademyPage />} />
+                <Route path="/academy/course/:id" element={<CoursePage />} />
+                <Route path="/academy/my-learning" element={<Mylearningpage />} />
+                <Route path="/academy/certificate/:courseId" element={<CertificatePage />} />
+
+
                 <Route path="/verify/:id" element={<Verify />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

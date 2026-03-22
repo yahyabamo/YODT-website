@@ -61,6 +61,8 @@ const quickLinks: QuickLink[] = [
   { icon: BookOpen, label: 'القرآن الكريم', path: '/quran-life' },
   { icon: '📋', label: 'دليل الطالب', path: '/guide' },
   { icon: HelpCircle, label: 'الأسئلة الشائعة', path: '/faq' },
+  { icon: '🗳️', label: 'الانتخابات', path: '/elections' },
+  { icon: '🎓', label: 'الأكاديمية', path: '/academy' },
 ];
 
 interface SmartTopBarProps {
