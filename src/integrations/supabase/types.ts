@@ -6,7 +6,114 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+
+// ============================================
+// BUSLA - TypeScript Types
+// ============================================
+
+export interface LibraryItem {
+  id: string;
+  title: string;
+  description: string | null;
+  type: 'book' | 'course' | 'lecture' | 'summary';
+  file_url: string | null;
+  cover_url: string | null;
+  created_at: string;
+}
+
+export interface Track {
+  id: string;
+  title: string;
+  description: string | null;
+  created_at: string;
+  // joined from queries
+  member_count?: number;
+  is_member?: boolean;
+  current_book?: LibraryItem | null;
+  user_progress?: number; // last_page
+}
+
+export interface TrackMember {
+  id: string;
+  user_id: string;
+  track_id: string;
+  joined_at: string;
+}
+
+export interface TrackBook {
+  id: string;
+  track_id: string;
+  library_item_id: string;
+  is_current: boolean;
+  assigned_at: string;
+  library_items?: LibraryItem;
+}
+
+export interface Note {
+  id: string;
+  user_id: string;
+  track_id: string;
+  page_number: number;
+  content: string;
+  created_at: string;
+}
+
+export interface Bookmark {
+  id: string;
+  user_id: string;
+  track_id: string;
+  page_number: number;
+  created_at: string;
+}
+
+export interface TrackMessage {
+  id: string;
+  track_id: string;
+  user_id: string;
+  message: string;
+  created_at: string;
+  profiles?: {
+    full_name: string | null;
+    avatar_url: string | null;
+  };
+}
+
+export interface TrackProgress {
+  id: string;
+  user_id: string;
+  track_id: string;
+  last_page: number;
+  updated_at: string;
+}
+
+export interface Activity2 {
+  id: string;
+  title: string;
+  description: string | null;
+  date: string | null;
+  time: string | null;
+  location: string | null;
+  max_attendees: number;
+  points: number;
+  status: 'upcoming' | 'ongoing' | 'completed';
+  created_at: string;
+  // joined
+  attendees_count?: number;
+  is_registered?: boolean;
+}
+
+export type LibraryItemType = 'book' | 'course' | 'lecture' | 'summary';
+
+export const LIBRARY_TYPE_LABELS: Record<string, string> = {
+  book: 'كتاب',
+  course: 'دورة',
+  lecture: 'محاضرة',
+  summary: 'ملخص',
+};
+
 export type Database = {
+
+
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
@@ -163,8 +270,8 @@ export type Database = {
           age: number | null
           created_at: string | null
           current_level:
-            | Database["public"]["Enums"]["memorization_level"]
-            | null
+          | Database["public"]["Enums"]["memorization_level"]
+          | null
           gender: Database["public"]["Enums"]["gender_type"] | null
           id: string
           memorization_plan: Json | null
@@ -178,8 +285,8 @@ export type Database = {
           age?: number | null
           created_at?: string | null
           current_level?:
-            | Database["public"]["Enums"]["memorization_level"]
-            | null
+          | Database["public"]["Enums"]["memorization_level"]
+          | null
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
           memorization_plan?: Json | null
@@ -193,8 +300,8 @@ export type Database = {
           age?: number | null
           created_at?: string | null
           current_level?:
-            | Database["public"]["Enums"]["memorization_level"]
-            | null
+          | Database["public"]["Enums"]["memorization_level"]
+          | null
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
           memorization_plan?: Json | null
@@ -579,8 +686,8 @@ export type Database = {
           clinic_name: string | null
           consultation_count: number | null
           consultation_types:
-            | Database["public"]["Enums"]["consultation_type"][]
-            | null
+          | Database["public"]["Enums"]["consultation_type"][]
+          | null
           country_id: string | null
           created_at: string | null
           education: string[] | null
@@ -608,8 +715,8 @@ export type Database = {
           clinic_name?: string | null
           consultation_count?: number | null
           consultation_types?:
-            | Database["public"]["Enums"]["consultation_type"][]
-            | null
+          | Database["public"]["Enums"]["consultation_type"][]
+          | null
           country_id?: string | null
           created_at?: string | null
           education?: string[] | null
@@ -637,8 +744,8 @@ export type Database = {
           clinic_name?: string | null
           consultation_count?: number | null
           consultation_types?:
-            | Database["public"]["Enums"]["consultation_type"][]
-            | null
+          | Database["public"]["Enums"]["consultation_type"][]
+          | null
           country_id?: string | null
           created_at?: string | null
           education?: string[] | null
@@ -699,8 +806,8 @@ export type Database = {
           attendees_count?: number | null
           city_id?: string | null
           conference_type?:
-            | Database["public"]["Enums"]["conference_type"]
-            | null
+          | Database["public"]["Enums"]["conference_type"]
+          | null
           country_id?: string | null
           created_at?: string | null
           date?: string | null
@@ -720,8 +827,8 @@ export type Database = {
           attendees_count?: number | null
           city_id?: string | null
           conference_type?:
-            | Database["public"]["Enums"]["conference_type"]
-            | null
+          | Database["public"]["Enums"]["conference_type"]
+          | null
           country_id?: string | null
           created_at?: string | null
           date?: string | null
@@ -1145,8 +1252,8 @@ export type Database = {
           gender: Database["public"]["Enums"]["gender_type"] | null
           id: string
           individual_category:
-            | Database["public"]["Enums"]["individual_category"]
-            | null
+          | Database["public"]["Enums"]["individual_category"]
+          | null
           phone: string | null
           total_points: number | null
           updated_at: string | null
@@ -1163,8 +1270,8 @@ export type Database = {
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id: string
           individual_category?:
-            | Database["public"]["Enums"]["individual_category"]
-            | null
+          | Database["public"]["Enums"]["individual_category"]
+          | null
           phone?: string | null
           total_points?: number | null
           updated_at?: string | null
@@ -1181,8 +1288,8 @@ export type Database = {
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
           individual_category?:
-            | Database["public"]["Enums"]["individual_category"]
-            | null
+          | Database["public"]["Enums"]["individual_category"]
+          | null
           phone?: string | null
           total_points?: number | null
           updated_at?: string | null
@@ -1492,23 +1599,23 @@ export type Database = {
       consultation_status: "pending" | "active" | "completed" | "cancelled"
       consultation_type: "text" | "voice" | "video"
       corps_type:
-        | "health"
-        | "education"
-        | "tech"
-        | "engineering"
-        | "media"
-        | "other"
+      | "health"
+      | "education"
+      | "tech"
+      | "engineering"
+      | "media"
+      | "other"
       gender_type: "male" | "female"
       goal_type: "surah" | "juz" | "khatma"
       individual_category: "student" | "graduate" | "volunteer" | "researcher"
       memorization_level: "beginner" | "partial" | "review" | "complete"
       partner_type:
-        | "government"
-        | "university"
-        | "municipality"
-        | "company"
-        | "individual_supporter"
-        | "association"
+      | "government"
+      | "university"
+      | "municipality"
+      | "company"
+      | "individual_supporter"
+      | "association"
       target_audience: "individuals" | "families" | "children" | "all"
       teaching_type: "memorization" | "correction" | "review" | "children"
       user_type: "individual" | "corps_member" | "partner" | "admin"
@@ -1525,116 +1632,116 @@ type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+  | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+  ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+  : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
-    ? R
-    : never
+  ? R
+  : never
   : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
-      }
-      ? R
-      : never
-    : never
+    DefaultSchema["Views"])
+  ? (DefaultSchema["Tables"] &
+    DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+      Row: infer R
+    }
+  ? R
+  : never
+  : never
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof DefaultSchema["Tables"]
+  | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+  : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
-    }
-    ? I
-    : never
+    Insert: infer I
+  }
+  ? I
+  : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
-      }
-      ? I
-      : never
-    : never
+  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+    Insert: infer I
+  }
+  ? I
+  : never
+  : never
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof DefaultSchema["Tables"]
+  | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+  : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
-    }
-    ? U
-    : never
+    Update: infer U
+  }
+  ? U
+  : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
-      }
-      ? U
-      : never
-    : never
+  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+    Update: infer U
+  }
+  ? U
+  : never
+  : never
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof DefaultSchema["Enums"]
+  | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+  ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+  : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
+  ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+  : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof DefaultSchema["CompositeTypes"]
+  | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+  ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+  : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
+  ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  : never
 
 export const Constants = {
   public: {

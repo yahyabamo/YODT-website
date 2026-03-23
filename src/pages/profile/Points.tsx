@@ -8,6 +8,8 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { SmartTopBar } from '@/components/layout/SmartTopBar';
+
 
 interface Profile {
   id: string;
@@ -30,6 +32,7 @@ const Points = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [pointsHistory, setPointsHistory] = useState<PointsHistory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -111,7 +114,11 @@ const Points = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <PageHeader title="النقاط والترتيب" />
+      <header className="sticky z-40 top-0 bg-background/80 backdrop-blur-xl border-b border-border/40">
+        <div className="p-4 max-w-screen-xl mx-auto">
+          <SmartTopBar onOpenSearch={() => setShowSearch(true)} />
+        </div>
+      </header>
 
       <div className="px-4 py-4 max-w-lg mx-auto space-y-6">
         {/* Points Summary Card */}

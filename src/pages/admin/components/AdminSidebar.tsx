@@ -21,6 +21,7 @@ export const navItems = [
     { id: "appsmapadmin", path: "/admin/appsmapadmin", label: "تطبيقات - خرائط", icon: "📱" },
     { id: "elections", path: "/admin/elections", label: "الانتخابات", icon: "🗳️" },
     { id: "academy", path: "/admin/academy", label: "الأكاديمية", icon: "🎓" },
+    { id: "busla", path: "/admin/busla", label: "بوصلة", icon: "🧭" },
 
 ];
 

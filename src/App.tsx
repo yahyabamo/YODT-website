@@ -84,6 +84,11 @@ import CertificateVerificationPage from './pages/academy/Certificateverification
 import Unionprojects from './pages/Unionprojects';
 import FoundingTeam from "./pages/Foundingteam";
 import ProjectDetail from './pages/Unionprojects';
+import BuslaPage from "./pages/busla/busla";
+import TracksPage from "./pages/busla/Tracks";
+import LibraryPage from "./pages/busla/library";
+import TrackDetailPage from "./pages/busla/TrackDetail";
+import ActivitiesPage from "./pages/busla/Activitiesbusla";
 
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
@@ -105,7 +110,10 @@ import AdminCourseFormPage from "./pages/admin/Admincourseformpage";
 import AdminCoursesPage from "./pages/admin/Adminacademypage";
 import AdminAcademyPage from "./pages/admin/Adminacademypage";
 import AdminCourseStudentsPage from "./pages/admin/Admincoursestudentspage";
-
+import AdminActivitiesPage from "./pages/admin/busla/activityadmin";
+import BuslaAdminPage from "./pages/admin/busla/buslaAdmin";
+import LibraryAdminPage from "./pages/admin/busla/library";
+import TrackDetailAdminPage from "./pages/admin/busla/trackadmin";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -156,6 +164,10 @@ const App = () => (
                   <Route path="/admin/academy/:id" element={<AdminCourseFormPage />} />
                   <Route path="/admin/academy/new" element={<AdminCourseFormPage />} />
                   <Route path="/admin/academy/:id/students" element={<AdminCourseStudentsPage />} />
+                  <Route path="/admin/busla/activities" element={<AdminActivitiesPage />} />
+                  <Route path="/admin/busla" element={<BuslaAdminPage />} />
+                  <Route path="/admin/busla/library" element={<LibraryAdminPage />} />
+                  <Route path="/admin/busla/tracks" element={<TrackDetailAdminPage />} />
 
 
 
@@ -231,7 +243,11 @@ const App = () => (
                 <Route path="/union-projects" element={<Unionprojects />} />
                 <Route path="/founding-team" element={<FoundingTeam />} />
                 <Route path="/union-projects/:projectId" element={<ProjectDetail />} />
-
+                <Route path="/busla" element={<BuslaPage />} />
+                <Route path="/busla/tracks" element={<TracksPage />} />
+                <Route path="/busla/library" element={<LibraryPage />} />
+                <Route path="/busla/track/:id" element={<TrackDetailPage />} />
+                <Route path="/busla/activities" element={<ActivitiesPage />} />
 
                 <Route path="/verify/:id" element={<Verify />} />
                 <Route path="*" element={<NotFound />} />

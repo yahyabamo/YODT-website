@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   ChevronLeft, Sparkles, BookOpen, Heart, MapPin, Calendar,
-  Briefcase, Gift, Play, QrCode, Zap, Users, ArrowLeft, ArrowUpRight
+  Briefcase, Gift, Play, QrCode, Zap, Users, ArrowLeft, ArrowUpRight, GraduationCap,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -87,19 +87,19 @@ const Home = () => {
       iconColor: 'text-rose-500',
     },
     {
-      icon: QrCode,
-      label: language === 'ar' ? 'بطاقة العضوية' : 'Membership',
-      path: '/membership-card',
+      icon: BookOpen,
+      label: language === 'ar' ? 'بوصلة' : 'Busla',
+      path: '/busla',
       gradient: 'from-warning/20 to-warning/5',
       iconColor: 'text-warning',
     },
     {
-      icon: Heart,
-      label: language === 'ar' ? 'الداعمون' : 'Partners',
-      path: '/partners',
+      icon: GraduationCap,
+      label: language === 'ar' ? 'الأكاديمية' : 'Academy',
+      path: '/academy',
       gradient: 'from-pink-500/20 to-pink-500/5',
       iconColor: 'text-pink-500',
-      badge: language === 'ar' ? 'خصومات حصرية' : 'Exclusive',
+      badge: language === 'ar' ? 'دورات' : 'Courses',
     },
   ];
 
