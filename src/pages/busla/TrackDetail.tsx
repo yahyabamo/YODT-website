@@ -242,14 +242,22 @@ export default function TrackDetailPage() {
                     </Card>
                 ) : (
                     /* PDF Viewer */
-                    <PDFViewer
-                        url={track.current_book.file_url}
-                        initialPage={currentPage}
-                        isBookmarked={bookmarkedPages.has(currentPage)}
-                        onPageChange={handlePageChange}
-                        onBookmarkToggle={handleBookmarkToggle}
-                        onTotalPages={setTotalPages}
-                    />
+                    /* Replace the PDF Viewer section with this */
+                    <Suspense fallback={
+                        <div className="flex flex-col items-center justify-center py-20 bg-muted rounded-2xl">
+                            <Loader2 className="h-10 w-10 animate-spin text-red-700 mb-2" />
+                            <p className="text-sm text-muted-foreground">جاري تحميل قارئ الكتب...</p>
+                        </div>
+                    }>
+                        <PDFViewer
+                            url={track.current_book.file_url}
+                            initialPage={currentPage}
+                            isBookmarked={bookmarkedPages.has(currentPage)}
+                            onPageChange={handlePageChange}
+                            onBookmarkToggle={handleBookmarkToggle}
+                            onTotalPages={setTotalPages}
+                        />
+                    </Suspense>
                 )}
 
                 {/* Progress info */}
