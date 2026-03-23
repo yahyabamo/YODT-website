@@ -19,7 +19,7 @@ import { toast } from 'sonner';
 
 
 // IPHONE FIX 1: Use a specific CDN worker for better cross-browser compatibility
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 interface PDFViewerProps {
     url: string;
@@ -44,8 +44,17 @@ export default function PDFViewer({
     const [loading, setLoading] = useState(true);
     const [containerWidth, setContainerWidth] = useState(0);
 
-    const containerRef = useCallback((node: HTMLDivElement | null) => {
-        if (node) setContainerWidth(node.offsetWidth);
+    useEffect(() => {
+        const observer = new ResizeObserver((entries) => {
+            if (entries[0]) {
+                setContainerWidth(entries[0].contentRect.width);
+            }
+        });
+
+        const el = document.getElementById('pdf-container');
+        if (el) observer.observe(el);
+
+        return () => observer.disconnect();
     }, []);
 
     useEffect(() => {
@@ -96,7 +105,7 @@ export default function PDFViewer({
                 </div>
             </div>
 
-            <div ref={containerRef} className="overflow-auto max-h-[60vh] flex justify-center bg-gray-200 min-h-[300px]">
+            <div id="pdf-container" className="overflow-auto max-h-[60vh] flex justify-center bg-gray-200 min-h-[300px]">
                 <Document
                     // Pass the URL directly as a string or a simple object
                     file={url}
@@ -125,7 +134,7 @@ export default function PDFViewer({
                 >
                     <Page
                         pageNumber={currentPage}
-                        width={pageWidth}
+                        width={pageWidth || 300}
                         // Keep these false for iPhone memory safety
                         renderTextLayer={false}
                         renderAnnotationLayer={false}
@@ -146,5 +155,7 @@ export default function PDFViewer({
                 </div>
             )}
         </div>
+
     );
+
 }

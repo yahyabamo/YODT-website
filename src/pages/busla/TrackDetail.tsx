@@ -35,8 +35,7 @@ import { SmartTopBar } from '@/components/layout/SmartTopBar';
 
 
 // Lazy load PDF viewer to avoid SSR issues
-const PDFViewer = lazy(() => import('@/components/Pdfviewer'));
-
+import PDFViewer from '@/components/Pdfviewer';
 type Tab = 'notes' | 'bookmarks' | 'chat';
 
 export default function TrackDetailPage() {
