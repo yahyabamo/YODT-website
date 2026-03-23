@@ -81,6 +81,9 @@ import VotingPage from './pages/election/Votingpage'
 import CandidatePage from './pages/election/Candidatespage'
 import CandidateProfilePage from "./pages/election/Candidateprofilepage";
 import CertificateVerificationPage from './pages/academy/Certificateverificationpage';
+import Unionprojects from './pages/Unionprojects';
+import FoundingTeam from "./pages/Foundingteam";
+import ProjectDetail from './pages/Unionprojects';
 
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
@@ -225,6 +228,9 @@ const App = () => (
                 <Route path="/academy/my-learning" element={<Mylearningpage />} />
                 <Route path="/academy/certificate/:courseId" element={<CertificatePage />} />
                 <Route path="/verify/:certId" element={<CertificateVerificationPage />} />
+                <Route path="/union-projects" element={<Unionprojects />} />
+                <Route path="/founding-team" element={<FoundingTeam />} />
+                <Route path="/union-projects/:projectId" element={<ProjectDetail />} />
 
 
                 <Route path="/verify/:id" element={<Verify />} />
