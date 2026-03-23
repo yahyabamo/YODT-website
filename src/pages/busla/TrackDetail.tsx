@@ -254,7 +254,6 @@ export default function TrackDetailPage() {
                             isBookmarked={bookmarkedPages.has(currentPage)}
                             onPageChange={handlePageChange}
                             onBookmarkToggle={handleBookmarkToggle}
-                            onTotalPages={setTotalPages}
                         />
                     </Suspense>
                 )}
