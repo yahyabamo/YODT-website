@@ -2,8 +2,11 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import type { Course } from '@/integrations/supabase/academy.types'
-import { BookOpen, Clock, Search, GraduationCap, Users, Trophy } from 'lucide-react'
+import { BookOpen, Clock, Search, GraduationCap, Users, Trophy, ArrowLeft } from 'lucide-react'
 import { SmartTopBar } from '@/components/layout/SmartTopBar';
+import { useNavigate } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
+
 
 
 const CATEGORIES = ['الكل', 'برمجة', 'تصميم', 'تسويق', 'لغات', 'ريادة أعمال', 'مهارات شخصية']
@@ -24,6 +27,10 @@ export default function AcademyPage() {
     const [activeCategory, setActiveCategory] = useState('الكل')
     const [stats, setStats] = useState({ courses: 0, students: 0, certs: 0 })
     const [showSearch, setShowSearch] = useState(false);
+    const navigate = useNavigate();
+
+
+
 
     useEffect(() => {
         fetchCourses()
@@ -67,6 +74,7 @@ export default function AcademyPage() {
                 className="relative overflow-hidden px-6 py-20"
                 style={{ background: 'linear-gradient(135deg, #111111 0%, #1A0606 60%, #111111 100%)' }}
             >
+
                 {/* geometric overlay */}
                 <div
                     className="absolute inset-0 opacity-[0.04]"
@@ -146,7 +154,44 @@ export default function AcademyPage() {
                         ))}
                     </div>
                 </div>
+
+                {/* ── My Learning CTA ── */}
+                <div
+                    className="flex items-center gap-4 p-4 mt-4 cursor-pointer group"
+                    style={{
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '16px',
+                        maxWidth: '440px',
+                        transition: 'all 0.25s',
+                        position: 'relative',  // ← add this
+                        zIndex: 1,
+                    }}
+                    onClick={() => navigate('/academy/my-learning')}
+                    onMouseEnter={e => {
+                        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(185,28,28,0.4)'
+                    }}
+                    onMouseLeave={e => {
+                        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.1)'
+                    }}
+                >
+                    <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                        style={{ background: 'rgba(185,28,28,0.25)' }}
+                    >
+                        <GraduationCap className="w-5 h-5" style={{ color: '#FCA5A5' }} />
+                    </div>
+                    <div className="flex-1">
+                        <p className="text-sm font-bold text-white">متابعة التعلم</p>
+                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                            تحقق من كورساتك وشهاداتك
+                        </p>
+                    </div>
+                    <ArrowLeft className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }} />
+                </div>
+
             </section>
+
 
             {/* ── Categories ── */}
             <div className="px-6 py-5 flex gap-2 flex-wrap">

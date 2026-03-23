@@ -858,6 +858,47 @@
     flex-shrink: 0;
   }
 
+
+  @media print {
+
+    /* Force the browser to print background colors and images */
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    /* Hide the entire page */
+    body {
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    body>* {
+      display: none !important;
+    }
+
+    /* Show only the certificate */
+    #cert-printable {
+      display: block !important;
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden !important;
+    }
+
+    #cert-printable * {
+      visibility: visible !important;
+    }
+
+    @page {
+      size: A4 landscape;
+      margin: 0 !important;
+    }
+  }
+
   @keyframes pulse {
 
     0%,

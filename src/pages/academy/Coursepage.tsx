@@ -7,7 +7,6 @@ import {
     PlayCircle, Lock, ArrowRight, AlertCircle,
 } from 'lucide-react'
 
-// ─── YouTube IFrame API types ────────────────────────────────────────────────
 declare global {
     interface Window {
         YT: {
@@ -20,6 +19,8 @@ declare global {
 interface YTPlayer { destroy: () => void }
 interface YTPlayerOptions {
     videoId: string
+    width?: string | number
+    height?: string | number
     playerVars?: Record<string, unknown>
     events?: {
         onStateChange?: (e: { data: number }) => void
@@ -53,36 +54,76 @@ export default function CoursePage() {
     const [ytReady, setYtReady] = useState(false)
     const playerRef = useRef<YTPlayer | null>(null)
     const containerRef = useRef<HTMLDivElement>(null)
+    // Guard against double-init in React strict mode
+    const initingRef = useRef(false)
 
-    // Load YouTube IFrame API once
+    // ── Load YouTube IFrame API once ──────────────────────────────────────
     useEffect(() => {
         if (window.YT?.Player) { setYtReady(true); return }
+        // If script already added by a previous mount, just wait for the callback
+        if (document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
+            // Poll until ready (handles strict mode double-mount)
+            const interval = setInterval(() => {
+                if (window.YT?.Player) { setYtReady(true); clearInterval(interval) }
+            }, 100)
+            return () => clearInterval(interval)
+        }
         const tag = document.createElement('script')
         tag.src = 'https://www.youtube.com/iframe_api'
         document.head.appendChild(tag)
         window.onYouTubeIframeAPIReady = () => setYtReady(true)
-        return () => { window.onYouTubeIframeAPIReady = () => { } }
     }, [])
 
-    // Init / reinit player when lesson changes
+    // ── Init / reinit player when lesson or API ready ─────────────────────
     useEffect(() => {
         if (!ytReady || !activeLesson || !containerRef.current) return
+        if (initingRef.current) return
         const videoId = getYouTubeId(activeLesson.youtube_url)
         if (!videoId) return
+
+        initingRef.current = true
         setVideoEnded(false)
-        playerRef.current?.destroy()
+
+        // Destroy old player
+        try { playerRef.current?.destroy() } catch (_) { /* ignore */ }
         playerRef.current = null
+
+        // Clear container and create a fresh div absolutely positioned
+        // inside the padding-trick box (paddingTop: 56.25% = 16:9 ratio)
         containerRef.current.innerHTML = ''
         const div = document.createElement('div')
+        div.style.position = 'absolute'
+        div.style.top = '0'
+        div.style.left = '0'
+        div.style.width = '100%'
+        div.style.height = '100%'
         containerRef.current.appendChild(div)
+
         playerRef.current = new window.YT.Player(div, {
             videoId,
-            playerVars: { rel: 0, modestbranding: 1 },
-            events: { onStateChange: (e) => { if (e.data === 0) setVideoEnded(true) } },
+            width: '100%',
+            height: '100%',
+            playerVars: {
+                rel: 0,
+                modestbranding: 1,
+                // Allow API to work properly
+                enablejsapi: 1,
+                origin: window.location.origin,
+            },
+            events: {
+                onReady: () => { initingRef.current = false },
+                onStateChange: (e) => { if (e.data === 0) setVideoEnded(true) },
+            },
         })
-        return () => { playerRef.current?.destroy(); playerRef.current = null }
+
+        return () => {
+            initingRef.current = false
+            try { playerRef.current?.destroy() } catch (_) { /* ignore */ }
+            playerRef.current = null
+        }
     }, [ytReady, activeLesson])
 
+    // ── Data loading ──────────────────────────────────────────────────────
     useEffect(() => { if (id) init() }, [id])
 
     async function init() {
@@ -150,7 +191,8 @@ export default function CoursePage() {
             {/* Top bar */}
             <div className="sticky top-0 z-50 flex items-center gap-3 px-6 py-3"
                 style={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(16px)', borderBottom: '1px solid #EEE' }}>
-                <button onClick={() => navigate('/academy')} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 transition-colors">
+                <button onClick={() => navigate('/academy')}
+                    className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 transition-colors">
                     <ArrowRight className="w-4 h-4" />الأكاديمية
                 </button>
                 <ChevronRight className="w-3 h-3 text-gray-300" />
@@ -167,11 +209,25 @@ export default function CoursePage() {
             </div>
 
             <div className="flex flex-col lg:flex-row max-w-7xl mx-auto">
-                <div className="flex-1 min-w-0 p-6">
+                <div className="flex-1 min-w-0 p-4 md:p-6">
 
-                    {/* YouTube player — API mounts inside this div */}
-                    <div ref={containerRef} className="w-full aspect-video overflow-hidden mb-6"
-                        style={{ borderRadius: '20px', background: '#111' }} />
+                    {/* ── YouTube container ──
+                        overflow-hidden is REMOVED — it was clipping the iframe.
+                        The container needs a defined height for the API to size into. */}
+                    <div
+                        ref={containerRef}
+                        className="w-full mb-6"
+                        style={{
+                            borderRadius: '20px',
+                            background: '#111',
+                            // aspect-ratio via padding trick keeps height relative to width
+                            position: 'relative',
+                            paddingTop: '56.25%', // 16:9
+                        }}
+                    >
+                        {/* The YouTube API iframe will be injected into the child div,
+                            which is absolutely positioned to fill this padding box */}
+                    </div>
 
                     {/* Lesson info + complete button */}
                     {activeLesson && (
@@ -210,7 +266,8 @@ export default function CoursePage() {
                     {/* Course info */}
                     <div className="bg-white p-6 mb-4" style={{ borderRadius: '20px', border: '1px solid #F0EDE8' }}>
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black text-white" style={{ background: '#1A1A1A' }}>
+                            <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black text-white"
+                                style={{ background: '#1A1A1A' }}>
                                 {course.instructor.charAt(0)}
                             </div>
                             <div>
@@ -241,12 +298,15 @@ export default function CoursePage() {
                 </div>
 
                 {/* Sidebar */}
-                <div className="w-full lg:w-80 xl:w-96 flex-shrink-0 p-6 lg:pr-0">
-                    <div className="sticky top-20 bg-white overflow-hidden" style={{ borderRadius: '20px', border: '1px solid #F0EDE8' }}>
+                <div className="w-full lg:w-80 xl:w-96 flex-shrink-0 p-4 md:p-6 lg:pr-0">
+                    <div className="sticky top-20 bg-white overflow-hidden"
+                        style={{ borderRadius: '20px', border: '1px solid #F0EDE8' }}>
                         {!enrolled && (
                             <div className="p-5" style={{ borderBottom: '1px solid #F5F2EE' }}>
                                 <p className="font-black text-gray-900 mb-1">سجّل مجاناً</p>
-                                <p className="text-xs text-gray-400 mb-4">{lessons.length} درس · {formatMins(course.duration_mins)}</p>
+                                <p className="text-xs text-gray-400 mb-4">
+                                    {lessons.length} درس · {formatMins(course.duration_mins)}
+                                </p>
                                 <button onClick={handleEnroll} disabled={enrolling}
                                     className="w-full py-3 rounded-xl font-black text-white text-sm transition-all hover:-translate-y-0.5 disabled:opacity-60"
                                     style={{ background: '#B91C1C', boxShadow: '0 4px 16px rgba(185,28,28,0.3)' }}>
@@ -262,7 +322,9 @@ export default function CoursePage() {
                                     const active = activeLesson?.id === lesson.id
                                     const locked = !enrolled && i > 0
                                     return (
-                                        <button key={lesson.id} onClick={() => !locked && setActiveLesson(lesson)} disabled={locked}
+                                        <button key={lesson.id}
+                                            onClick={() => !locked && setActiveLesson(lesson)}
+                                            disabled={locked}
                                             className="w-full flex items-center gap-3 p-3 rounded-xl text-right transition-all duration-150"
                                             style={active ? { background: '#111111' } : {}}
                                             onMouseEnter={e => { if (!active && !locked) (e.currentTarget as HTMLElement).style.background = '#F8F7F5' }}
@@ -278,7 +340,8 @@ export default function CoursePage() {
                                                     style={{ color: active ? '#fff' : locked ? '#CCC' : '#111' }}>
                                                     {lesson.title}
                                                 </p>
-                                                <p className="text-[10px] mt-0.5" style={{ color: active ? 'rgba(255,255,255,0.4)' : '#AAA' }}>
+                                                <p className="text-[10px] mt-0.5"
+                                                    style={{ color: active ? 'rgba(255,255,255,0.4)' : '#AAA' }}>
                                                     {formatMins(lesson.duration_mins)}
                                                 </p>
                                             </div>

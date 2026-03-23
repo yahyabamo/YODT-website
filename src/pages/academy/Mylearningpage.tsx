@@ -114,7 +114,7 @@ export default function MyLearningPage() {
                         {[
                             { icon: BookOpen, val: inProgress.length, lbl: 'كورس جارٍ', color: '#DC2626' },
                             { icon: Trophy, val: certs.length, lbl: 'شهادة مكتسبة', color: '#D97706' },
-                            { icon: GraduationCap, val: `${totalProgress}٪`, lbl: 'متوسط التقدم', color: '#10B981' },
+                            // { icon: GraduationCap, val: `${totalProgress}٪`, lbl: 'متوسط التقدم', color: '#10B981' },
                         ].map(({ icon: Icon, val, lbl, color }) => (
                             <div
                                 key={lbl}

@@ -80,6 +80,7 @@ import ResultsPage from './pages/election/Resultspage'
 import VotingPage from './pages/election/Votingpage'
 import CandidatePage from './pages/election/Candidatespage'
 import CandidateProfilePage from "./pages/election/Candidateprofilepage";
+import CertificateVerificationPage from './pages/academy/Certificateverificationpage';
 
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
@@ -223,6 +224,7 @@ const App = () => (
                 <Route path="/academy/course/:id" element={<CoursePage />} />
                 <Route path="/academy/my-learning" element={<Mylearningpage />} />
                 <Route path="/academy/certificate/:courseId" element={<CertificatePage />} />
+                <Route path="/verify/:certId" element={<CertificateVerificationPage />} />
 
 
                 <Route path="/verify/:id" element={<Verify />} />
