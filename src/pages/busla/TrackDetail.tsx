@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     StickyNote,
@@ -11,8 +11,15 @@ import {
     Plus,
     Loader2,
     BookOpen,
+    ArrowLeft,
+    Search,
+    X,
+    Clock,
+    TrendingUp,
+    Share2,
+    ChevronLeft,
 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { cn } from '@/lib/utils';
@@ -33,435 +40,635 @@ import { lazy, Suspense } from 'react';
 import type { Note, Bookmark as BookmarkType, TrackMessage } from '@/integrations/supabase/types';
 import { SmartTopBar } from '@/components/layout/SmartTopBar';
 
-
 // Lazy load PDF viewer to avoid SSR issues
-import PDFViewer from '@/components/Pdfviewer';
+const PDFViewer = lazy(() => import('@/components/Pdfviewer'));
+
 type Tab = 'notes' | 'bookmarks' | 'chat';
+
+interface TrackDetailPageState {
+    track: any;
+    userId: string | null;
+    loading: boolean;
+    currentPage: number;
+    totalPages: number;
+    activeTab: Tab;
+    bookmarkedPages: Set<number>;
+    notes: Note[];
+    noteInput: string;
+    savingNote: boolean;
+    showAllNotes: boolean;
+    showSearch: boolean;
+    searchQuery: string;
+    bookmarks: BookmarkType[];
+    messages: TrackMessage[];
+    chatInput: string;
+    sendingMsg: boolean;
+}
 
 export default function TrackDetailPage() {
     const { id } = useParams<{ id: string }>();
-    const navigate = useNavigate(); // Rename router to navigate for clarity
+    const navigate = useNavigate();
 
-    const [track, setTrack] = useState<any>(null);
-    const [userId, setUserId] = useState<string | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(0);
-    const [activeTab, setActiveTab] = useState<Tab>('notes');
-    const [bookmarkedPages, setBookmarkedPages] = useState<Set<number>>(new Set());
+    // Consolidated state management
+    const [state, setState] = useState<TrackDetailPageState>({
+        track: null,
+        userId: null,
+        loading: true,
+        currentPage: 1,
+        totalPages: 0,
+        activeTab: 'notes',
+        bookmarkedPages: new Set(),
+        notes: [],
+        noteInput: '',
+        savingNote: false,
+        showAllNotes: false,
+        showSearch: false,
+        searchQuery: '',
+        bookmarks: [],
+        messages: [],
+        chatInput: '',
+        sendingMsg: false,
+    });
 
-    // Notes state
-    const [notes, setNotes] = useState<Note[]>([]);
-    const [noteInput, setNoteInput] = useState('');
-    const [savingNote, setSavingNote] = useState(false);
-    const [showAllNotes, setShowAllNotes] = useState(false);
-    const [showSearch, setShowSearch] = useState(false);
-
-    // Bookmarks state
-    const [bookmarks, setBookmarks] = useState<BookmarkType[]>([]);
-
-    // Chat state
-    const [messages, setMessages] = useState<TrackMessage[]>([]);
-    const [chatInput, setChatInput] = useState('');
-    const [sendingMsg, setSendingMsg] = useState(false);
     const chatEndRef = useRef<HTMLDivElement>(null);
-    // ... other states
+    const progressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // 1. Get user first
+    // Helper function to update state
+    const updateState = useCallback((updates: Partial<TrackDetailPageState>) => {
+        setState((prev) => ({ ...prev, ...updates }));
+    }, []);
+
+    // 1. Get user on mount
     useEffect(() => {
-        supabase.auth.getUser().then(({ data }) => {
-            const user = data.user?.id ?? null;
-            setUserId(user);
-            // If no user is found, stop loading so we don't hang forever
-            if (!user) setLoading(false);
-        });
+        const fetchUser = async () => {
+            try {
+                const { data } = await supabase.auth.getUser();
+                const userId = data.user?.id ?? null;
+                updateState({ userId, loading: !userId ? false : true });
+            } catch (error) {
+                console.error('Auth error:', error);
+                updateState({ loading: false });
+            }
+        };
+        fetchUser();
     }, []);
 
     // 2. Fetch track data
     useEffect(() => {
-        // Only fetch if we have the ID and we know the userId (even if null)
-        if (!id) return;
+        if (!id || !state.userId) return;
 
-        const fetchData = async () => {
-            // If user finished checking and is null, redirect or stop loading
-            if (userId === null) {
-                // setLoading(false); // Optional: depends if you allow guests
-                return;
-            }
-
-            setLoading(true);
+        const fetchTrackData = async () => {
+            updateState({ loading: true });
             try {
-                const data = await getTrackById(id, userId);
+                const data = await getTrackById(id, state.userId!);
                 if (!data) {
+                    toast.error('المسار غير موجود');
                     navigate('/busla/tracks');
                     return;
                 }
-                setTrack(data);
-                setCurrentPage(data.last_page || 1);
-            } catch (err) {
-                console.error(err);
-                toast.error("حدث خطأ أثناء تحميل البيانات");
+                updateState({
+                    track: data,
+                    currentPage: data.last_page || 1,
+                    totalPages: data.total_pages || 0,
+                });
+            } catch (error) {
+                console.error('Track fetch error:', error);
+                toast.error('حدث خطأ أثناء تحميل البيانات');
             } finally {
-                setLoading(false);
+                updateState({ loading: false });
             }
         };
 
-        fetchData();
-        // REMOVED 'navigate' from dependencies to prevent re-fire loops
-    }, [userId, id]);
+        fetchTrackData();
+    }, [state.userId, id]);
 
-    // ... handle other effects similarly (remove unnecessary dependencies)
-
-    // Fetch bookmarks
+    // 3. Fetch notes
     useEffect(() => {
-        if (!userId || !id) return;
-        getBookmarks(id, userId).then((bk) => {
-            setBookmarks(bk);
-            setBookmarkedPages(new Set(bk.map((b) => b.page_number)));
-        });
-    }, [userId, id]);
+        if (!state.userId || !id) return;
+        const fetchNotes = async () => {
+            try {
+                const notesData = await getNotes(id, state.userId!);
+                updateState({ notes: notesData || [] });
+            } catch (error) {
+                console.error('Notes fetch error:', error);
+            }
+        };
+        fetchNotes();
+    }, [state.userId, id]);
 
-    // Fetch messages
+    // 4. Fetch bookmarks
     useEffect(() => {
-        if (!userId || !id || activeTab !== 'chat') return;
-        getMessages(id).then(setMessages);
-    }, [userId, id, activeTab]);
+        if (!state.userId || !id) return;
+        const fetchBookmarks = async () => {
+            try {
+                const bookmarksData = await getBookmarks(id, state.userId!);
+                updateState({
+                    bookmarks: bookmarksData || [],
+                    bookmarkedPages: new Set(bookmarksData?.map((b) => b.page_number) || []),
+                });
+            } catch (error) {
+                console.error('Bookmarks fetch error:', error);
+            }
+        };
+        fetchBookmarks();
+    }, [state.userId, id]);
 
-    // Scroll chat to bottom
+    // 5. Fetch messages when chat tab is active
+    useEffect(() => {
+        if (!state.userId || !id || state.activeTab !== 'chat') return;
+        const fetchMessages = async () => {
+            try {
+                const messagesData = await getMessages(id);
+                updateState({ messages: messagesData || [] });
+            } catch (error) {
+                console.error('Messages fetch error:', error);
+            }
+        };
+        fetchMessages();
+    }, [state.userId, id, state.activeTab]);
+
+    // 6. Auto-scroll chat to bottom
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages]);
+    }, [state.messages]);
 
-    // Handle page change - debounced progress save
-    const progressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const handlePageChange = (page: number) => {
-        setCurrentPage(page);
+    // Handle page change with debounced progress save
+    const handlePageChange = useCallback((page: number) => {
+        updateState({ currentPage: page });
         if (progressTimer.current) clearTimeout(progressTimer.current);
         progressTimer.current = setTimeout(() => {
-            if (userId) updateProgress(id, userId, page);
+            if (state.userId && id) {
+                updateProgress(id, state.userId, page).catch(console.error);
+            }
         }, 1000);
-    };
+    }, [state.userId, id]);
+
+    // Handle total pages update from PDFViewer
+    const handleTotalPagesChange = useCallback((pages: number) => {
+        updateState({ totalPages: pages });
+    }, []);
 
     // Save note
-    const handleSaveNote = async () => {
-        if (!userId || !noteInput.trim()) return;
-        setSavingNote(true);
-        const { data, error } = await createNote(id, userId, currentPage, noteInput.trim());
-        if (error) {
-            toast.error('فشل حفظ الملاحظة');
-        } else if (data) {
-            setNotes((prev) => [data, ...prev]);
-            setNoteInput('');
-            toast.success('تم حفظ الملاحظة');
+    const handleSaveNote = useCallback(async () => {
+        if (!state.userId || !state.noteInput.trim() || !id) return;
+        updateState({ savingNote: true });
+        try {
+            const { data, error } = await createNote(id, state.userId, state.currentPage, state.noteInput.trim());
+            if (error) {
+                toast.error('فشل حفظ الملاحظة');
+            } else if (data) {
+                updateState({
+                    notes: [data, ...state.notes],
+                    noteInput: '',
+                });
+                toast.success('تم حفظ الملاحظة بنجاح ✓');
+            }
+        } catch (error) {
+            console.error('Note save error:', error);
+            toast.error('حدث خطأ أثناء حفظ الملاحظة');
+        } finally {
+            updateState({ savingNote: false });
         }
-        setSavingNote(false);
-    };
+    }, [state.userId, state.noteInput, state.currentPage, state.notes, id]);
 
     // Delete note
-    const handleDeleteNote = async (noteId: string) => {
-        await deleteNote(noteId);
-        setNotes((prev) => prev.filter((n) => n.id !== noteId));
-        toast.info('تم حذف الملاحظة');
-    };
+    const handleDeleteNote = useCallback(async (noteId: string) => {
+        try {
+            await deleteNote(noteId);
+            updateState({
+                notes: state.notes.filter((n) => n.id !== noteId),
+            });
+            toast.info('تم حذف الملاحظة');
+        } catch (error) {
+            console.error('Note delete error:', error);
+            toast.error('فشل حذف الملاحظة');
+        }
+    }, [state.notes]);
 
     // Toggle bookmark
-    const handleBookmarkToggle = async (page: number) => {
-        if (!userId) return;
-        const { added, error } = await toggleBookmark(id, userId, page);
-        if (error) {
-            toast.error('حدث خطأ');
-            return;
+    const handleBookmarkToggle = useCallback(async (page: number) => {
+        if (!state.userId || !id) return;
+        try {
+            const { added, error } = await toggleBookmark(id, state.userId, page);
+            if (error) {
+                toast.error('حدث خطأ');
+                return;
+            }
+            if (added) {
+                updateState({
+                    bookmarkedPages: new Set([...state.bookmarkedPages, page]),
+                    bookmarks: [
+                        ...state.bookmarks,
+                        { id: `temp-${Date.now()}`, user_id: state.userId, track_id: id, page_number: page, created_at: new Date().toISOString() },
+                    ],
+                });
+                toast.success(`✓ تمت إضافة إشارة مرجعية للصفحة ${page}`);
+            } else {
+                const newBookmarkedPages = new Set(state.bookmarkedPages);
+                newBookmarkedPages.delete(page);
+                updateState({
+                    bookmarkedPages: newBookmarkedPages,
+                    bookmarks: state.bookmarks.filter((b) => b.page_number !== page),
+                });
+                toast.info('تمت إزالة الإشارة المرجعية');
+            }
+        } catch (error) {
+            console.error('Bookmark toggle error:', error);
+            toast.error('فشل تحديث الإشارة المرجعية');
         }
-        if (added) {
-            setBookmarkedPages((prev) => new Set([...prev, page]));
-            setBookmarks((prev) => [
-                ...prev,
-                { id: 'temp', user_id: userId, track_id: id, page_number: page, created_at: '' },
-            ]);
-            toast.success(`تمت إضافة إشارة مرجعية للصفحة ${page}`);
-        } else {
-            setBookmarkedPages((prev) => {
-                const next = new Set(prev);
-                next.delete(page);
-                return next;
-            });
-            setBookmarks((prev) => prev.filter((b) => b.page_number !== page));
-            toast.info('تمت إزالة الإشارة المرجعية');
-        }
-    };
+    }, [state.userId, state.bookmarkedPages, state.bookmarks, id]);
 
     // Send chat message
-    const handleSendMessage = async () => {
-        if (!userId || !chatInput.trim()) return;
-        setSendingMsg(true);
-        const { error } = await sendMessage(id, userId, chatInput.trim());
-        if (error) {
-            toast.error('فشل إرسال الرسالة');
-        } else {
-            setChatInput('');
-            const updated = await getMessages(id);
-            setMessages(updated);
+    const handleSendMessage = useCallback(async () => {
+        if (!state.userId || !state.chatInput.trim() || !id) return;
+        updateState({ sendingMsg: true });
+        try {
+            const { error } = await sendMessage(id, state.userId, state.chatInput.trim());
+            if (error) {
+                toast.error('فشل إرسال الرسالة');
+            } else {
+                updateState({ chatInput: '' });
+                const updatedMessages = await getMessages(id);
+                updateState({ messages: updatedMessages || [] });
+                toast.success('تم إرسال الرسالة ✓');
+            }
+        } catch (error) {
+            console.error('Message send error:', error);
+            toast.error('حدث خطأ أثناء إرسال الرسالة');
+        } finally {
+            updateState({ sendingMsg: false });
         }
-        setSendingMsg(false);
-    };
+    }, [state.userId, state.chatInput, id]);
 
-    const currentPageNotes = notes.filter((n) => n.page_number === currentPage);
-    const allNotes = showAllNotes ? notes : notes.filter((n) => n.page_number === currentPage);
+    // Memoized filtered data
+    const filteredNotes = useMemo(() => {
+        const pageNotes = state.notes.filter((n) => n.page_number === state.currentPage);
+        if (state.showAllNotes) return state.notes;
+        return pageNotes;
+    }, [state.notes, state.currentPage, state.showAllNotes]);
 
-    const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
-        { key: 'notes', label: 'الملاحظات', icon: <StickyNote className="h-4 w-4" /> },
-        { key: 'bookmarks', label: 'الإشارات', icon: <Bookmark className="h-4 w-4" /> },
-        { key: 'chat', label: 'الدردشة', icon: <MessageCircle className="h-4 w-4" /> },
+    const searchedNotes = useMemo(() => {
+        if (!state.searchQuery.trim()) return filteredNotes;
+        return filteredNotes.filter((n) =>
+            n.content.toLowerCase().includes(state.searchQuery.toLowerCase())
+        );
+    }, [filteredNotes, state.searchQuery]);
+
+    const tabs: { key: Tab; label: string; icon: React.ReactNode; count?: number }[] = [
+        { key: 'notes', label: 'الملاحظات', icon: <StickyNote className="h-4 w-4" />, count: state.notes.length },
+        { key: 'bookmarks', label: 'الإشارات', icon: <Bookmark className="h-4 w-4" />, count: state.bookmarks.length },
+        { key: 'chat', label: 'الدردشة', icon: <MessageCircle className="h-4 w-4" />, count: state.messages.length },
     ];
 
-    if (loading) {
+    // Loading state
+    if (state.loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-red-700" />
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100">
+                <div className="text-center space-y-4">
+                    <Loader2 className="h-12 w-12 animate-spin text-red-700 mx-auto" />
+                    <p className="text-slate-600 font-medium">جاري تحميل المسار...</p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-background pb-24" dir="rtl">
-            <header className="sticky-header">
+        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 pb-24" dir="rtl">
+            {/* Header */}
+            <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
                 <div className="p-4 max-w-screen-xl mx-auto">
-                    <SmartTopBar onOpenSearch={() => setShowSearch(true)} />
+                    <div className="flex items-center justify-between mb-4">
+                        <button
+                            onClick={() => navigate('/busla/tracks')}
+                            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                        >
+                            <ArrowLeft className="h-5 w-5 text-slate-700" />
+                        </button>
+                        <h1 className="text-lg font-bold text-slate-900 flex-1 text-center px-4 line-clamp-1">
+                            {state.track?.name || 'المسار'}
+                        </h1>
+                        <Button size="icon" variant="ghost" className="h-10 w-10">
+                            <Share2 className="h-5 w-5 text-slate-600" />
+                        </Button>
+                    </div>
+                    <SmartTopBar onOpenSearch={() => updateState({ showSearch: true })} />
                 </div>
             </header>
 
-            <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
-                {/* No book assigned */}
-                {!track?.current_book?.file_url ? (
-                    <Card>
-                        <CardContent className="py-12 text-center text-muted-foreground">
-                            <BookOpen className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                            <p>لم يُعيَّن كتاب لهذا المدار بعد</p>
+            {/* Main Content */}
+            <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
+                {/* No book assigned state */}
+                {!state.track?.current_book?.file_url ? (
+                    <Card className="border-0 shadow-md bg-white">
+                        <CardContent className="py-16 text-center space-y-4">
+                            <div className="flex justify-center">
+                                <div className="p-4 bg-slate-100 rounded-full">
+                                    <BookOpen className="h-12 w-12 text-slate-400" />
+                                </div>
+                            </div>
+                            <div>
+                                <p className="text-slate-600 font-medium">لم يُعيَّن كتاب لهذا المسار بعد</p>
+                                <p className="text-sm text-slate-500 mt-2">سيتم إضافة الكتاب قريباً</p>
+                            </div>
                         </CardContent>
                     </Card>
                 ) : (
-                    /* PDF Viewer */
-                    /* Replace the PDF Viewer section with this */
-                    <Suspense fallback={
-                        <div className="flex flex-col items-center justify-center py-20 bg-muted rounded-2xl">
-                            <Loader2 className="h-10 w-10 animate-spin text-red-700 mb-2" />
-                            <p className="text-sm text-muted-foreground">جاري تحميل قارئ الكتب...</p>
-                        </div>
-                    }>
+                    /* PDF Viewer with Suspense */
+                    <Suspense
+                        fallback={
+                            <div className="flex flex-col items-center justify-center py-24 bg-white rounded-2xl shadow-md border border-slate-200">
+                                <Loader2 className="h-10 w-10 animate-spin text-red-700 mb-3" />
+                                <p className="text-sm text-slate-600 font-medium">جاري تحميل قارئ الكتب...</p>
+                            </div>
+                        }
+                    >
                         <PDFViewer
-                            url={track.current_book.file_url}
-                            initialPage={currentPage}
-                            isBookmarked={bookmarkedPages.has(currentPage)}
+                            url={state.track.current_book.file_url}
+                            currentPage={state.currentPage}
+                            totalPages={state.totalPages}
+                            isBookmarked={state.bookmarkedPages.has(state.currentPage)}
                             onPageChange={handlePageChange}
                             onBookmarkToggle={handleBookmarkToggle}
+                            onTotalPagesChange={handleTotalPagesChange}
                         />
                     </Suspense>
                 )}
 
-                {/* Progress info */}
-                {track?.current_book && totalPages > 0 && (
-                    <div className="flex items-center justify-between text-sm text-muted-foreground px-1">
-                        <span>صفحة {currentPage} من {totalPages}</span>
-                        <span className="font-medium text-red-700">
-                            {Math.round((currentPage / totalPages) * 100)}% مكتمل
-                        </span>
-                    </div>
+                {/* Progress Info Card */}
+                {state.track?.current_book?.file_url && (
+                    <Card className="border-0 shadow-md bg-white">
+                        <CardContent className="p-4 space-y-4">
+                            <div className="flex items-center justify-between gap-4">
+                                <div className="flex-1">
+                                    <label className="text-xs font-semibold text-slate-600 block mb-2">
+                                        الصفحة الحالية
+                                    </label>
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => handlePageChange(state.currentPage - 1)}
+                                            disabled={state.currentPage <= 1}
+                                            className="h-9 px-3"
+                                        >
+                                            السابقة
+                                        </Button>
+                                        <input
+                                            type="number"
+                                            min={1}
+                                            value={state.currentPage}
+                                            onChange={(e) => {
+                                                const page = Math.max(1, Number(e.target.value) || 1);
+                                                handlePageChange(page);
+                                            }}
+                                            className="flex-1 h-9 px-3 border border-slate-300 rounded-lg text-center font-mono text-sm focus:outline-none focus:ring-2 focus:ring-red-700"
+                                        />
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => handlePageChange(state.currentPage + 1)}
+                                            disabled={state.totalPages > 0 && state.currentPage >= state.totalPages}
+                                            className="h-9 px-3"
+                                        >
+                                            التالية
+                                        </Button>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-xs font-semibold text-slate-600 mb-2">التقدم</p>
+                                    <div className="text-2xl font-bold text-red-700">
+                                        {state.totalPages > 0
+                                            ? Math.round((state.currentPage / state.totalPages) * 100)
+                                            : 0}
+                                        %
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Progress bar */}
+                            <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                                <div
+                                    className="bg-gradient-to-r from-red-600 to-red-500 h-full transition-all duration-300"
+                                    style={{
+                                        width: `${state.totalPages > 0 ? (state.currentPage / state.totalPages) * 100 : 0}%`,
+                                    }}
+                                />
+                            </div>
+
+                            {/* Stats */}
+                            <div className="grid grid-cols-3 gap-3 pt-2">
+                                <div className="bg-slate-50 rounded-lg p-3 text-center">
+                                    <Clock className="h-4 w-4 text-slate-500 mx-auto mb-1" />
+                                    <p className="text-xs text-slate-600 font-medium">قراءة</p>
+                                    <p className="text-sm font-bold text-slate-900">
+                                        {Math.ceil((state.totalPages || 0) / 10)}د
+                                    </p>
+                                </div>
+                                <div className="bg-slate-50 rounded-lg p-3 text-center">
+                                    <StickyNote className="h-4 w-4 text-slate-500 mx-auto mb-1" />
+                                    <p className="text-xs text-slate-600 font-medium">ملاحظات</p>
+                                    <p className="text-sm font-bold text-slate-900">{state.notes.length}</p>
+                                </div>
+                                <div className="bg-slate-50 rounded-lg p-3 text-center">
+                                    <Bookmark className="h-4 w-4 text-slate-500 mx-auto mb-1" />
+                                    <p className="text-xs text-slate-600 font-medium">إشارات</p>
+                                    <p className="text-sm font-bold text-slate-900">{state.bookmarks.length}</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
                 )}
 
-                {/* Tabs */}
-                <div className="flex rounded-xl overflow-hidden border">
+                {/* Tabs Navigation */}
+                <div className="flex gap-2 bg-white rounded-xl p-1 shadow-sm border border-slate-200">
                     {tabs.map((tab) => (
                         <button
                             key={tab.key}
-                            onClick={() => setActiveTab(tab.key)}
+                            onClick={() => updateState({ activeTab: tab.key })}
                             className={cn(
-                                'flex-1 py-2.5 text-sm font-medium flex items-center justify-center gap-1.5 transition-all',
-                                activeTab === tab.key
-                                    ? 'bg-gray-900 text-white'
-                                    : 'bg-background text-muted-foreground hover:bg-muted'
+                                'flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200',
+                                state.activeTab === tab.key
+                                    ? 'bg-red-700 text-white shadow-md'
+                                    : 'text-slate-600 hover:bg-slate-50'
                             )}
                         >
                             {tab.icon}
                             <span className="hidden sm:inline">{tab.label}</span>
+                            {tab.count !== undefined && (
+                                <span className="ml-1 text-xs bg-white/20 px-2 py-0.5 rounded-full">
+                                    {tab.count}
+                                </span>
+                            )}
                         </button>
                     ))}
                 </div>
 
-                {/* ── NOTES TAB ── */}
-                {activeTab === 'notes' && (
-                    <div className="space-y-3">
-                        {/* Add note */}
-                        <Card>
-                            <CardContent className="p-3 space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">
-                                        ملاحظة على الصفحة {currentPage}
-                                    </span>
-                                    <button
-                                        onClick={() => setShowAllNotes((v) => !v)}
-                                        className="text-xs text-muted-foreground hover:text-foreground"
-                                    >
-                                        {showAllNotes ? 'الصفحة الحالية' : `الكل (${notes.length})`}
-                                    </button>
-                                </div>
-                                <textarea
-                                    value={noteInput}
-                                    onChange={(e) => setNoteInput(e.target.value)}
-                                    placeholder="اكتب ملاحظتك هنا..."
-                                    rows={3}
-                                    className="w-full bg-muted rounded-lg p-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-red-700"
+                {/* Tab Content */}
+                <div className="space-y-4">
+                    {/* Notes Tab */}
+                    {state.activeTab === 'notes' && (
+                        <div className="space-y-4">
+                            {/* Search Bar */}
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="ابحث في الملاحظات..."
+                                    value={state.searchQuery}
+                                    onChange={(e) => updateState({ searchQuery: e.target.value })}
+                                    className="w-full px-4 py-3 pl-10 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent"
                                 />
-                                <Button
-                                    size="sm"
-                                    className="w-full"
-                                    onClick={handleSaveNote}
-                                    disabled={savingNote || !noteInput.trim()}
-                                >
-                                    {savingNote ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                        <>
-                                            <Plus className="h-4 w-4 ml-1" />
-                                            حفظ الملاحظة
-                                        </>
-                                    )}
-                                </Button>
-                            </CardContent>
-                        </Card>
-
-                        {/* Notes list */}
-                        {allNotes.length === 0 ? (
-                            <p className="text-center text-muted-foreground text-sm py-4">
-                                لا توجد ملاحظات {showAllNotes ? '' : 'لهذه الصفحة'}
-                            </p>
-                        ) : (
-                            allNotes.map((note) => (
-                                <Card key={note.id} className="shadow-soft">
-                                    <CardContent className="p-3">
-                                        <div className="flex items-start justify-between gap-2">
-                                            <div className="flex-1">
-                                                <span className="text-xs text-muted-foreground">
-                                                    صفحة {note.page_number}
-                                                </span>
-                                                <p className="text-sm mt-0.5 leading-relaxed">{note.content}</p>
-                                            </div>
-                                            <button
-                                                onClick={() => handleDeleteNote(note.id)}
-                                                className="text-muted-foreground hover:text-destructive shrink-0 mt-0.5"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))
-                        )}
-                    </div>
-                )}
-
-                {/* ── BOOKMARKS TAB ── */}
-                {activeTab === 'bookmarks' && (
-                    <div className="space-y-3">
-                        {bookmarks.length === 0 ? (
-                            <div className="text-center py-8 text-muted-foreground">
-                                <Bookmark className="h-10 w-10 mx-auto mb-2 opacity-40" />
-                                <p className="text-sm">لا توجد إشارات مرجعية</p>
-                                <p className="text-xs mt-1">
-                                    اضغط على أيقونة الإشارة في قارئ PDF لإضافتها
-                                </p>
+                                <Search className="absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
                             </div>
-                        ) : (
-                            bookmarks.map((bk) => (
-                                <Card
-                                    key={bk.id}
-                                    className="shadow-soft cursor-pointer hover:border-red-700 transition-colors"
-                                    onClick={() => handlePageChange(bk.page_number)}
-                                >
-                                    <CardContent className="p-3 flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-lg bg-red-700/10 flex items-center justify-center shrink-0">
-                                                <Bookmark className="h-5 w-5 text-red-700" />
-                                            </div>
-                                            <div>
-                                                <p className="font-medium text-sm">صفحة {bk.page_number}</p>
-                                                {totalPages > 0 && (
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {Math.round((bk.page_number / totalPages) * 100)}% من الكتاب
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleBookmarkToggle(bk.page_number);
-                                            }}
-                                            className="text-muted-foreground hover:text-destructive"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </button>
-                                    </CardContent>
-                                </Card>
-                            ))
-                        )}
-                    </div>
-                )}
 
-                {/* ── CHAT TAB ── */}
-                {activeTab === 'chat' && (
-                    <div className="space-y-3">
-                        <Card>
-                            <CardContent className="p-3">
-                                {/* Messages */}
-                                <div className="space-y-3 max-h-64 overflow-y-auto mb-3 pr-1">
-                                    {messages.length === 0 && (
-                                        <p className="text-center text-muted-foreground text-sm py-4">
-                                            لا توجد رسائل بعد. كن أول من يتحدث!
-                                        </p>
-                                    )}
-                                    {messages.map((msg) => {
-                                        const isMe = msg.user_id === userId;
-                                        return (
+                            {/* Note Input */}
+                            <Card className="border-0 shadow-md bg-white">
+                                <CardContent className="p-4 space-y-3">
+                                    <textarea
+                                        value={state.noteInput}
+                                        onChange={(e) => updateState({ noteInput: e.target.value })}
+                                        placeholder="أضف ملاحظة جديدة..."
+                                        className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:bg-white resize-none"
+                                        rows={3}
+                                    />
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs text-slate-500">الصفحة {state.currentPage}</span>
+                                        <Button
+                                            onClick={handleSaveNote}
+                                            disabled={state.savingNote || !state.noteInput.trim()}
+                                            className="bg-red-700 hover:bg-red-800 text-white gap-2"
+                                            size="sm"
+                                        >
+                                            {state.savingNote ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : (
+                                                <Plus className="h-4 w-4" />
+                                            )}
+                                            حفظ الملاحظة
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Toggle All Notes */}
+                            {state.notes.length > 0 && (
+                                <button
+                                    onClick={() => updateState({ showAllNotes: !state.showAllNotes })}
+                                    className="w-full text-sm text-red-700 font-medium hover:text-red-800 transition-colors py-2"
+                                >
+                                    {state.showAllNotes ? '← عرض ملاحظات هذه الصفحة فقط' : '→ عرض جميع الملاحظات'}
+                                </button>
+                            )}
+
+                            {/* Notes List */}
+                            {searchedNotes.length > 0 ? (
+                                <div className="space-y-3">
+                                    {searchedNotes.map((note) => (
+                                        <Card key={note.id} className="border-0 shadow-sm bg-white hover:shadow-md transition-shadow">
+                                            <CardContent className="p-4 space-y-2">
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div className="flex-1">
+                                                        <p className="text-xs font-semibold text-slate-500 mb-1">
+                                                            الصفحة {note.page_number}
+                                                        </p>
+                                                        <p className="text-sm text-slate-800 leading-relaxed">{note.content}</p>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleDeleteNote(note.id)}
+                                                        className="p-2 hover:bg-red-50 rounded-lg transition-colors text-slate-400 hover:text-red-600"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                </div>
+                                                <p className="text-xs text-slate-400">
+                                                    {new Date(note.created_at).toLocaleDateString('ar-SA')}
+                                                </p>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-12">
+                                    <StickyNote className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+                                    <p className="text-slate-500 text-sm">لا توجد ملاحظات بعد</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Bookmarks Tab */}
+                    {state.activeTab === 'bookmarks' && (
+                        <div className="space-y-3">
+                            {state.bookmarks.length > 0 ? (
+                                state.bookmarks.map((bookmark) => (
+                                    <Card
+                                        key={bookmark.id}
+                                        onClick={() => handlePageChange(bookmark.page_number)}
+                                        className="border-0 shadow-sm bg-white hover:shadow-md cursor-pointer transition-all"
+                                    >
+                                        <CardContent className="p-4 flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <Bookmark className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+                                                <div>
+                                                    <p className="font-semibold text-slate-900">الصفحة {bookmark.page_number}</p>
+                                                    <p className="text-xs text-slate-500">
+                                                        {new Date(bookmark.created_at).toLocaleDateString('ar-SA')}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <ChevronLeft className="h-5 w-5 text-slate-400" />
+                                        </CardContent>
+                                    </Card>
+                                ))
+                            ) : (
+                                <div className="text-center py-12">
+                                    <Bookmark className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+                                    <p className="text-slate-500 text-sm">لا توجد إشارات مرجعية بعد</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Chat Tab */}
+                    {state.activeTab === 'chat' && (
+                        <Card className="border-0 shadow-md bg-white">
+                            <CardContent className="p-4 space-y-4">
+                                {/* Messages List */}
+                                <div className="max-h-96 overflow-y-auto space-y-3 mb-4">
+                                    {state.messages.length > 0 ? (
+                                        state.messages.map((msg, idx) => (
                                             <div
-                                                key={msg.id}
+                                                key={idx}
                                                 className={cn(
-                                                    'flex flex-col gap-0.5',
-                                                    isMe ? 'items-end' : 'items-start'
+                                                    'flex gap-2',
+                                                    msg.user_id === state.userId ? 'justify-end' : 'justify-start'
                                                 )}
                                             >
-                                                {!isMe && (
-                                                    <span className="text-xs text-muted-foreground px-1">
-                                                        {msg.profiles?.full_name ?? 'مجهول'}
-                                                    </span>
-                                                )}
                                                 <div
                                                     className={cn(
-                                                        'max-w-[80%] px-3 py-2 rounded-2xl text-sm',
-                                                        isMe
-                                                            ? 'bg-red-700 text-white rounded-tl-sm'
-                                                            : 'bg-muted text-foreground rounded-tr-sm'
+                                                        'max-w-xs px-4 py-2 rounded-xl text-sm',
+                                                        msg.user_id === state.userId
+                                                            ? 'bg-red-700 text-white rounded-br-none'
+                                                            : 'bg-slate-100 text-slate-900 rounded-bl-none'
                                                     )}
                                                 >
                                                     {msg.message}
                                                 </div>
-                                                <span className="text-[10px] text-muted-foreground px-1">
-                                                    {new Date(msg.created_at).toLocaleTimeString('ar', {
-                                                        hour: '2-digit',
-                                                        minute: '2-digit',
-                                                    })}
-                                                </span>
                                             </div>
-                                        );
-                                    })}
+                                        ))
+                                    ) : (
+                                        <div className="text-center py-8">
+                                            <MessageCircle className="h-10 w-10 text-slate-300 mx-auto mb-2" />
+                                            <p className="text-slate-500 text-sm">لا توجد رسائل بعد</p>
+                                        </div>
+                                    )}
                                     <div ref={chatEndRef} />
                                 </div>
 
-                                {/* Input */}
-                                <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        value={chatInput}
-                                        onChange={(e) => setChatInput(e.target.value)}
+                                {/* Message Input */}
+                                <div className="flex gap-2 pt-4 border-t border-slate-200">
+                                    <textarea
+                                        value={state.chatInput}
+                                        onChange={(e) => updateState({ chatInput: e.target.value })}
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter' && !e.shiftKey) {
                                                 e.preventDefault();
@@ -469,15 +676,16 @@ export default function TrackDetailPage() {
                                             }
                                         }}
                                         placeholder="اكتب رسالة..."
-                                        className="flex-1 bg-muted rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-700"
+                                        className="flex-1 bg-slate-50 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:bg-white resize-none"
+                                        rows={2}
                                     />
                                     <Button
                                         size="icon"
                                         onClick={handleSendMessage}
-                                        disabled={sendingMsg || !chatInput.trim()}
-                                        className="shrink-0"
+                                        disabled={state.sendingMsg || !state.chatInput.trim()}
+                                        className="bg-red-700 hover:bg-red-800 text-white h-10 w-10"
                                     >
-                                        {sendingMsg ? (
+                                        {state.sendingMsg ? (
                                             <Loader2 className="h-4 w-4 animate-spin" />
                                         ) : (
                                             <Send className="h-4 w-4" />
@@ -486,8 +694,8 @@ export default function TrackDetailPage() {
                                 </div>
                             </CardContent>
                         </Card>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     );
