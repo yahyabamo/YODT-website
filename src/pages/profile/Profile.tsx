@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   User, Mail, Phone, GraduationCap, BookOpen, LogOut, Settings,
   ChevronLeft, Heart, CreditCard, Percent, QrCode, Edit3, Check, X,
-  Shield, Activity, Camera
+  Shield, Activity, Camera, StickyNote
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -179,7 +179,7 @@ const Profile = () => {
     { icon: Percent, label: 'الخصومات والعروض', path: '/home/offers', color: 'bg-orange-500/10 text-orange-600' },
     // { icon: CreditCard, label: 'الاشتراكات', path: '/subscriptions', color: 'bg-primary/10 text-primary' },
     { icon: Heart, label: 'الداعمون والشركاء', path: '/partners', color: 'bg-red-500/10 text-red-600' },
-    // { icon: BookOpen, label: 'الشهادات', path: '/certificates', color: 'bg-blue-500/10 text-blue-600' },
+    { icon: StickyNote, label: 'الملاحظات', path: '/notes', color: 'bg-blue-500/10 text-blue-600' },
   ];
 
   if (authLoading || loading) {

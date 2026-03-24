@@ -18,6 +18,7 @@ import {
     TrendingUp,
     Share2,
     ChevronLeft,
+    ArrowRight,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -337,21 +338,22 @@ export default function TrackDetailPage() {
             {/* Header */}
             <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
                 <div className="p-4 max-w-screen-xl mx-auto">
+                    <SmartTopBar onOpenSearch={() => updateState({ showSearch: true })} />
+
                     <div className="flex items-center justify-between mb-4">
                         <button
                             onClick={() => navigate('/busla/tracks')}
                             className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
                         >
-                            <ArrowLeft className="h-5 w-5 text-slate-700" />
+                            <ArrowRight className="h-5 w-5 text-slate-700" />
                         </button>
                         <h1 className="text-lg font-bold text-slate-900 flex-1 text-center px-4 line-clamp-1">
                             {state.track?.name || 'المسار'}
                         </h1>
-                        <Button size="icon" variant="ghost" className="h-10 w-10">
+                        {/* <Button size="icon" variant="ghost" className="h-10 w-10">
                             <Share2 className="h-5 w-5 text-slate-600" />
-                        </Button>
+                        </Button> */}
                     </div>
-                    <SmartTopBar onOpenSearch={() => updateState({ showSearch: true })} />
                 </div>
             </header>
 

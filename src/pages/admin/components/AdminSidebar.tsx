@@ -22,7 +22,8 @@ export const navItems = [
     { id: "elections", path: "/admin/elections", label: "الانتخابات", icon: "🗳️" },
     { id: "academy", path: "/admin/academy", label: "الأكاديمية", icon: "🎓" },
     { id: "busla", path: "/admin/busla", label: "بوصلة", icon: "🧭" },
-
+    { id: "engagement-chat", path: "/admin/engagement/chat", label: "التفاعل - الدردشة", icon: "💬" },
+    { id: "engagement-weekly", path: "/admin/engagement/weekly", label: "التفاعل - الأسبوعي", icon: "📋" },
 ];
 
 interface AdminSidebarProps {

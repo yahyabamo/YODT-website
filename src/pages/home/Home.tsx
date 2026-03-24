@@ -101,6 +101,21 @@ const Home = () => {
       iconColor: 'text-pink-500',
       badge: language === 'ar' ? 'دورات' : 'Courses',
     },
+    {
+      icon: Users, // Using Lucide Users icon
+      label: language === 'ar' ? 'المجتمع' : 'Community',
+      path: '/engagement/chat', // Path to your chat page
+      gradient: 'from-blue-500/20 to-blue-500/5',
+      iconColor: 'text-blue-500',
+    },
+    {
+      icon: Calendar, // Using Lucide Calendar icon
+      label: language === 'ar' ? 'النشاط الأسبوعي' : 'Weekly Activity',
+      path: '/engagement/weekly-question', // Path to your weekly question page
+      gradient: 'from-emerald-500/20 to-emerald-500/5',
+      iconColor: 'text-emerald-500',
+      badge: language === 'ar' ? 'جديد' : 'New',
+    },
   ];
 
   const quickServices = [

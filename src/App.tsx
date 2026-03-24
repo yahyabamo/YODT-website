@@ -114,6 +114,11 @@ import AdminActivitiesPage from "./pages/admin/busla/activityadmin";
 import BuslaAdminPage from "./pages/admin/busla/buslaAdmin";
 import LibraryAdminPage from "./pages/admin/busla/library";
 import TrackDetailAdminPage from "./pages/admin/busla/trackadmin";
+import WeeklyQuestion from "./pages/engagement/WeeklyQuestion";
+import Chat from "./pages/engagement/Chat";
+import EngagementPoints from "./pages/engagement/EngagementPoints";
+import ChatAdmin from "./pages/admin/engagement/ChatAdmin";
+import WeeklyAdmin from "./pages/admin/engagement/WeeklyAdmin";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -168,8 +173,8 @@ const App = () => (
                   <Route path="/admin/busla" element={<BuslaAdminPage />} />
                   <Route path="/admin/busla/library" element={<LibraryAdminPage />} />
                   <Route path="/admin/busla/tracks" element={<TrackDetailAdminPage />} />
-
-
+                  <Route path="/admin/engagement/chat" element={<ChatAdmin />} />
+                  <Route path="/admin/engagement/weekly" element={<WeeklyAdmin />} />
 
                 </Route>
                 <Route path="/" element={<Index />} />
@@ -248,6 +253,9 @@ const App = () => (
                 <Route path="/busla/library" element={<LibraryPage />} />
                 <Route path="/busla/track/:id" element={<TrackDetailPage />} />
                 <Route path="/busla/activities" element={<ActivitiesPage />} />
+                <Route path="/engagement/weekly-question" element={<WeeklyQuestion />} />
+                <Route path="/engagement/chat" element={<Chat />} />
+                <Route path="/engagement/points" element={<EngagementPoints />} />
 
                 <Route path="/verify/:id" element={<Verify />} />
                 <Route path="*" element={<NotFound />} />
