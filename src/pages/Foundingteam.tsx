@@ -32,10 +32,12 @@ const FoundingTeam = () => {
         const fetchMembers = async () => {
             const { data: { session } } = await supabase.auth.getSession();
             let userGender: string | null = null;
+            let userRole: string | null = null;
             if (session?.user) {
                 const { data: profile } = await supabase
-                    .from('profiles').select('gender').eq('id', session.user.id).single();
+                    .from('profiles').select('gender, role').eq('id', session.user.id).single();
                 userGender = profile?.gender ?? null;
+                userRole = profile?.role ?? null;
             }
 
             let query = supabase
@@ -47,7 +49,9 @@ const FoundingTeam = () => {
 
             if (!error && data) {
                 let result = data;
-                if (userGender !== 'female') {
+                // Admins & female users can see all members; male non-admins see only male members
+                const canSeeAll = userRole === 'admin' || userGender === 'female';
+                if (!canSeeAll) {
                     result = result.filter((m: TeamMember) => m.gender === 'male');
                 }
                 setShuffled(shuffle(result));

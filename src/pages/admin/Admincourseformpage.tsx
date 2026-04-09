@@ -6,6 +6,7 @@ import {
     ArrowRight, Plus, Trash2, GripVertical,
     Youtube, Save, Eye, EyeOff, AlertCircle, CheckCircle2,
 } from 'lucide-react'
+import { useRoleGuard } from '@/hooks/useRoleGuard'
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 function getYouTubeId(url: string): string | null {
@@ -29,6 +30,7 @@ function newLesson(order: number): LessonDraft {
 
 // ─── Page ───────────────────────────────────────────────────────────────────
 export default function AdminCourseFormPage() {
+    useRoleGuard(['academy']);
     const { id } = useParams<{ id: string }>()
     const navigate = useNavigate()
     const isNew = !id || id === 'new'

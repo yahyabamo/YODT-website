@@ -15,6 +15,7 @@ import {
 } from '@/lib/queries';
 import type { LibraryItem } from '@/integrations/supabase/types';
 import { LIBRARY_TYPE_LABELS } from '@/integrations/supabase/types';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 
 const EMPTY_FORM = {
     title: '',
@@ -23,6 +24,7 @@ const EMPTY_FORM = {
 };
 
 export default function AdminLibraryPage() {
+    useRoleGuard(['busla']);
     const [items, setItems] = useState<LibraryItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [form, setForm] = useState(EMPTY_FORM);

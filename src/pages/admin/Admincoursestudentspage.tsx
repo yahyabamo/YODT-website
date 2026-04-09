@@ -6,6 +6,7 @@ import {
     ArrowRight, Users, CheckCircle2, Clock,
     Trophy, Search, TrendingUp,
 } from 'lucide-react'
+import { useRoleGuard } from '@/hooks/useRoleGuard'
 
 interface StudentRow {
     user_id: string
@@ -28,6 +29,7 @@ function formatDate(iso: string) {
 }
 
 export default function AdminCourseStudentsPage() {
+    useRoleGuard(['academy']);
     const { id } = useParams<{ id: string }>()
     const navigate = useNavigate()
 

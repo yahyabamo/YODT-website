@@ -4,6 +4,7 @@ import { fetchUsers, updateUserStatus, updateUserPoints } from "@/service/supaba
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar, Badge, Spinner, Inp, Sel, Modal, B } from "./components/AdminUI";
+import { ROLE_LABELS, ALL_PERMISSIONS, PERMISSION_LABELS, PERMISSION_ICONS, Permission, UserRole } from "@/hooks/useRoleGuard";
 import { useOutletContext } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
@@ -12,7 +13,8 @@ interface User {
     id: string;
     full_name: string;
     email: string;
-    role: "admin" | "staff" | "user"; // Updated roles
+    role: UserRole;
+    permissions: string[] | null;
     status: "active" | "inactive" | "banned";
     total_points: number;
     university: string;
@@ -38,6 +40,9 @@ export default function UsersAdmin() {
     const [filter, setFilter] = useState("all");
     const [loading, setLoading] = useState(true);
     const [pointsModal, setPointsModal] = useState<User | null>(null);
+    const [roleModal, setRoleModal] = useState<User | null>(null);
+    const [selectedRole, setSelectedRole] = useState<UserRole>('user');
+    const [selectedPerms, setSelectedPerms] = useState<Permission[]>([]);
     const [pf, setPf] = useState({ amount: "", reason: "", type: "manual" });
     const debRef = useRef<any>();
 
@@ -67,7 +72,14 @@ export default function UsersAdmin() {
         debRef.current = setTimeout(() => { setSearch(v); setPage(0); }, 350);
     };
 
-    const filtered = filter === "all" ? users : users.filter(u => u.status === filter);
+    const filtered = (() => {
+        if (filter === 'all') return users;
+        if (filter === 'admin') return users.filter(u => u.role === 'admin');
+        if (filter === 'staff') return users.filter(u => u.role === 'staff' && (u.permissions ?? []).length === 0);
+        if (filter === 'user') return users.filter(u => u.role === 'user');
+        // Permission filters: staff who have this permission in their array
+        return users.filter(u => u.role === 'staff' && (u.permissions ?? []).includes(filter));
+    })();
 
     // const handleStatus = (u: User, ns: "active" | "inactive" | "banned") => setConfirm({
     //     title: ns === "banned" ? "حظر المستخدم" : "تغيير الحالة",
@@ -79,37 +91,33 @@ export default function UsersAdmin() {
     //     }
     // });
 
-    const handleRole = (u: User) => {
-        // Simple logic: Toggle between User -> Staff -> Super Admin
-        const roles: User['role'][] = ["user", "staff", "admin"];
-        const currentIndex = roles.indexOf(u.role);
-        const nextRole = roles[(currentIndex + 1) % roles.length];
+    const openRoleModal = (u: User) => {
+        setSelectedRole(u.role as UserRole);
+        setSelectedPerms((u.permissions ?? []) as Permission[]);
+        setRoleModal(u);
+    };
 
-        const roleLabels = { user: "عضو", staff: "موظف", admin: "مسؤول رئيسي" };
+    const togglePerm = (p: Permission) => {
+        setSelectedPerms(prev =>
+            prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]
+        );
+    };
 
-        setConfirm({
-            title: "تغيير الصلاحية",
-            message: `هل تريد تغيير صلاحية ${u.full_name} إلى ${roleLabels[nextRole]}؟`,
-            danger: nextRole === "admin", // Warning if making someone a full admin
-            onConfirm: async () => {
-                try {
-                    // Update in Supabase using the 'admin' string
-                    const { error } = await supabase
-                        .from('profiles')
-                        .update({ role: nextRole })
-                        .eq('id', u.id);
-
-                    if (error) throw error;
-                    setConfirm(null);
-                    toast.success(`تم تغيير الدور إلى ${roleLabels[nextRole]}`);
-                    load(false);
-                }
-                catch (err: any) {
-                    toast.error("فشل تحديث الصلاحية");
-                    console.error(err);
-                }
-            }
-        });
+    const handleRole = async () => {
+        if (!roleModal) return;
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update({ role: selectedRole, permissions: selectedPerms })
+                .eq('id', roleModal.id);
+            if (error) throw error;
+            setRoleModal(null);
+            toast.success(`تم تحديث الصلاحيات بنجاح`);
+            load(false);
+        } catch (err: any) {
+            toast.error("فشل تحديث الصلاحية");
+            console.error(err);
+        }
     };
 
     const handleDelete = (u: User) => setConfirm({
@@ -157,21 +165,59 @@ export default function UsersAdmin() {
                 </div>
             </div>
 
-            <div className="flex gap-2.5 mb-4 flex-wrap">
-                <input onChange={e => handleSearch(e.target.value)} placeholder="🔍  بحث بالاسم أو البريد..." style={{ ...inputStyle, flex: 1, minWidth: 220 }} />
-                {["all", "active", "inactive", "banned"].map(f => (
-                    <button
-                        key={f}
-                        onClick={() => setFilter(f)}
-                        className="px-4 py-2 rounded-xl border-none cursor-pointer font-semibold text-[13px] shadow-sm"
-                        style={{
-                            background: filter === f ? B : "#fff",
-                            color: filter === f ? "#fff" : "#6b7280"
-                        }}
-                    >
-                        {f === "all" ? "الكل" : f === "active" ? "نشط" : f === "inactive" ? "غير نشط" : "محظور"}
-                    </button>
-                ))}
+            {/* ─── Search + Role/Responsibility Filters ─── */}
+            <div className="mb-4">
+                <input
+                    onChange={e => handleSearch(e.target.value)}
+                    placeholder="🔍  بحث بالاسم أو البريد..."
+                    style={{ ...inputStyle, width: '100%', marginBottom: 10 }}
+                />
+                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                    {([
+                        { key: 'all',      label: 'الكل',          icon: '👁️' },
+                        { key: 'user',     label: 'أعضاء',         icon: '👤' },
+                        { key: 'staff',    label: 'موظف (كامل)',   icon: '🔧' },
+                        { key: 'activity', label: 'الفعاليات',     icon: '🎯' },
+                        { key: 'partners', label: 'الشركاء',       icon: '🤝' },
+                        { key: 'reels',    label: 'الريلز',        icon: '🎬' },
+                        { key: '3wn',      label: 'عون',           icon: '🛠' },
+                        { key: 'academy',  label: 'الأكاديمية',    icon: '🎓' },
+                        { key: 'busla',    label: 'بوصلة',         icon: '🧭' },
+                        { key: 'admin',    label: 'مسؤولون',       icon: '👑' },
+                    ] as const).map(f => {
+                        const count =
+                            f.key === 'all'      ? users.length
+                          : f.key === 'user'     ? users.filter(u => u.role === 'user').length
+                          : f.key === 'admin'    ? users.filter(u => u.role === 'admin').length
+                          : f.key === 'staff'    ? users.filter(u => u.role === 'staff' && (u.permissions ?? []).length === 0).length
+                          : users.filter(u => u.role === 'staff' && (u.permissions ?? []).includes(f.key)).length;
+                        const active = filter === f.key;
+                        return (
+                            <button
+                                key={f.key}
+                                onClick={() => setFilter(f.key)}
+                                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border-none cursor-pointer font-semibold text-[12px] whitespace-nowrap shrink-0 transition-all"
+                                style={{
+                                    background: active ? B : '#f3f4f6',
+                                    color:      active ? '#fff' : '#6b7280',
+                                    boxShadow:  active ? `0 2px 8px ${B}40` : 'none',
+                                }}
+                            >
+                                <span>{f.icon}</span>
+                                <span>{f.label}</span>
+                                <span
+                                    className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                                    style={{
+                                        background: active ? 'rgba(255,255,255,.25)' : '#e5e7eb',
+                                        color:      active ? '#fff' : '#9ca3af',
+                                    }}
+                                >
+                                    {count}
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-[#f0f0f0] overflow-hidden">
@@ -201,15 +247,26 @@ export default function UsersAdmin() {
                                         <td className="p-3 md:px-4 md:py-3 text-[#6b7280] whitespace-nowrap">{u.faculty || "—"}</td>
                                         <td className="p-3 md:px-4 md:py-3"><span className="font-extrabold text-[15px]" style={{ color: B }}>{(u.total_points || 0).toLocaleString()}</span></td>
                                         <td className="p-3 md:px-4 md:py-3 whitespace-nowrap">
-                                            <Badge type={u.role}>
-                                                {u.role === "admin" ? "مسؤول (Admin)" : u.role === "staff" ? "موظف" : "عضو"}
-                                            </Badge>
+                                            <div className="flex flex-col gap-1">
+                                                <Badge type={u.role}>
+                                                    {ROLE_LABELS[u.role as UserRole] || u.role}
+                                                </Badge>
+                                                {u.role === 'staff' && (u.permissions ?? []).length > 0 && (
+                                                    <div className="flex flex-wrap gap-1 mt-1">
+                                                        {(u.permissions as Permission[]).map(p => (
+                                                            <span key={p} className="text-[10px] px-1.5 py-0.5 rounded-md" style={{ background: '#f0f0f0', color: '#555' }}>
+                                                                {PERMISSION_ICONS[p]} {PERMISSION_LABELS[p]}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="p-3 md:px-4 md:py-3">
                                             <div className="flex gap-1.5 flex-wrap">
                                                 {[
                                                     { icon: "⭐", bg: "#fef3c7", c: "#d97706", title: "إدارة النقاط", fn: () => setPointsModal(u), disabled: false },
-                                                    { icon: "🔑", bg: "#dbeafe", c: "#2563eb", title: "تغيير الدور", fn: () => handleRole(u), disabled: adminUser?.id === u.id },
+                                                    { icon: "🔑", bg: "#dbeafe", c: "#2563eb", title: "تغيير الدور", fn: () => openRoleModal(u), disabled: adminUser?.id === u.id },
                                                     // { icon: "🚫", bg: "#fee2e2", c: "#dc2626", title: "حظر", fn: () => handleStatus(u, "banned"), disabled: adminUser?.id === u.id },
                                                     { icon: "🗑️", bg: "#fee2e2", c: "#dc2626", title: "حذف", fn: () => handleDelete(u), disabled: adminUser?.id === u.id },
                                                 ].map((btn, i) => (
@@ -255,6 +312,108 @@ export default function UsersAdmin() {
                         <Inp label="السبب *" placeholder="سبب تغيير النقاط..." value={pf.reason} onChange={e => setPf(p => ({ ...p, reason: e.target.value }))} />
                         <button onClick={handlePoints} className="w-full py-3 rounded-xl border-none font-bold cursor-pointer text-sm mt-1 text-white" style={{ background: B }}>
                             {Number(pf.amount) > 0 ? "➕ إضافة نقاط" : "➖ خصم نقاط"}
+                        </button>
+                    </div>
+                )}
+            </Modal>
+
+            {/* Role Modal */}
+            <Modal open={!!roleModal} title={`تعديل صلاحيات: ${roleModal?.full_name || ""}`} onClose={() => setRoleModal(null)}>
+                {roleModal && (
+                    <div>
+                        {/* User info */}
+                        <div className="flex items-center gap-3 bg-[#f8fafc] rounded-xl px-4 py-3.5 mb-5">
+                            <Avatar name={roleModal.full_name} size={44} />
+                            <div>
+                                <div className="font-bold text-[#111]">{roleModal.full_name}</div>
+                                <div className="text-[13px] text-[#6b7280]">{roleModal.email}</div>
+                            </div>
+                        </div>
+
+                        {/* ── Layer 1: Hierarchy role ── */}
+                        <div className="mb-5">
+                            <p className="text-[12px] font-bold text-[#6b7280] uppercase tracking-wider mb-2.5">الدور الوظيفي</p>
+                            <div className="flex gap-2">
+                                {(['user', 'staff', 'admin'] as UserRole[]).map(r => (
+                                    <button
+                                        key={r}
+                                        onClick={() => {
+                                            setSelectedRole(r);
+                                            if (r !== 'staff') setSelectedPerms([]);
+                                        }}
+                                        className="flex-1 py-2.5 rounded-xl text-sm font-bold border-2 transition-all"
+                                        style={{
+                                            borderColor: selectedRole === r ? B : '#e5e7eb',
+                                            background: selectedRole === r ? B : '#fff',
+                                            color: selectedRole === r ? '#fff' : '#6b7280',
+                                        }}
+                                    >
+                                        {r === 'user' ? '👤 عضو' : r === 'staff' ? '🔧 موظف' : '👑 مسؤول'}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* ── Layer 2: Permissions (staff only) ── */}
+                        {selectedRole === 'staff' && (
+                            <div className="mb-5">
+                                <div className="flex items-center justify-between mb-2.5">
+                                    <p className="text-[12px] font-bold text-[#6b7280] uppercase tracking-wider">مناطق المسؤولية</p>
+                                    <button
+                                        onClick={() => setSelectedPerms(selectedPerms.length === ALL_PERMISSIONS.length ? [] : [...ALL_PERMISSIONS])}
+                                        className="text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-[#e5e7eb] hover:border-[#8B1A2A] transition-colors"
+                                        style={{ color: B }}
+                                    >
+                                        {selectedPerms.length === ALL_PERMISSIONS.length ? 'إلغاء الكل' : 'تحديد الكل'}
+                                    </button>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {ALL_PERMISSIONS.map(p => {
+                                        const checked = selectedPerms.includes(p);
+                                        return (
+                                            <button
+                                                key={p}
+                                                onClick={() => togglePerm(p)}
+                                                className="flex items-center gap-2.5 p-3 rounded-xl border-2 text-right transition-all"
+                                                style={{
+                                                    borderColor: checked ? B : '#e5e7eb',
+                                                    background: checked ? `${B}0d` : '#fafafa',
+                                                }}
+                                            >
+                                                <div
+                                                    className="w-4 h-4 rounded flex items-center justify-center shrink-0 text-[10px] font-black text-white"
+                                                    style={{ background: checked ? B : '#d1d5db' }}
+                                                >
+                                                    {checked ? '✓' : ''}
+                                                </div>
+                                                <span className="text-sm">{PERMISSION_ICONS[p]}</span>
+                                                <span className="text-[13px] font-semibold" style={{ color: checked ? B : '#374151' }}>
+                                                    {PERMISSION_LABELS[p]}
+                                                </span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                <p className="text-[11px] text-[#9ca3af] mt-2.5">
+                                    {selectedPerms.length === 0
+                                        ? '⚠️ بدون تحديد = وصول كامل لجميع الأقسام'
+                                        : `✓ وصول إلى ${selectedPerms.length} قسم`}
+                                </p>
+                            </div>
+                        )}
+
+                        {selectedRole === 'admin' && (
+                            <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#c2410c' }}>
+                                ⚠️ تحذير: هذا الدور يمنح صلاحيات إدارية كاملة غير محدودة.
+                            </div>
+                        )}
+
+                        <button
+                            onClick={handleRole}
+                            className="w-full py-3 rounded-xl border-none font-bold cursor-pointer text-sm text-white"
+                            style={{ background: B }}
+                        >
+                            🔑 حفظ الصلاحيات
                         </button>
                     </div>
                 )}

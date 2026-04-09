@@ -14,8 +14,10 @@ import {
     getLibraryItems,
 } from '@/lib/queries';
 import type { Track, LibraryItem } from '@/integrations/supabase/types';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 
 export default function AdminTracksPage() {
+    useRoleGuard(['busla']);
     const [tracks, setTracks] = useState<any[]>([]);
     const [books, setBooks] = useState<LibraryItem[]>([]);
     const [loading, setLoading] = useState(true);

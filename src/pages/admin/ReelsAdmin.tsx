@@ -4,6 +4,7 @@ import { fetchReels, upsertReel, deleteReel, fetchComments, deleteComment } from
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, Badge, Spinner, Inp, Sel, Tex, Modal, B, fmtDate } from "./components/AdminUI";
 import { useOutletContext } from "react-router-dom";
+import { useRoleGuard } from "@/hooks/useRoleGuard";
 
 interface Reel {
     id: string; title: string; description: string; video_url: string;
@@ -46,6 +47,7 @@ async function uploadImage(file: File): Promise<string> {
 }
 
 export default function ReelsAdmin() {
+    useRoleGuard(['reels']);
     const { setConfirm } = useOutletContext<{ setConfirm: (v: any) => void }>();
     const [reels, setReels] = useState<Reel[]>([]);
     const [loading, setLoading] = useState(true);

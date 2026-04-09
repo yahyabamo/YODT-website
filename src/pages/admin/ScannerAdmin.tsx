@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { fetchActivities, recordAttendance } from "@/service/supabaseData";
 import { Html5QrcodeScanner, Html5QrcodeScanType, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { Spinner, Sel, B } from "./components/AdminUI";
+import { useRoleGuard } from "@/hooks/useRoleGuard";
 
 interface Activity {
     id: string; title: string; description: string; event_date: string;
@@ -11,6 +12,7 @@ interface Activity {
 }
 
 export default function ScannerAdmin() {
+    useRoleGuard(['activity']);
     const [activities, setActivities] = useState<Activity[]>([]);
     const [selectedActivity, setSelectedActivity] = useState<string>('');
     const [loading, setLoading] = useState(true);

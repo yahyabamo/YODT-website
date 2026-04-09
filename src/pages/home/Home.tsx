@@ -1,21 +1,25 @@
 import { useState, useEffect } from 'react';
 import {
-  ChevronLeft, Sparkles, BookOpen, Heart, MapPin, Calendar,
-  Briefcase, Gift, Play, QrCode, Zap, Users, ArrowLeft, ArrowUpRight, GraduationCap,
+  ChevronLeft, Sparkles, BookOpen, Calendar,
+  Briefcase, Play, Zap, Users, ArrowLeft, ArrowUpRight, GraduationCap, Shield,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { SmartTopBar } from '@/components/layout/SmartTopBar';
-// import { GlobalSearch } from '@/components/layout/GlobalSearch';
 import { useAuth } from '@/context/AuthContext';
+import {
+  canAccess,
+  PERMISSION_ICONS,
+  PERMISSION_LABELS,
+  PERMISSION_PATHS,
+  ALL_PERMISSIONS,
+  type Permission,
+} from '@/hooks/useRoleGuard';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useLanguage } from '@/context/LanguageContext';
 import { QuickServicesSection } from '@/components/QuickServicesSection';
 import ReelsShelf from '@/pages/home/ReelsShelf';
-
-
 
 /**
  * Home Page - Institutional Dashboard Redesign
@@ -29,12 +33,21 @@ interface Profile {
 
 const Home = () => {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, profile: authProfile } = useAuth();
   const { language, t } = useLanguage();
   const [showSearch, setShowSearch] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Derive which admin permissions the logged-in user has
+  const adminPerms: Permission[] = ALL_PERMISSIONS.filter(p =>
+    canAccess(authProfile, p)
+  );
+  // Only show shield for staff with explicit permissions (not full-access staff / admin)
+  const role = authProfile?.role ?? 'user';
+  const showShield = role === 'staff' && (authProfile?.permissions ?? []).length > 0;
+  const shieldPerms: Permission[] = showShield ? adminPerms : [];
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -43,7 +56,6 @@ const Home = () => {
 
   useEffect(() => {
     if (authLoading) return;
-
     if (!user) {
       navigate('/login');
     } else {
@@ -53,14 +65,12 @@ const Home = () => {
 
   const fetchProfile = async () => {
     if (!user) return;
-
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, total_points, full_name')
         .eq('id', user.id)
         .single();
-
       if (error) throw error;
       setProfile(data);
     } catch (error) {
@@ -102,26 +112,20 @@ const Home = () => {
       badge: language === 'ar' ? 'دورات' : 'Courses',
     },
     {
-      icon: Users, // Using Lucide Users icon
+      icon: Users,
       label: language === 'ar' ? 'المجتمع' : 'Community',
-      path: '/engagement/chat', // Path to your chat page
+      path: '/engagement/chat',
       gradient: 'from-blue-500/20 to-blue-500/5',
       iconColor: 'text-blue-500',
     },
     {
-      icon: Calendar, // Using Lucide Calendar icon
+      icon: Calendar,
       label: language === 'ar' ? 'النشاط الأسبوعي' : 'Weekly Activity',
-      path: '/engagement/weekly-question', // Path to your weekly question page
+      path: '/engagement/weekly-question',
       gradient: 'from-emerald-500/20 to-emerald-500/5',
       iconColor: 'text-emerald-500',
       badge: language === 'ar' ? 'جديد' : 'New',
     },
-  ];
-
-  const quickServices = [
-    { label: language === 'ar' ? 'تطبيقات تركيا' : 'Turkey Apps', path: '/turkey-apps', icon: Briefcase, color: 'text-violet-500' },
-    { label: language === 'ar' ? 'طاقم الاتحاد' : 'Corps', path: '/corps', icon: Users, color: 'text-rose-500' },
-    { label: language === 'ar' ? 'الدليل' : 'Guide', path: '/guide', icon: '📋' },
   ];
 
   const getGreeting = () => {
@@ -164,7 +168,6 @@ const Home = () => {
 
         {/* Section 1: Hero Welcome Area */}
         <section className="px-4 animate-fade-in relative overflow-hidden">
-          {/* Subtle Background Pattern */}
           <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, var(--primary) 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
 
           <div className="flex items-center justify-between relative z-10">
@@ -177,18 +180,49 @@ const Home = () => {
               </h1>
             </div>
 
-            <button
-              onClick={() => navigate('/points')}
-              className="flex items-center gap-2 bg-card border border-border/50 shadow-soft px-4 py-2.5 rounded-2xl hover:shadow-card hover:border-primary/30 transition-all group"
-            >
-              <div className="bg-primary/10 p-1.5 rounded-full group-hover:bg-primary/20 transition-colors">
-                <Zap className="w-4 h-4 text-primary" />
-              </div>
-              <div className="flex flex-col items-start -space-y-0.5">
-                <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t('home.points')}</span>
-                <span className="text-base font-bold text-foreground">{profile.total_points}</span>
-              </div>
-            </button>
+            <div className="flex items-center gap-2">
+
+              {/* ── Admin Shortcut Shield ── */}
+              {shieldPerms.length === 1 && (
+                /* Single permission: direct link */
+                <button
+                  onClick={() => navigate(PERMISSION_PATHS[shieldPerms[0]])}
+                  title={`لوحة ${PERMISSION_LABELS[shieldPerms[0]]}`}
+                  className="flex items-center gap-1.5 bg-[#8B1A2A]/10 border border-[#8B1A2A]/20 text-[#8B1A2A] px-3 py-2.5 rounded-2xl hover:bg-[#8B1A2A]/20 hover:border-[#8B1A2A]/40 transition-all group shadow-soft"
+                >
+                  <Shield className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs font-bold hidden sm:inline">{PERMISSION_LABELS[shieldPerms[0]]}</span>
+                </button>
+              )}
+
+              {shieldPerms.length > 1 && (
+                /* Multiple permissions: navigate to admin dashboard */
+                <button
+                  onClick={() => navigate('/admin')}
+                  title="لوحة الإدارة"
+                  className="flex items-center gap-1.5 bg-[#8B1A2A]/10 border border-[#8B1A2A]/20 text-[#8B1A2A] px-3 py-2.5 rounded-2xl hover:bg-[#8B1A2A]/20 hover:border-[#8B1A2A]/40 transition-all group shadow-soft"
+                >
+                  <Shield className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs font-bold hidden sm:inline">
+                    {shieldPerms.map(p => PERMISSION_ICONS[p]).join(' ')}
+                  </span>
+                </button>
+              )}
+
+              {/* ── Points pill ── */}
+              <button
+                onClick={() => navigate('/points')}
+                className="flex items-center gap-2 bg-card border border-border/50 shadow-soft px-4 py-2.5 rounded-2xl hover:shadow-card hover:border-primary/30 transition-all group"
+              >
+                <div className="bg-primary/10 p-1.5 rounded-full group-hover:bg-primary/20 transition-colors">
+                  <Zap className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex flex-col items-start -space-y-0.5">
+                  <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t('home.points')}</span>
+                  <span className="text-base font-bold text-foreground">{profile.total_points}</span>
+                </div>
+              </button>
+            </div>
           </div>
         </section>
 
@@ -228,71 +262,13 @@ const Home = () => {
           </div>
         </section>
 
-        {/* Section 5: Points Card */}
-        {/* <section className="px-4 animate-slide-up" style={{ animationDelay: '0.4s' }}>
-          <div className="relative overflow-hidden rounded-3xl bg-foreground shadow-elevated group cursor-pointer" onClick={() => navigate('/points')}>
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
-            <div className="absolute bottom-0 left-0 w-40 h-40 bg-accent/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
-
-            <div className="relative p-6 lg:p-8 flex items-center justify-between">
-              <div>
-                <p className="text-background/70 font-medium text-sm mb-1">{t('home.points.card.title')}</p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold tracking-tight text-background">{profile.total_points}</span>
-                  <span className="text-primary font-medium tracking-wide">{t('home.points')}</span>
-                </div>
-              </div>
-
-              <div className="w-12 h-12 rounded-full bg-background/10 backdrop-blur-sm flex items-center justify-center border border-background/20 group-hover:bg-primary group-hover:border-primary transition-all duration-300">
-                {language === 'ar' ? (
-                  <ArrowLeft className="w-5 h-5 text-background" />
-                ) : (
-                  <ArrowUpRight className="w-5 h-5 text-background" />
-                )}
-              </div>
-            </div>
-          </div>
-        </section> */}
-
         <QuickServicesSection />
 
-
-        {/* Section 4: Quick Services
-        <section className="animate-slide-up" style={{ animationDelay: '0.3s' }}>
-          <div className="px-4 mb-4">
-            <h2 className="text-h3 font-bold text-foreground tracking-tight">{t('home.services.title')}</h2>
-          </div>
-          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-4 -mx-1 px-5 snap-x">
-            {quickServices.map((service, index) => (
-              <button
-                key={service.path}
-                onClick={() => navigate(service.path)}
-                className="snap-start flex-shrink-0 flex items-center gap-3 px-5 py-3 rounded-full bg-card border border-border/60 hover:border-primary/30 hover:bg-secondary/50 hover:shadow-sm transition-all group"
-              >
-                {typeof service.icon === 'string' ? (
-                  <span className="text-xl group-hover:scale-110 transition-transform">{service.icon}</span>
-                ) : (
-                  <div className={`p-1.5 rounded-full bg-secondary group-hover:bg-background transition-colors`}>
-                    <service.icon className={`w-4 h-4 ${service.color || 'text-muted-foreground'}`} />
-                  </div>
-                )}
-                <span className="text-sm font-semibold text-foreground whitespace-nowrap">{service.label}</span>
-              </button>
-            ))}
-            <div className="w-4 flex-shrink-0"></div>
-          </div>
-        </section> */}
-
-
-
         <ReelsShelf />
-
-
 
       </main>
 
       <BottomNav />
-      {/* <GlobalSearch isOpen={showSearch} onClose={() => setShowSearch(false)} /> */}
     </div>
   );
 };

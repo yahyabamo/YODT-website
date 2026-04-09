@@ -4,6 +4,7 @@ import { fetchOffers, fetchPartners, upsertOffer, deleteOffer } from "@/service/
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, Badge, Spinner, Inp, Sel, Tex, Modal, Field, B, fmtDate } from "./components/AdminUI";
 import { useOutletContext } from "react-router-dom";
+import { useRoleGuard } from "@/hooks/useRoleGuard";
 
 const inputStyle: React.CSSProperties = {
     width: "100%", padding: "10px 14px", border: "1px solid #e5e7eb",
@@ -38,6 +39,7 @@ async function uploadImage(file: File, folder: string): Promise<string> {
 }
 
 export default function OffersAdmin() {
+    useRoleGuard(['partners']);
     const { setConfirm } = useOutletContext<{ setConfirm: (v: any) => void }>();
 
     const [offers, setOffers] = useState<any[]>([]);

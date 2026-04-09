@@ -156,7 +156,7 @@ const MembersTab = ({ teamType }: { teamType: 'current' | 'founding' | 'external
                                     <div className="flex items-center gap-1.5 mt-0.5">
                                         {m.description && <p className="text-[11px] text-[#9ca3af] truncate">{m.description}</p>}
                                         <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${m.gender === 'female' ? 'bg-pink-100 text-pink-700' : 'bg-blue-100 text-blue-700'}`}>
-                                            {m.gender === 'female' ? '♀ أنثى' : '♂ ذكر'}
+                                            {m.gender === 'female' ? 'أنثى' : 'ذكر'}
                                         </span>
                                     </div>
                                 </div>

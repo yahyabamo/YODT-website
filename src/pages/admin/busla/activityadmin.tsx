@@ -14,6 +14,7 @@ import {
 } from '@/lib/queries';
 import { supabase } from '@/integrations/supabase/client';
 import type { Activity2 } from '@/integrations/supabase/types';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 
 const STATUS_LABELS = {
     upcoming: 'قادم',
@@ -39,6 +40,7 @@ const EMPTY_FORM = {
 };
 
 export default function AdminActivitiesPage() {
+    useRoleGuard(['busla']);
     const [activities, setActivities] = useState<Activity2[]>([]);
     const [loading, setLoading] = useState(true);
     const [form, setForm] = useState(EMPTY_FORM);

@@ -398,6 +398,47 @@
   }
 }
 
+/* ── Jambiya Divider — mobile responsive ── */
+/* On mobile, hide outer icons (keep center 7: indices 2–8) */
+@media (max-width: 600px) {
+  .jambiya-icon-row img[data-icon-index="0"],
+  .jambiya-icon-row img[data-icon-index="1"],
+  .jambiya-icon-row img[data-icon-index="9"],
+  .jambiya-icon-row img[data-icon-index="10"] {
+    display: none;
+  }
+  .jambiya-icon-row img {
+    height: 18px !important;
+  }
+  .jambiya-icon-row img[data-icon-index="5"] {
+    height: 26px !important;
+  }
+  .jambiya-divider-wrapper {
+    opacity: 0.10 !important;
+  }
+}
+
+/* Footer responsive grid */
+@media (max-width: 900px) {
+  .footer-grid-responsive {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+@media (max-width: 560px) {
+  .footer-grid-responsive {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+}
+
+/* About section responsive grid */
+@media (max-width: 768px) {
+  .about-grid {
+    grid-template-columns: 1fr !important;
+    gap: 40px !important;
+  }
+}
+
 /* ═══ COMPONENT STYLES ═══ */
 @layer components {
 
@@ -3568,5 +3609,219 @@
     .nav-controls .lang-switch {
       display: flex;
     }
+  }
+
+  /* ═══════════════════════════════════════════════
+   SCROLL REVEAL ANIMATIONS
+═══════════════════════════════════════════════ */
+  .reveal,
+  .reveal-left,
+  .reveal-right {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .reveal-left {
+    transform: translateX(-32px);
+  }
+
+  .reveal-right {
+    transform: translateX(32px);
+  }
+
+  .reveal.visible,
+  .reveal-left.visible,
+  .reveal-right.visible {
+    opacity: 1;
+    transform: translate(0);
+  }
+
+  /* ═══════════════════════════════════════════════
+   GRADIENT DRIFT — Hero animated background
+═══════════════════════════════════════════════ */
+  @keyframes gradientDrift {
+    0%, 100% { background-position: 0% 50%; }
+    50%       { background-position: 100% 50%; }
+  }
+
+  /* ═══════════════════════════════════════════════
+   INFINITE MARQUEE — Partners
+═══════════════════════════════════════════════ */
+  @keyframes infiniteMarquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  .marquee-viewport {
+    overflow: hidden;
+    position: relative;
+    -webkit-mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+    mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+  }
+
+  .marquee-track {
+    display: flex;
+    gap: 12px;
+    width: max-content;
+    animation: infiniteMarquee 32s linear infinite;
+  }
+
+  .marquee-track:hover {
+    animation-play-state: paused;
+  }
+
+  /* ═══════════════════════════════════════════════
+   CTA PULSE GLOW
+═══════════════════════════════════════════════ */
+  @keyframes ctaPulse {
+    0%, 100% { box-shadow: 0 4px 24px rgba(122, 28, 28, 0.45); }
+    50%      { box-shadow: 0 4px 40px rgba(122, 28, 28, 0.75), 0 0 60px rgba(200, 148, 58, 0.2); }
+  }
+
+  .cta-pulse {
+    animation: ctaPulse 3s ease-in-out infinite;
+  }
+
+  /* ═══════════════════════════════════════════════
+   SECTION RHYTHM — Alternating backgrounds
+═══════════════════════════════════════════════ */
+  /* bg-rhythm-1: base (Hero level) */
+  .section-bg-base   { background: var(--bg); }
+  /* bg-rhythm-2: slightly lighter */
+  .section-bg-raised { background: var(--bg-1); }
+  /* bg-rhythm-3: accent gradient */
+  .section-bg-accent {
+    background:
+      radial-gradient(ellipse 80% 50% at 50% 0%, rgba(179, 0, 31, 0.10) 0%, transparent 70%),
+      var(--bg-1);
+  }
+
+  /* Gold shimmer bar at top of footer */
+  @keyframes goldShimmer {
+    0%   { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+
+  .gold-shimmer-bar {
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, var(--gold) 30%, var(--gold-light) 50%, var(--gold) 70%, transparent 100%);
+    background-size: 200% auto;
+    animation: goldShimmer 4s linear infinite;
+    opacity: 0.6;
+  }
+
+  /* Section divider wrapper for JambiyaDivider */
+  .jambiya-section-divider {
+    background: var(--bg);
+    padding: 12px 0;
+  }
+
+  /* ═══════════════════════════════════════════════
+   MOTIVATIONAL QUOTE SECTION
+═══════════════════════════════════════════════ */
+  #motivational-quote {
+    padding: 72px 0;
+    background: var(--bg-1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  #motivational-quote::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 80% at 50% 50%, rgba(200, 168, 75, 0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .quote-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 0 5vw;
+  }
+
+  .quote-mark {
+    font-size: 4rem;
+    line-height: 1;
+    color: var(--gold);
+    opacity: 0.25;
+    font-family: var(--f-en);
+    display: block;
+    margin-bottom: -12px;
+  }
+
+  .quote-text {
+    font-family: var(--f-ar);
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    font-weight: 600;
+    line-height: 1.7;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+
+  [data-lang="en"] .quote-text {
+    font-family: var(--f-en);
+    font-style: italic;
+    font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+  }
+
+  .quote-author {
+    font-size: 0.82rem;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    font-family: var(--f-ui);
+  }
+
+  /* Partners section marquee item */
+  .marquee-partner-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 18px 20px;
+    border-radius: 12px;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+    width: 110px;
+    transition: border-color 0.2s ease, background 0.2s ease;
+    cursor: default;
+  }
+
+  .marquee-partner-item:hover {
+    border-color: var(--border-strong);
+    background: var(--bg-2);
+  }
+
+  .marquee-abbr-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.65rem;
+    color: var(--text-3);
+    letter-spacing: 0.04em;
+    transition: background 0.2s ease;
+  }
+
+  .marquee-partner-item:hover .marquee-abbr-box {
+    background: var(--bg-3);
+  }
+
+  .marquee-partner-name {
+    font-size: 0.7rem;
+    color: var(--text-3);
+    text-align: center;
+    line-height: 1.3;
   }
 }

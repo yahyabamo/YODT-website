@@ -1,138 +1,62 @@
-
 import React from 'react';
 
+const partnersList = [
+    { abbr: 'UNI', nameAr: 'جامعة إسطنبول', nameEn: 'Istanbul University' },
+    { abbr: 'EDU', nameAr: 'مركز التعليم التقني', nameEn: 'Tech Education Center' },
+    { abbr: 'MED', nameAr: 'المركز الطبي', nameEn: 'Medical Center' },
+    { abbr: 'LAW', nameAr: 'استشارات قانونية', nameEn: 'Legal Consulting' },
+    { abbr: 'TECH', nameAr: 'شركة تقنية', nameEn: 'Tech Company' },
+    { abbr: 'REST', nameAr: 'سلسلة مطاعم', nameEn: 'Restaurant Chain' },
+    { abbr: 'BANK', nameAr: 'خدمات مالية', nameEn: 'Financial Services' },
+    { abbr: 'LANG', nameAr: 'مركز اللغات', nameEn: 'Language Center' },
+    { abbr: 'PRINT', nameAr: 'خدمات طباعة', nameEn: 'Printing Services' },
+    { abbr: 'BOOK', nameAr: 'دار نشر', nameEn: 'Publishing House' },
+    { abbr: 'HLTH', nameAr: 'صيدلية', nameEn: 'Pharmacy' },
+    { abbr: 'VISA', nameAr: 'خدمات التأشيرة', nameEn: 'Visa Services' },
+];
+
+const PartnerItem = ({ partner }: { partner: typeof partnersList[0] }) => (
+    <div className="marquee-partner-item">
+        <div className="marquee-abbr-box">{partner.abbr}</div>
+        <span className="marquee-partner-name">
+            <span className="ar-only">{partner.nameAr}</span>
+            <span className="en-only">{partner.nameEn}</span>
+        </span>
+    </div>
+);
+
 export const Partners = () => {
+    // Duplicate list for seamless infinite scroll
+    const doubled = [...partnersList, ...partnersList];
+
     return (
-        <section id="partners">
-            <div className="container">
-                <div className="section-header center-line reveal" style={{ marginBottom: '60px' }}>
-                    <div className="hero-eyebrow">
-                        <div className="eyebrow-line"></div>
-                        <span className="eyebrow-text ar-only">شركاء النجاح</span>
-                        <span className="eyebrow-text en-only">Partners of Success</span>
-                    </div>
-
-                    {/* <h2 className="heading-lg">
-                        <span className="ar-only">نعتز بشراكاتنا<br />الاستراتيجية</span>
-                        <span className="en-only">We Cherish Our<br />Strategic Partnerships</span>
-                    </h2> */}
-
-                    <div className="divider-line"></div>
-
-                    <p>
-                        <span className="ar-only">نفخر بشراكاتنا مع مؤسسات بارزة في إسطنبول تدعم الطلاب اليمنيين.</span>
-                        <span className="en-only">We are proud of our partnerships with prominent institutions in Istanbul that support Yemeni students.</span>
-                    </p>
+        <section id="partners" className="section-bg-raised" style={{ padding: 'var(--section-y) 0' }}>
+            {/* Section header */}
+            <div className="reveal" style={{ textAlign: 'center', marginBottom: '48px', padding: '0 5vw' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '14px' }}>
+                    <div style={{ height: '1px', width: '32px', background: 'var(--gold)' }} />
+                    <span style={{ color: 'var(--gold)', fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', fontFamily: 'var(--f-ui)' }}>
+                        <span className="ar-only">شركاء النجاح</span>
+                        <span className="en-only">Partners of Success</span>
+                    </span>
+                    <div style={{ height: '1px', width: '32px', background: 'var(--gold)' }} />
                 </div>
+                <h2 className="heading-md" style={{ marginBottom: '10px' }}>
+                    <span className="ar-only">شركاؤنا الاستراتيجيون</span>
+                    <span className="en-only">Our Strategic Partners</span>
+                </h2>
+                <p style={{ color: 'var(--text-3)', fontSize: '0.88rem', maxWidth: '500px', margin: '0 auto' }}>
+                    <span className="ar-only">نفخر بشراكاتنا مع مؤسسات بارزة في إسطنبول تدعم الطلاب اليمنيين.</span>
+                    <span className="en-only">Proud partners with prominent institutions in Istanbul supporting Yemeni students.</span>
+                </p>
+            </div>
 
-                <div className="partners-grid reveal">
-                    {/* Partner 1 */}
-                    <div className="partner-item delay-1">
-                        <div className="partner-placeholder">
-                            <div className="partner-logo-box"><span style={{ fontSize: '0.7rem', color: 'var(--text-3)', fontWeight: 600 }}>UNI</span></div>
-                            <div className="partner-name ar-only">جامعة إسطنبول</div>
-                            <div className="partner-name en-only">Istanbul University</div>
-                        </div>
-                    </div>
-
-                    {/* Partner 2 */}
-                    <div className="partner-item delay-2">
-                        <div className="partner-placeholder">
-                            <div className="partner-logo-box"><span style={{ fontSize: '0.7rem', color: 'var(--text-3)', fontWeight: 600 }}>EDU</span></div>
-                            <div className="partner-name ar-only">مركز التعليم التقني</div>
-                            <div className="partner-name en-only">Tech Education Center</div>
-                        </div>
-                    </div>
-
-                    {/* Partner 3 */}
-                    <div className="partner-item delay-3">
-                        <div className="partner-placeholder">
-                            <div className="partner-logo-box"><span style={{ fontSize: '0.7rem', color: 'var(--text-3)', fontWeight: 600 }}>MED</span></div>
-                            <div className="partner-name ar-only">المركز الطبي</div>
-                            <div className="partner-name en-only">Medical Center</div>
-                        </div>
-                    </div>
-
-                    {/* Partner 4 */}
-                    <div className="partner-item delay-1">
-                        <div className="partner-placeholder">
-                            <div className="partner-logo-box"><span style={{ fontSize: '0.7rem', color: 'var(--text-3)', fontWeight: 600 }}>LAW</span></div>
-                            <div className="partner-name ar-only">مكتب استشارات قانونية</div>
-                            <div className="partner-name en-only">Legal Consulting</div>
-                        </div>
-                    </div>
-
-                    {/* Partner 5 */}
-                    <div className="partner-item delay-2">
-                        <div className="partner-placeholder">
-                            <div className="partner-logo-box"><span style={{ fontSize: '0.7rem', color: 'var(--text-3)', fontWeight: 600 }}>TECH</span></div>
-                            <div className="partner-name ar-only">شركة تقنية</div>
-                            <div className="partner-name en-only">Tech Company</div>
-                        </div>
-                    </div>
-
-                    {/* Partner 6 */}
-                    <div className="partner-item delay-3">
-                        <div className="partner-placeholder">
-                            <div className="partner-logo-box"><span style={{ fontSize: '0.7rem', color: 'var(--text-3)', fontWeight: 600 }}>REST</span></div>
-                            <div className="partner-name ar-only">سلسلة مطاعم</div>
-                            <div className="partner-name en-only">Restaurant Chain</div>
-                        </div>
-                    </div>
-
-                    {/* Partner 7 */}
-                    <div className="partner-item delay-1">
-                        <div className="partner-placeholder">
-                            <div className="partner-logo-box"><span style={{ fontSize: '0.7rem', color: 'var(--text-3)', fontWeight: 600 }}>BANK</span></div>
-                            <div className="partner-name ar-only">خدمات مالية</div>
-                            <div className="partner-name en-only">Financial Services</div>
-                        </div>
-                    </div>
-
-                    {/* Partner 8 */}
-                    <div className="partner-item delay-2">
-                        <div className="partner-placeholder">
-                            <div className="partner-logo-box"><span style={{ fontSize: '0.7rem', color: 'var(--text-3)', fontWeight: 600 }}>LANG</span></div>
-                            <div className="partner-name ar-only">مركز اللغات</div>
-                            <div className="partner-name en-only">Language Center</div>
-                        </div>
-                    </div>
-
-                    {/* Partner 9 */}
-                    <div className="partner-item delay-3">
-                        <div className="partner-placeholder">
-                            <div className="partner-logo-box"><span style={{ fontSize: '0.7rem', color: 'var(--text-3)', fontWeight: 600 }}>PRINT</span></div>
-                            <div className="partner-name ar-only">خدمات الطباعة</div>
-                            <div className="partner-name en-only">Printing Services</div>
-                        </div>
-                    </div>
-
-                    {/* Partner 10 */}
-                    <div className="partner-item delay-1">
-                        <div className="partner-placeholder">
-                            <div className="partner-logo-box"><span style={{ fontSize: '0.7rem', color: 'var(--text-3)', fontWeight: 600 }}>BOOK</span></div>
-                            <div className="partner-name ar-only">دار نشر</div>
-                            <div className="partner-name en-only">Publishing House</div>
-                        </div>
-                    </div>
-
-                    {/* Partner 11 */}
-                    <div className="partner-item delay-2">
-                        <div className="partner-placeholder">
-                            <div className="partner-logo-box"><span style={{ fontSize: '0.7rem', color: 'var(--text-3)', fontWeight: 600 }}>HLTH</span></div>
-                            <div className="partner-name ar-only">صيدلية</div>
-                            <div className="partner-name en-only">Pharmacy</div>
-                        </div>
-                    </div>
-
-                    {/* Partner 12 */}
-                    <div className="partner-item delay-3">
-                        <div className="partner-placeholder">
-                            <div className="partner-logo-box"><span style={{ fontSize: '0.7rem', color: 'var(--text-3)', fontWeight: 600 }}>VISA</span></div>
-                            <div className="partner-name ar-only">خدمات التأشيرة</div>
-                            <div className="partner-name en-only">Visa Services</div>
-                        </div>
-                    </div>
+            {/* Infinite marquee */}
+            <div className="marquee-viewport">
+                <div className="marquee-track" style={{ padding: '8px 0' }}>
+                    {doubled.map((partner, i) => (
+                        <PartnerItem key={`${partner.abbr}-${i}`} partner={partner} />
+                    ))}
                 </div>
             </div>
         </section>

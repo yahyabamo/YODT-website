@@ -143,8 +143,9 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         );
     }
 
-    // 4. Check for the NEW roles
-    const hasAccess = profile.role === 'admin' || profile.role === 'staff';
+    // 4. Allow any non-user role into the admin panel.
+    //    Fine-grained page access is enforced by useRoleGuard() inside each page.
+    const hasAccess = profile.role && profile.role !== 'user';
 
     if (!hasAccess) {
         // If they are just a 'user', send them to the home page

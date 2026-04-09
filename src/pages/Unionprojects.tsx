@@ -32,10 +32,12 @@ const ProjectMembers = ({
     project,
     onBack,
     userGender,
+    userRole,
 }: {
     project: Project;
     onBack: () => void;
     userGender: string | null;
+    userRole: string | null;
 }) => {
     const [members, setMembers] = useState<TeamMember[]>([]);
     const [loading, setLoading] = useState(true);
@@ -53,7 +55,9 @@ const ProjectMembers = ({
                 let result = data
                     .map((row: any) => row.union_team_members)
                     .filter(Boolean);
-                if (userGender !== 'female') {
+                // Admins & female users can see all members; male non-admins see only male members
+                const canSeeAll = userRole === 'admin' || userGender === 'female';
+                if (!canSeeAll) {
                     result = result.filter((m: TeamMember) => m.gender === 'male');
                 }
                 setMembers(shuffle(result));
@@ -171,6 +175,7 @@ const UnionProjects = () => {
     const [loading, setLoading] = useState(true);
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
     const [userGender, setUserGender] = useState<string | null>(null);
+    const [userRole, setUserRole] = useState<string | null>(null);
     const [showSearch, setShowSearch] = useState(false);
     const location = useLocation(); // 2. Initialize location
 
@@ -180,8 +185,9 @@ const UnionProjects = () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (session?.user) {
                 const { data: profile } = await supabase
-                    .from('profiles').select('gender').eq('id', session.user.id).single();
+                    .from('profiles').select('gender, role').eq('id', session.user.id).single();
                 setUserGender(profile?.gender ?? null);
+                setUserRole(profile?.role ?? null);
             }
 
             // Fetch projects
@@ -267,6 +273,7 @@ const UnionProjects = () => {
                         project={selectedProject}
                         onBack={() => setSelectedProject(null)}
                         userGender={userGender}
+                        userRole={userRole}
                     />
                 ) : projects.length === 0 ? (
                     <div className="text-center text-muted-foreground py-16">لا توجد مشاريع بعد</div>

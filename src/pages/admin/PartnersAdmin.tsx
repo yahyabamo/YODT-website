@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { fetchPartners, upsertPartner, deletePartner } from "@/service/supabaseData";
 import { Badge, Spinner, Inp, Sel, Tex, Modal, B } from "./components/AdminUI";
 import { useOutletContext } from "react-router-dom";
+import { useRoleGuard } from "@/hooks/useRoleGuard";
 
 interface Partner {
     id: string; name: string; status: "active" | "inactive";
@@ -36,6 +37,7 @@ async function uploadImage(file: File): Promise<string> {
 }
 
 export default function PartnersAdmin() {
+    useRoleGuard(['partners']);
     const { setConfirm } = useOutletContext<{ setConfirm: (v: any) => void }>();
     const [partners, setPartners] = useState<Partner[]>([]);
     const [loading, setLoading] = useState(true);

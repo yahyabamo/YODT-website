@@ -6,8 +6,10 @@ import {
     Plus, Pencil, Trash2, Eye, EyeOff,
     BookOpen, Users, Trophy, Search,
 } from 'lucide-react'
+import { useRoleGuard } from '@/hooks/useRoleGuard'
 
 export default function AdminAcademyPage() {
+    useRoleGuard(['academy']);
     const navigate = useNavigate()
     const [courses, setCourses] = useState<Course[]>([])
     const [loading, setLoading] = useState(true)

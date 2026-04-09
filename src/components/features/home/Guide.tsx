@@ -1,85 +1,120 @@
-
 import React from 'react';
+
+const guideCards = [
+    {
+        icon: '❓',
+        titleAr: 'أسئلة وأجوبة شاملة',
+        titleEn: 'Comprehensive Q&A',
+        descAr: 'إجابات مفصلة لكل الأسئلة الشائعة — من الوثائق المطلوبة إلى تكاليف الدراسة وكل ما يخطر ببالك.',
+        descEn: 'Detailed answers to all common questions — from required documents to tuition costs and everything you need to know.',
+        wide: true,
+    },
+    {
+        icon: '🏠',
+        titleAr: 'دليل السكن',
+        titleEn: 'Housing Guide',
+        descAr: 'كل ما تحتاج معرفته عن السكن في إسطنبول — الأحياء والأسعار ونصائح التعاقد.',
+        descEn: 'Everything about housing in Istanbul — neighborhoods, prices, and rental tips.',
+    },
+    {
+        icon: '🏛️',
+        titleAr: 'دليل الجامعات',
+        titleEn: 'Universities Guide',
+        descAr: 'مقارنة شاملة لأهم الجامعات التركية والتخصصات المتاحة ومتطلبات القبول.',
+        descEn: 'Comprehensive comparison of Turkish universities, majors, and admission requirements.',
+    },
+    {
+        icon: '📋',
+        titleAr: 'إجراءات الإقامة',
+        titleEn: 'Residence Procedures',
+        descAr: 'خطوات مفصلة للحصول على إقامة الطالب، الوثائق المطلوبة، والمواعيد.',
+        descEn: 'Step-by-step guide for student residence, required documents, and appointments.',
+    },
+    {
+        icon: '☀️',
+        titleAr: 'نصائح الحياة اليومية',
+        titleEn: 'Daily Life Tips',
+        descAr: 'دليل عملي للحياة في إسطنبول — المواصلات والتسوق والخدمات الصحية.',
+        descEn: 'A practical guide to Istanbul — transportation, shopping, and healthcare services.',
+    },
+];
 
 export const Guide = () => {
     return (
-        <section id="guide">
+        <section id="guide" style={{ background: 'var(--bg-1)' }}>
             <div className="container section-pad">
-                <div className="guide-intro reveal">
-                    <div className="hero-eyebrow">
-                        <div className="eyebrow-line"></div>
-                        <span className="eyebrow-text ar-only">الدليل الطلابي</span>
-                        <span className="eyebrow-text en-only">Student Guide</span>
+                {/* Section header */}
+                <div className="guide-intro reveal" style={{ maxWidth: '560px', margin: '0 auto 56px', textAlign: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '16px' }}>
+                        <div style={{ height: '1px', width: '32px', background: 'var(--gold)' }} />
+                        <span style={{ color: 'var(--gold)', fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+                            <span className="ar-only">الدليل الطلابي</span>
+                            <span className="en-only">Student Guide</span>
+                        </span>
+                        <div style={{ height: '1px', width: '32px', background: 'var(--gold)' }} />
                     </div>
-                    <h2 className="heading-lg" style={{ marginBottom: '18px' }}>
+
+                    <h2 className="heading-lg" style={{ marginBottom: '14px', fontSize: 'clamp(1.4rem, 3vw, 1.9rem)' }}>
                         <span className="ar-only">دليلك الشامل للدراسة<br />والحياة في تركيا</span>
                         <span className="en-only">Your Complete Guide to<br />Studying & Living in Turkey</span>
                     </h2>
-                    <div className="divider-line" style={{ margin: '20px auto' }}></div>
-                    <p style={{ color: 'var(--text-2)', fontSize: '0.97rem', lineHeight: 1.8, maxWidth: '600px', margin: '0 auto' }}>
-                        <span className="ar-only">يوفر اتحادنا دليلًا شاملًا يغطي كل ما يحتاجه الطالب اليمني في رحلته داخل تركيا، من أول يوم حتى التخرج.</span>
-                        <span className="en-only">Our union provides a comprehensive guide covering everything a Yemeni student needs in Turkey, from day one through graduation.</span>
+
+                    <p style={{ color: 'var(--text-2)', fontSize: '0.93rem', lineHeight: 1.8 }}>
+                        <span className="ar-only">يوفر اتحادنا دليلًا شاملًا يغطي كل ما يحتاجه الطالب اليمني في رحلته داخل تركيا.</span>
+                        <span className="en-only">Our union provides a comprehensive guide covering everything a Yemeni student needs in Turkey.</span>
                     </p>
                 </div>
 
-                <div className="guide-grid">
-                    {/* Wide card: FAQs */}
-                    <div className="guide-card guide-card-wide reveal delay-1">
-                        <div className="guide-card-content">
-                            <div className="guide-card-icon" style={{ fontSize: '1.9rem' }}>❓</div>
-                            <div>
-                                <div className="guide-card-title ar-only">أسئلة وأجوبة شاملة</div>
-                                <div className="guide-card-title en-only">Comprehensive Q&A</div>
-                                <div className="guide-card-desc ar-only">
-                                    إجابات مفصلة لكل الأسئلة الشائعة التي يطرحها الطلاب اليمنيون — من الوثائق المطلوبة، إجراءات الالتحاق بالجامعة، تكاليف الدراسة، وكل ما يخطر ببالك.
-                                </div>
-                                <div className="guide-card-desc en-only">
-                                    Detailed answers to all common questions asked by Yemeni students — required documents, university enrollment procedures, tuition costs, and everything you can think of.
-                                </div>
-                            </div>
+                {/* Guide cards grid */}
+                <div
+                    className="guide-grid"
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                        gap: '16px',
+                    }}
+                >
+                    {guideCards.map((card) => (
+                        <div
+                            key={card.titleAr}
+                            className="reveal"
+                            style={{
+                                gridColumn: card.wide ? 'span 2' : 'span 1',
+                                padding: '24px',
+                                borderRadius: '16px',
+                                background: 'var(--bg-1)',
+                                border: '1px solid var(--border)',
+                                cursor: 'default',
+                                transition: 'transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease',
+                                position: 'relative',
+                                overflow: 'hidden',
+                            }}
+                            onMouseEnter={e => {
+                                (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)';
+                                (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-red)';
+                                (e.currentTarget as HTMLElement).style.boxShadow = '0 12px 32px rgba(122,28,28,0.12)';
+                            }}
+                            onMouseLeave={e => {
+                                (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
+                                (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)';
+                                (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+                            }}
+                        >
+                            {/* Card icon */}
+                            <div style={{ fontSize: card.wide ? '2rem' : '1.75rem', marginBottom: '14px' }}>{card.icon}</div>
+                            <h3 style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text)', marginBottom: '8px' }}>
+                                <span className="ar-only">{card.titleAr}</span>
+                                <span className="en-only">{card.titleEn}</span>
+                            </h3>
+                            <p style={{ fontSize: '0.83rem', color: 'var(--text-3)', lineHeight: 1.7, margin: 0 }}>
+                                <span className="ar-only">{card.descAr}</span>
+                                <span className="en-only">{card.descEn}</span>
+                            </p>
+
+                            {/* Arrow indicator */}
+                            <div style={{ position: 'absolute', bottom: '20px', left: '20px', color: 'var(--text-3)', fontSize: '1rem', opacity: 0.5 }}>→</div>
                         </div>
-                        <div className="guide-card-arrow">→</div>
-                    </div>
-
-                    {/* Housing Guide */}
-                    <div className="guide-card reveal delay-2">
-                        <div className="guide-card-icon">🏠</div>
-                        <div className="guide-card-title ar-only">دليل السكن</div>
-                        <div className="guide-card-title en-only">Housing Guide</div>
-                        <div className="guide-card-desc ar-only">كل ما تحتاج معرفته عن السكن في إسطنبول — الأحياء المناسبة، متوسط الأسعار، ونصائح التعاقد والإيجار.</div>
-                        <div className="guide-card-desc en-only">Everything you need to know about housing in Istanbul — suitable neighborhoods, average prices, and contract & rental tips.</div>
-                        <div className="guide-card-arrow">→</div>
-                    </div>
-
-                    {/* Universities Guide */}
-                    <div className="guide-card reveal delay-3">
-                        <div className="guide-card-icon">🏛️</div>
-                        <div className="guide-card-title ar-only">دليل الجامعات</div>
-                        <div className="guide-card-title en-only">Universities Guide</div>
-                        <div className="guide-card-desc ar-only">مقارنة شاملة لأهم الجامعات التركية، التخصصات المتاحة، متطلبات القبول، ورسوم الدراسة.</div>
-                        <div className="guide-card-desc en-only">Comprehensive comparison of major Turkish universities, available majors, admission requirements, and tuition fees.</div>
-                        <div className="guide-card-arrow">→</div>
-                    </div>
-
-                    {/* Residence Procedures */}
-                    <div className="guide-card reveal delay-2">
-                        <div className="guide-card-icon">📋</div>
-                        <div className="guide-card-title ar-only">إجراءات الإقامة</div>
-                        <div className="guide-card-title en-only">Residence Procedures</div>
-                        <div className="guide-card-desc ar-only">خطوات مفصلة للحصول على إقامة الطالب في تركيا، الوثائق المطلوبة، والمواعيد والرسوم.</div>
-                        <div className="guide-card-desc en-only">Detailed steps to obtain student residence in Turkey, required documents, appointments, and fees.</div>
-                        <div className="guide-card-arrow">→</div>
-                    </div>
-
-                    {/* Daily Life */}
-                    <div className="guide-card reveal delay-3">
-                        <div className="guide-card-icon">☀️</div>
-                        <div className="guide-card-title ar-only">نصائح الحياة اليومية</div>
-                        <div className="guide-card-title en-only">Daily Life Tips</div>
-                        <div className="guide-card-desc ar-only">دليل عملي للحياة في إسطنبول — المواصلات، التسوق، الطعام، الخدمات الصحية، وأهم التطبيقات.</div>
-                        <div className="guide-card-desc en-only">A practical guide to life in Istanbul — transportation, shopping, food, healthcare, and essential apps.</div>
-                        <div className="guide-card-arrow">→</div>
-                    </div>
+                    ))}
                 </div>
             </div>
         </section>

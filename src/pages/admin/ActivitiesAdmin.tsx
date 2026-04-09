@@ -4,6 +4,7 @@ import { fetchActivities, fetchActivityAttendees, upsertActivity, deleteActivity
 import { Avatar, Badge, Spinner, Inp, Sel, Tex, Modal, B, fmtDate } from "./components/AdminUI";
 // import { uploadImage } from '@/service/cloudinary';
 import { useOutletContext } from "react-router-dom";
+import { useRoleGuard } from "@/hooks/useRoleGuard";
 
 interface Activity {
     id: string; title: string; description: string; event_date: string;
@@ -48,6 +49,7 @@ async function uploadImage(file: File): Promise<string> {
 }
 
 export default function ActivitiesAdmin() {
+    useRoleGuard(['activity']);
     const { setConfirm } = useOutletContext<{ setConfirm: (v: any) => void }>();
     const [activities, setActivities] = useState<Activity[]>([]);
     const [loading, setLoading] = useState(true);

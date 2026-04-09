@@ -1,30 +1,69 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { canAccess, isAdminLevel } from "@/hooks/useRoleGuard";
+import {
+    LayoutDashboard, Target, ScanLine, Award,
+    Users, ShieldCheck, Vote,
+    HeartHandshake, Compass, Clapperboard,
+    Briefcase, Map, GraduationCap, BookOpen,
+    MessageSquare, TrendingUp, Handshake, Tag
+} from "lucide-react";
 
-const B = "#8B1A2A";
+const B = "#8B1A2A"; // Primary Brand Color
 
-// The full list of items
-export const navItems = [
-    { id: "dashboard", path: "/admin", label: "الرئيسية", icon: "⊞" },
-    { id: "scanner", path: "/admin/scanner", label: "الماسح الضوئي", icon: "📹" },
-    { id: "users", path: "/admin/users", label: "المستخدمون", icon: "👥" },
-    { id: "activities", path: "/admin/activities", label: "الفعاليات", icon: "🎯" },
-    { id: "partners", path: "/admin/partners", label: "الشركاء", icon: "🤝" },
-    { id: "offers", path: "/admin/offers", label: "العروض", icon: "🏷️" },
-    { id: "reels", path: "/admin/reels", label: "الريلز", icon: "🎥" },
-    { id: "points", path: "/admin/points", label: "سجل النقاط", icon: "⭐" },
-    { id: "3wn-admin", path: "/admin/3wnAdmin", label: "عون-إدارة", icon: "⊞" },
-    { id: "jobadmin", path: "/admin/jobadmin", label: "الوظائف", icon: "💼" },
-    { id: "guideadmin", path: "/admin/guideadmin", label: "الدليل - الأسئلة الشائعة", icon: "📚" },
-    { id: "teamadmin", path: "/admin/teamadmin", label: "فريق الاتحاد", icon: "👥" },
-    { id: "appsmapadmin", path: "/admin/appsmapadmin", label: "تطبيقات - خرائط", icon: "📱" },
-    { id: "elections", path: "/admin/elections", label: "الانتخابات", icon: "🗳️" },
-    { id: "academy", path: "/admin/academy", label: "الأكاديمية", icon: "🎓" },
-    { id: "busla", path: "/admin/busla", label: "بوصلة", icon: "🧭" },
-    { id: "engagement-chat", path: "/admin/engagement/chat", label: "التفاعل - الدردشة", icon: "💬" },
-    { id: "engagement-weekly", path: "/admin/engagement/weekly", label: "التفاعل - الأسبوعي", icon: "📋" },
+/**
+ * Grouped Navigation Structure mirroring the Smart Top Bar
+ */
+export const navGroups = [
+    {
+        title: "الأقسام الرئيسية", // Matches Top Bar Main Sections
+        items: [
+            { id: "dashboard", path: "/admin", label: "الرئيسية", icon: LayoutDashboard, permission: null, adminOnly: false },
+            { id: "activities", path: "/admin/activities", label: "الفعاليات", icon: Target, permission: "activity", adminOnly: false },
+            { id: "scanner", path: "/admin/scanner", label: "الماسح الضوئي", icon: ScanLine, permission: "activity", adminOnly: false },
+            { id: "points", path: "/admin/points", label: "سجل النقاط", icon: Award, permission: null, adminOnly: true },
+        ]
+    },
+    {
+        title: "كادر الاتحاد والنظام", // Matches "كادر الاتحاد" grid
+        items: [
+            { id: "users", path: "/admin/users", label: "المستخدمون", icon: Users, permission: null, adminOnly: true },
+            { id: "teamadmin", path: "/admin/teamadmin", label: "فريق الاتحاد", icon: ShieldCheck, permission: null, adminOnly: true },
+            { id: "elections", path: "/admin/elections", label: "الانتخابات", icon: Vote, permission: null, adminOnly: false },
+        ]
+    },
+    {
+        title: "مشاريع الاتحاد", // Matches "مشاريع الاتحاد" list
+        items: [
+            { id: "3wn-admin", path: "/admin/3wnAdmin", label: "إدارة عون", icon: HeartHandshake, permission: "3wn", adminOnly: false },
+            { id: "busla", path: "/admin/busla", label: "إدارة بوصلة", icon: Compass, permission: "busla", adminOnly: false },
+            { id: "reels", path: "/admin/reels", label: "مفهوم (الريلز)", icon: Clapperboard, permission: "reels", adminOnly: false },
+            { id: "academy", path: "/admin/academy", label: "الأكاديمية", icon: GraduationCap, permission: "academy", adminOnly: false },
+
+        ]
+    },
+    {
+        title: "خدمات وأدوات", // Matches "خدمات وأدوات" grid
+        items: [
+            { id: "jobadmin", path: "/admin/jobadmin", label: "إدارة الوظائف", icon: Briefcase, permission: null, adminOnly: false },
+            { id: "appsmapadmin", path: "/admin/appsmapadmin", label: "تطبيقات وخرائط", icon: Map, permission: null, adminOnly: false },
+            { id: "guideadmin", path: "/admin/guideadmin", label: "الدليل والأسئلة", icon: BookOpen, permission: null, adminOnly: false },
+        ]
+    },
+    {
+        title: "التفاعل والشركاء", // Remaining admin-specific management
+        items: [
+            { id: "engagement-chat", path: "/admin/engagement/chat", label: "إدارة الدردشة", icon: MessageSquare, permission: null, adminOnly: false },
+            { id: "engagement-weekly", path: "/admin/engagement/weekly", label: "التفاعل الأسبوعي", icon: TrendingUp, permission: null, adminOnly: false },
+            { id: "partners", path: "/admin/partners", label: "إدارة الشركاء", icon: Handshake, permission: "partners", adminOnly: false },
+            { id: "offers", path: "/admin/offers", label: "إدارة العروض", icon: Tag, permission: "partners", adminOnly: false },
+        ]
+    }
 ];
+
+// REQUIRED FOR ADMIN.TSX ROUTING: This flattens the groups back into the list your router expects.
+export const navItems = navGroups.flatMap(group => group.items);
 
 interface AdminSidebarProps {
     currentPageId: string;
@@ -34,78 +73,126 @@ interface AdminSidebarProps {
 }
 
 export function AdminSidebar({ currentPageId, sidebarOpen, setSidebarOpen, isMobile }: AdminSidebarProps) {
-    const { profile } = useAuth(); // Get the user profile to check the role
+    const { profile } = useAuth();
 
     const handleLinkClick = () => {
-        if (isMobile) {
-            setSidebarOpen(false);
-        }
+        if (isMobile) setSidebarOpen(false);
     };
 
-    // Filter items based on the user's role
-    const filteredNavItems = navItems.filter(item => {
-        // Only super_admin can see the Users and Team Admin pages
-        if (item.id === "users" || item.id === "teamadmin") {
-            return profile?.role === "admin";
-        }
-        return true;
-    });
+    const role = profile?.role ?? '';
+    const isAdmin = role === 'admin';
+    const perms = (profile?.permissions ?? []) as string[];
+    const isRestrictedStaff = role === 'staff' && perms.length > 0;
+
+    const visibleGroups = navGroups.map(group => {
+        const filteredItems = group.items.filter(item => {
+            if (!isAdminLevel(profile)) return false;
+            if (item.adminOnly) return isAdmin;
+            if (item.id === 'dashboard') return true;
+            if (isRestrictedStaff) {
+                return item.permission ? canAccess(profile, item.permission as any) : false;
+            }
+            return true;
+        });
+        return { ...group, items: filteredItems };
+    }).filter(group => group.items.length > 0);
 
     return (
         <>
-            {/* Mobile Overlay */}
-            {isMobile && sidebarOpen && (
+            {isMobile && (
                 <div
-                    className="fixed inset-0 bg-black/50 z-40 transition-opacity"
+                    className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity duration-300 ${sidebarOpen ? "opacity-100 visible" : "opacity-0 invisible"
+                        }`}
                     onClick={() => setSidebarOpen(false)}
                 />
             )}
 
-            {/* Sidebar */}
             <aside
-                className={`fixed md:relative flex flex-col h-full bg-white border-l border-gray-100 z-50 transition-all duration-300 ease-in-out ${sidebarOpen ? "w-64 translate-x-0" : "w-64 md:w-[72px] translate-x-full md:translate-x-0"
+                className={`fixed md:relative flex flex-col h-full bg-white border-l border-gray-100 z-50 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] shadow-[4px_0_24px_rgba(0,0,0,0.04)] ${sidebarOpen ? "w-72 translate-x-0" : "w-72 md:w-[80px] translate-x-full md:translate-x-0"
                     }`}
-                style={{ boxShadow: "2px 0 8px rgba(0,0,0,.04)" }}
+                dir="rtl"
             >
-                <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-                    <div className={`flex items-center gap-3 ${sidebarOpen || isMobile ? "justify-start" : "justify-center w-full"}`}>
-                        <div style={{ width: 36, height: 36, borderRadius: 10, background: B, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 16, flexShrink: 0 }}>ا</div>
+                {/* Header */}
+                <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                    <div className={`flex items-center gap-3 transition-all ${sidebarOpen || isMobile ? "justify-start" : "justify-center w-full"}`}>
+                        <div
+                            className="flex items-center justify-center shrink-0 text-white font-bold text-lg shadow-sm"
+                            style={{ width: 40, height: 40, borderRadius: 12, background: `linear-gradient(135deg, ${B}, #600f1c)` }}
+                        >
+                            ا
+                        </div>
                         {(sidebarOpen || isMobile) && (
-                            <div>
-                                <div style={{ fontWeight: 800, fontSize: 13, color: "#111", lineHeight: 1.2 }}>اتحاد الطلاب اليمنيين</div>
-                                <div style={{ fontSize: 11, color: "#9ca3af" }}>فرع إسطنبول</div>
+                            <div className="flex flex-col overflow-hidden animate-fade-in">
+                                <span className="font-bold text-sm text-gray-900 truncate">اتحاد الطلاب اليمنيين</span>
+                                <span className="text-xs text-gray-500 truncate">لوحة التحكم والإدارة</span>
                             </div>
                         )}
                     </div>
                     {isMobile && (
-                        <button onClick={() => setSidebarOpen(false)} className="text-gray-500 hover:text-gray-700 md:hidden pb-1 ps-1 border-none bg-transparent cursor-pointer">
+                        <button
+                            onClick={() => setSidebarOpen(false)}
+                            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                        >
                             ✕
                         </button>
                     )}
                 </div>
 
-                <nav className="flex-1 p-2 overflow-y-auto">
-                    {filteredNavItems.map(item => {
-                        const isActive = currentPageId === item.id || (item.id === "dashboard" && currentPageId === "");
-                        return (
-                            <Link
-                                to={item.path}
-                                key={item.id}
-                                onClick={handleLinkClick}
-                                className={`w-full flex items-center gap-3 p-2.5 rounded-xl border-none cursor-pointer text-sm mb-1 transition-all duration-150 ${sidebarOpen || isMobile ? "justify-start" : "justify-center"
-                                    }`}
-                                style={{
-                                    fontWeight: isActive ? 700 : 500,
-                                    background: isActive ? `${B}14` : "transparent",
-                                    color: isActive ? B : "#6b7280",
-                                    textDecoration: "none"
-                                }}
-                            >
-                                <span className="text-lg shrink-0">{item.icon}</span>
-                                {(sidebarOpen || isMobile) && <span className="whitespace-nowrap">{item.label}</span>}
-                            </Link>
-                        );
-                    })}
+                {/* Navigation Links */}
+                <nav className="flex-1 px-3 py-4 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    <style>{`nav::-webkit-scrollbar { display: none; }`}</style>
+
+                    {visibleGroups.map((group, groupIndex) => (
+                        <div key={groupIndex} className="mb-6 last:mb-0">
+                            {(sidebarOpen || isMobile) ? (
+                                <h3 className="px-3 mb-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                                    {group.title}
+                                </h3>
+                            ) : (
+                                <div className="w-full border-t border-gray-100 my-3 opacity-50"></div>
+                            )}
+
+                            <ul className="space-y-1 list-none p-0 m-0">
+                                {group.items.map(item => {
+                                    const isActive = currentPageId === item.id || (item.id === "dashboard" && currentPageId === "");
+                                    const Icon = item.icon; // Use Lucide Icon
+
+                                    return (
+                                        <li key={item.id}>
+                                            <Link
+                                                to={item.path}
+                                                onClick={handleLinkClick}
+                                                className={`group flex items-center gap-3 py-2.5 px-3 rounded-xl transition-all duration-200 relative overflow-hidden ${sidebarOpen || isMobile ? "justify-start" : "justify-center"
+                                                    } ${isActive
+                                                        ? "text-[#8B1A2A] font-bold"
+                                                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 font-medium"
+                                                    }`}
+                                            >
+                                                {isActive && (
+                                                    <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundColor: B }} />
+                                                )}
+
+                                                {isActive && (sidebarOpen || isMobile) && (
+                                                    <div className="absolute right-0 top-1/4 bottom-1/4 w-1 rounded-l-full" style={{ backgroundColor: B }} />
+                                                )}
+
+                                                <span className={`flex items-center justify-center shrink-0 transition-transform duration-200 ${isActive ? "scale-110" : "group-hover:scale-110"}`}>
+                                                    {/* Rendering the Lucide component */}
+                                                    <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                                                </span>
+
+                                                {(sidebarOpen || isMobile) && (
+                                                    <span className="whitespace-nowrap tracking-wide text-[13px]">
+                                                        {item.label}
+                                                    </span>
+                                                )}
+                                            </Link>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
+                    ))}
                 </nav>
             </aside>
         </>

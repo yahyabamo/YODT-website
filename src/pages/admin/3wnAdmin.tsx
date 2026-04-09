@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, Badge, Spinner, Inp, Sel, Tex, Modal, Field, B, fmtDate } from "./components/AdminUI";
 import { useOutletContext } from "react-router-dom";
+import { useRoleGuard } from "@/hooks/useRoleGuard";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Service {
@@ -149,6 +150,7 @@ function RequestDetailModal({ req, onClose, onUpdate }: { req: ServiceRequest; o
 
 // ─── Main Admin Page ──────────────────────────────────────────────────────────
 export default function AwnAdmin() {
+    useRoleGuard(['3wn']);
     const { setConfirm } = useOutletContext<{ setConfirm: (v: any) => void }>();
 
     const [tab, setTab] = useState<"services" | "requests">("services");

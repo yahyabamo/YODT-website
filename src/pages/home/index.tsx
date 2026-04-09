@@ -7,7 +7,7 @@ import { Guide } from '../../components/features/home/Guide';
 import { Activities } from '../../components/features/home/Activities';
 import { Discounts } from '../../components/features/home/Discounts';
 import { Partners } from '../../components/features/home/Partners';
-// import { Testimonials } from '../../components/features/home/Testimonials';
+// import { MotivationalQuote } from '../../components/features/home/MotivationalQuote';
 import { FinalCTA } from '../../components/features/home/FinalCTA';
 import { Footer } from '../../components/features/home/Footer';
 
@@ -28,6 +28,7 @@ const Index = () => {
   }, [lang]);
 
   useEffect(() => {
+    // Respect the user's current theme — do NOT force dark mode
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
   }, [isDark]);
 
@@ -57,7 +58,6 @@ const Index = () => {
   useEffect(() => {
     const revealEls = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
 
-    // Initial check
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -67,10 +67,8 @@ const Index = () => {
     }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
 
     revealEls.forEach(el => observer.observe(el));
-
-    // Cleanup
     return () => observer.disconnect();
-  }, [modalOpen]); // Re-run if DOM changes significantly, though sections are static.
+  }, [modalOpen]);
 
   // Counter Animation Observer
   useEffect(() => {
@@ -79,7 +77,6 @@ const Index = () => {
 
     const animateCount = (counter: HTMLElement) => {
       const target = +((counter.dataset.target || counter.innerText) as string);
-      // If dataset.target is not set, use innerText and store it
       if (!counter.dataset.target) counter.dataset.target = counter.innerText;
 
       const count = +counter.innerText;
@@ -91,7 +88,7 @@ const Index = () => {
       } else {
         counter.innerText = target.toString();
       }
-    }
+    };
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
@@ -122,16 +119,33 @@ const Index = () => {
         onOpenModal={openModal}
       />
 
+      {/*
+        VISUAL RHYTHM — Alternating between bg / bg-1:
+        1. Hero       → var(--bg)      [dark base]
+          ↓ JambiyaDivider (Hero → About)  — already inside Hero.tsx
+        2. About      → var(--bg)      [base — shares bg with Hero gradient fade]
+        3. Guide      → var(--bg-1)    [slightly lighter]
+        4. Activities → var(--bg)      [back to base]
+          ↓ JambiyaDivider (Activities → Discounts)
+        5. Discounts  → var(--bg-1)    [lighter again]
+        6. Partners   → var(--bg-1)    [same level, part of Discounts visual block]
+        7. Quote      → var(--bg-1)    [gentle break, gold accent]
+        8. FinalCTA   → var(--bg)→bg-2 [gradient, feels like a conclusion]
+          ↓ JambiyaDivider   — inside Footer.tsx
+        9. Footer     → var(--bg)      [matches page base]
+      */}
+
       <Hero onOpenModal={openModal} />
       <About />
       <Guide />
       <Activities />
+
+
       <Discounts />
       <Partners />
-      {/* <Testimonials /> */}
+      {/* <MotivationalQuote /> */}
       <FinalCTA onOpenModal={openModal} />
       <Footer />
-
     </div>
   );
 };

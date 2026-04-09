@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 
 interface Stats {
     tracks: number;
@@ -21,6 +22,7 @@ const adminLinks = [
 ];
 
 export default function BuslaAdminPage() {
+    useRoleGuard(['busla']);
     const [stats, setStats] = useState<Stats>({ tracks: 0, activities: 0, library: 0, members: 0 });
 
     useEffect(() => {
