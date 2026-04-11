@@ -29,6 +29,7 @@ interface Profile {
   id: string;
   total_points: number;
   full_name: string;
+  job_title?: string;
 }
 
 const Home = () => {
@@ -68,7 +69,7 @@ const Home = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, total_points, full_name')
+        .select('id, total_points, full_name, job_title')
         .eq('id', user.id)
         .single();
       if (error) throw error;
@@ -175,9 +176,16 @@ const Home = () => {
               <p className="text-sm font-medium text-muted-foreground/80 mb-1 tracking-wide uppercase">
                 {getGreeting()}
               </p>
-              <h1 className="text-h1 text-foreground font-bold tracking-tight">
-                {getFirstName()}
-              </h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-h1 text-foreground font-bold tracking-tight">
+                  {getFirstName()}
+                </h1>
+                {role === 'staff' && profile.job_title && (
+                  <span className="text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-full font-bold">
+                    {profile.job_title}
+                  </span>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center gap-2">

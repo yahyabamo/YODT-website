@@ -55,7 +55,7 @@ export const PERMISSION_PATHS: Record<Permission, string> = {
 /** Role display labels */
 export const ROLE_LABELS: Record<UserRole, string> = {
     user: 'عضو',
-    staff: 'موظف',
+    staff: 'مسؤول',
     admin: 'مسؤول رئيسي',
 };
 
