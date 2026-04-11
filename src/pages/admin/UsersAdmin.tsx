@@ -21,6 +21,8 @@ interface User {
     faculty: string;
     avatar_url: string;
     created_at: string;
+    job_title?: string;
+    gender?: string;
 }
 
 const inputStyle: React.CSSProperties = {
@@ -43,6 +45,9 @@ export default function UsersAdmin() {
     const [roleModal, setRoleModal] = useState<User | null>(null);
     const [selectedRole, setSelectedRole] = useState<UserRole>('user');
     const [selectedPerms, setSelectedPerms] = useState<Permission[]>([]);
+    const [selectedJobTitle, setSelectedJobTitle] = useState("");
+    const [template, setTemplate] = useState('all');
+    const [showExportMenu, setShowExportMenu] = useState(false);
     const [pf, setPf] = useState({ amount: "", reason: "", type: "manual" });
     const debRef = useRef<any>();
 
@@ -58,7 +63,7 @@ export default function UsersAdmin() {
     const load = useCallback(async (showLoader: boolean = true) => {
         if (showLoader) setLoading(true);
         try {
-            const { data, count } = await fetchUsers({ page, pageSize: 20, search });
+            const { data, count } = await fetchUsers({ page, pageSize: 500, search });
             setUsers(data || []);
             setCount(count || 0);
         } catch (err: any) { toast.error("فشل تحميل المستخدمين: " + (err?.message || "")); console.error(err); }
@@ -73,12 +78,19 @@ export default function UsersAdmin() {
     };
 
     const filtered = (() => {
-        if (filter === 'all') return users;
-        if (filter === 'admin') return users.filter(u => u.role === 'admin');
-        if (filter === 'staff') return users.filter(u => u.role === 'staff' && (u.permissions ?? []).length === 0);
-        if (filter === 'user') return users.filter(u => u.role === 'user');
+        let base = users;
+        // apply template filter FIRST
+        if (template === 'male') base = users.filter(u => u.gender === 'male');
+        if (template === 'female') base = users.filter(u => u.gender === 'female');
+        if (template === 'staff') base = users.filter(u => u.role === 'staff');
+        if (template === 'admin') base = users.filter(u => u.role === 'admin');
+
+        if (filter === 'all') return base;
+        if (filter === 'admin') return base.filter(u => u.role === 'admin');
+        if (filter === 'staff') return base.filter(u => u.role === 'staff' && (u.permissions ?? []).length === 0);
+        if (filter === 'user') return base.filter(u => u.role === 'user');
         // Permission filters: staff who have this permission in their array
-        return users.filter(u => u.role === 'staff' && (u.permissions ?? []).includes(filter));
+        return base.filter(u => u.role === 'staff' && (u.permissions ?? []).includes(filter));
     })();
 
     // const handleStatus = (u: User, ns: "active" | "inactive" | "banned") => setConfirm({
@@ -94,6 +106,7 @@ export default function UsersAdmin() {
     const openRoleModal = (u: User) => {
         setSelectedRole(u.role as UserRole);
         setSelectedPerms((u.permissions ?? []) as Permission[]);
+        setSelectedJobTitle(u.job_title || "");
         setRoleModal(u);
     };
 
@@ -108,7 +121,11 @@ export default function UsersAdmin() {
         try {
             const { error } = await supabase
                 .from('profiles')
-                .update({ role: selectedRole, permissions: selectedPerms })
+                .update({
+                    role: selectedRole,
+                    permissions: selectedPerms,
+                    job_title: selectedRole === 'staff' ? selectedJobTitle : null
+                })
                 .eq('id', roleModal.id);
             if (error) throw error;
             setRoleModal(null);
@@ -156,12 +173,77 @@ export default function UsersAdmin() {
         } catch (err: any) { toast.error("فشل تحديث النقاط: " + (err?.message || "")); console.error(err); }
     };
 
+    const downloadCSV = () => {
+        const headers = ["الاسم", "الدور الوظيفي", "القسم / الكلية", "البريد الإلكتروني", "الحالة العضوية", "الجنس"];
+        const rows = filtered.map(u => [
+            u.full_name || "—",
+            u.role === 'staff' ? (u.job_title || 'مسؤول') : (ROLE_LABELS[u.role as UserRole] || u.role),
+            u.faculty || "—",
+            u.email || "—",
+            u.status === 'active' ? "نشط" : u.status === 'banned' ? "محظور" : "غير نشط",
+            u.gender === 'male' ? "ذكر" : u.gender === 'female' ? "أنثى" : "—"
+        ]);
+
+        const csvContent = [
+            headers.join(","),
+            ...rows.map(r => r.map(c => `"${c?.toString().replace(/"/g, '""')}"`).join(","))
+        ].join("\n");
+
+        const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `UsersExport_${template}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        toast.success("تم تصدير البيانات بنجاح");
+        setShowExportMenu(false);
+    };
+
     return (
         <div>
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-5 gap-4">
                 <div>
                     <h2 className="m-0 text-xl font-extrabold text-[#111]">إدارة المستخدمين</h2>
                     <p className="m-0 mt-0.5 text-[#9ca3af] text-[13px]">{count} عضو</p>
+                </div>
+
+                <div className="relative">
+                    <button
+                        onClick={() => setShowExportMenu(!showExportMenu)}
+                        className="px-4 py-2 bg-white border border-[#e5e7eb] rounded-lg text-sm font-semibold text-[#374151] flex items-center gap-2 cursor-pointer hover:bg-gray-50 active:scale-95 transition-all shadow-sm"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                        فلترة / تصدير
+                    </button>
+                    {showExportMenu && (
+                        <div className="absolute top-12 left-0 w-64 bg-white border border-[#e5e7eb] rounded-xl shadow-lg p-3 z-50 animate-in fade-in zoom-in-95 duration-200">
+                            <p className="text-xs font-bold text-gray-400 mb-2 uppercase text-right px-2">القوالب والتصنيفات</p>
+                            <div className="flex flex-col gap-1 mb-3">
+                                {[
+                                    { id: 'all', name: 'كل الأعضاء' },
+                                    { id: 'male', name: 'الطلاب (الذكور)' },
+                                    { id: 'female', name: 'الطالبات (الإناث)' },
+                                    { id: 'staff', name: 'الموظفين / المسؤولين' },
+                                    // {id:'admin', name:'الهيئة الإدارية'}
+                                ].map(t => (
+                                    <button
+                                        key={t.id}
+                                        onClick={() => setTemplate(t.id)}
+                                        className={`text-right px-3 py-2 rounded-lg text-[13px] font-semibold transition-colors cursor-pointer border-none ${template === t.id ? 'bg-[#8B1A2A] text-white' : 'bg-transparent text-[#374151] hover:bg-gray-100'}`}
+                                    >
+                                        {t.name}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="pt-3 border-t border-gray-100 flex gap-2">
+                                <button onClick={downloadCSV} className="flex-1 py-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] hover:bg-[#f3f4f6] text-[12px] font-bold cursor-pointer text-[#111] transition-colors">
+                                    تصدير كـ CSV / Excel
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -174,23 +256,23 @@ export default function UsersAdmin() {
                 />
                 <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                     {([
-                        { key: 'all',      label: 'الكل',          icon: '👁️' },
-                        { key: 'user',     label: 'أعضاء',         icon: '👤' },
-                        { key: 'staff',    label: 'موظف (كامل)',   icon: '🔧' },
-                        { key: 'activity', label: 'الفعاليات',     icon: '🎯' },
-                        { key: 'partners', label: 'الشركاء',       icon: '🤝' },
-                        { key: 'reels',    label: 'الريلز',        icon: '🎬' },
-                        { key: '3wn',      label: 'عون',           icon: '🛠' },
-                        { key: 'academy',  label: 'الأكاديمية',    icon: '🎓' },
-                        { key: 'busla',    label: 'بوصلة',         icon: '🧭' },
-                        { key: 'admin',    label: 'مسؤولون',       icon: '👑' },
+                        { key: 'all', label: 'الكل', icon: '👁️' },
+                        { key: 'user', label: 'أعضاء', icon: '👤' },
+                        { key: 'staff', label: 'مسؤول (كامل)', icon: '🔧' },
+                        { key: 'activity', label: 'الفعاليات', icon: '🎯' },
+                        { key: 'partners', label: 'الشركاء', icon: '🤝' },
+                        { key: 'reels', label: 'الريلز', icon: '🎬' },
+                        { key: '3wn', label: 'عون', icon: '🛠' },
+                        { key: 'academy', label: 'الأكاديمية', icon: '🎓' },
+                        { key: 'busla', label: 'بوصلة', icon: '🧭' },
+                        { key: 'admin', label: 'مسؤولون', icon: '👑' },
                     ] as const).map(f => {
                         const count =
-                            f.key === 'all'      ? users.length
-                          : f.key === 'user'     ? users.filter(u => u.role === 'user').length
-                          : f.key === 'admin'    ? users.filter(u => u.role === 'admin').length
-                          : f.key === 'staff'    ? users.filter(u => u.role === 'staff' && (u.permissions ?? []).length === 0).length
-                          : users.filter(u => u.role === 'staff' && (u.permissions ?? []).includes(f.key)).length;
+                            f.key === 'all' ? users.length
+                                : f.key === 'user' ? users.filter(u => u.role === 'user').length
+                                    : f.key === 'admin' ? users.filter(u => u.role === 'admin').length
+                                        : f.key === 'staff' ? users.filter(u => u.role === 'staff' && (u.permissions ?? []).length === 0).length
+                                            : users.filter(u => u.role === 'staff' && (u.permissions ?? []).includes(f.key)).length;
                         const active = filter === f.key;
                         return (
                             <button
@@ -199,8 +281,8 @@ export default function UsersAdmin() {
                                 className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border-none cursor-pointer font-semibold text-[12px] whitespace-nowrap shrink-0 transition-all"
                                 style={{
                                     background: active ? B : '#f3f4f6',
-                                    color:      active ? '#fff' : '#6b7280',
-                                    boxShadow:  active ? `0 2px 8px ${B}40` : 'none',
+                                    color: active ? '#fff' : '#6b7280',
+                                    boxShadow: active ? `0 2px 8px ${B}40` : 'none',
                                 }}
                             >
                                 <span>{f.icon}</span>
@@ -209,7 +291,7 @@ export default function UsersAdmin() {
                                     className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
                                     style={{
                                         background: active ? 'rgba(255,255,255,.25)' : '#e5e7eb',
-                                        color:      active ? '#fff' : '#9ca3af',
+                                        color: active ? '#fff' : '#9ca3af',
                                     }}
                                 >
                                     {count}
@@ -249,7 +331,7 @@ export default function UsersAdmin() {
                                         <td className="p-3 md:px-4 md:py-3 whitespace-nowrap">
                                             <div className="flex flex-col gap-1">
                                                 <Badge type={u.role}>
-                                                    {ROLE_LABELS[u.role as UserRole] || u.role}
+                                                    {u.role === 'staff' ? (u.job_title || 'مسؤول') : (ROLE_LABELS[u.role as UserRole] || u.role)}
                                                 </Badge>
                                                 {u.role === 'staff' && (u.permissions ?? []).length > 0 && (
                                                     <div className="flex flex-wrap gap-1 mt-1">
@@ -348,11 +430,23 @@ export default function UsersAdmin() {
                                             color: selectedRole === r ? '#fff' : '#6b7280',
                                         }}
                                     >
-                                        {r === 'user' ? '👤 عضو' : r === 'staff' ? '🔧 موظف' : '👑 مسؤول'}
+                                        {r === 'user' ? '👤 عضو' : r === 'staff' ? '🔧 مسؤول' : '👑 ادمن'}
                                     </button>
                                 ))}
                             </div>
                         </div>
+
+                        {/* ── Layer 1.5: Job Title (staff only) ── */}
+                        {selectedRole === 'staff' && (
+                            <div className="mb-5">
+                                <Inp
+                                    label="المسمى الوظيفي"
+                                    placeholder="مثال: مسؤول الفعاليات"
+                                    value={selectedJobTitle}
+                                    onChange={e => setSelectedJobTitle(e.target.value)}
+                                />
+                            </div>
+                        )}
 
                         {/* ── Layer 2: Permissions (staff only) ── */}
                         {selectedRole === 'staff' && (
