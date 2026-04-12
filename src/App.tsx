@@ -119,6 +119,8 @@ import Chat from "./pages/engagement/Chat";
 import EngagementPoints from "./pages/engagement/EngagementPoints";
 import ChatAdmin from "./pages/admin/engagement/ChatAdmin";
 import WeeklyAdmin from "./pages/admin/engagement/WeeklyAdmin";
+import LeadershipAdmin from "./pages/admin/LeadershipAdmin";
+import LeadershipDetail from "./pages/admin/LeadershipDetail";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -175,6 +177,8 @@ const App = () => (
                   <Route path="/admin/busla/tracks" element={<TrackDetailAdminPage />} />
                   <Route path="/admin/engagement/chat" element={<ChatAdmin />} />
                   <Route path="/admin/engagement/weekly" element={<WeeklyAdmin />} />
+                  <Route path="/admin/leadership" element={<LeadershipAdmin />} />
+                  <Route path="/admin/leadership/:leaderId" element={<LeadershipDetail />} />
 
                 </Route>
                 <Route path="/" element={<Index />} />

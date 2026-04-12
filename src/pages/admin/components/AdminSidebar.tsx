@@ -7,7 +7,7 @@ import {
     Users, ShieldCheck, Vote,
     HeartHandshake, Compass, Clapperboard,
     Briefcase, Map, GraduationCap, BookOpen,
-    MessageSquare, TrendingUp, Handshake, Tag
+    MessageSquare, TrendingUp, Handshake, Tag, BarChart
 } from "lucide-react";
 
 const B = "#8B1A2A"; // Primary Brand Color
@@ -30,6 +30,7 @@ export const navGroups = [
         items: [
             { id: "users", path: "/admin/users", label: "المستخدمون", icon: Users, permission: null, adminOnly: true },
             { id: "teamadmin", path: "/admin/teamadmin", label: "فريق الاتحاد", icon: ShieldCheck, permission: null, adminOnly: true },
+            { id: "leadership", path: "/admin/leadership", label: "الأداء ", icon: BarChart, permission: null, adminOnly: false },
             { id: "elections", path: "/admin/elections", label: "الانتخابات", icon: Vote, permission: null, adminOnly: false },
         ]
     },
@@ -88,7 +89,7 @@ export function AdminSidebar({ currentPageId, sidebarOpen, setSidebarOpen, isMob
         const filteredItems = group.items.filter(item => {
             if (!isAdminLevel(profile)) return false;
             if (item.adminOnly) return isAdmin;
-            if (item.id === 'dashboard') return true;
+            if (item.id === 'dashboard' || item.id === 'leadership') return true;
             if (isRestrictedStaff) {
                 return item.permission ? canAccess(profile, item.permission as any) : false;
             }
