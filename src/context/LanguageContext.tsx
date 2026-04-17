@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Language = 'ar' | 'en';
+type Language = 'ar' | 'en' | 'tr';
 
 interface LanguageContextType {
     language: Language;
@@ -47,6 +47,25 @@ const translations: Record<Language, Record<string, string>> = {
         'nav.desc.activities': 'Activities',
         'nav.desc.reels': 'Visual Content',
         'nav.desc.settings': 'Profile & Settings',
+    },
+    tr: {
+        'home.greeting.morning': 'Günaydın',
+        'home.greeting.afternoon': 'Tünaydın',
+        'home.greeting.evening': 'İyi Akşamlar',
+        'home.points': 'Puan',
+        'home.sections.title': 'Ana Bölümler',
+        'home.wisdom': 'Günün Sözü',
+        'home.wisdom.text': 'Bilgi ışıktır ve cehalet karanlıktır, her zaman aydınlık için çabalayın',
+        'home.services.title': 'Hızlı Servisler',
+        'home.points.card.title': 'Puanlarınız',
+        'nav.home': 'Ana Sayfa',
+        'nav.activities': 'Etkinlikler',
+        'nav.reels': 'Videolar',
+        'nav.settings': 'Profil',
+        'nav.desc.home': 'Günlük Pano',
+        'nav.desc.activities': 'Etkinlikler',
+        'nav.desc.reels': 'Görsel İçerik',
+        'nav.desc.settings': 'Profil ve Ayarlar',
     }
 };
 
@@ -74,7 +93,9 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
     };
 
     const toggleLanguage = () => {
-        setLanguage(language === 'ar' ? 'en' : 'ar');
+        if (language === 'ar') setLanguage('en');
+        else if (language === 'en') setLanguage('tr');
+        else setLanguage('ar');
     };
 
     const t = (key: string): string => {

@@ -17,6 +17,8 @@ const Index = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
 
+
+
   // Initialize lang and theme on mount
   useEffect(() => {
     document.documentElement.setAttribute('lang', lang);
@@ -108,7 +110,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen font-display" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
-      <Navbar
+      {/* <Navbar
         lang={lang}
         setLang={setLang}
         isDark={isDark}
@@ -117,7 +119,7 @@ const Index = () => {
         toggleMobileMenu={toggleMobileMenu}
         closeMobileMenu={closeMobileMenu}
         onOpenModal={openModal}
-      />
+      /> */}
 
       {/*
         VISUAL RHYTHM — Alternating between bg / bg-1:
@@ -145,7 +147,7 @@ const Index = () => {
       <Partners />
       {/* <MotivationalQuote /> */}
       <FinalCTA onOpenModal={openModal} />
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 };

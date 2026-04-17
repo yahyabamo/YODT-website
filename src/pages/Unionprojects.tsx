@@ -3,12 +3,33 @@ import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from '@/components/layout/BottomNav';
 import { SmartTopBar } from '@/components/layout/SmartTopBar';
 import { useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
+
+interface TrackPageState {
+    track: any;
+    userId: string | null;
+    loading: boolean;
+    currentPage: number;
+    totalPages: number;
+    bookmarkedPages: Set<number>;
+    noteInput: string;
+    savingNote: false;
+    showAllNotes: false;
+    showSearch: false;
+    searchQuery: string;
+
+    chatInput: string;
+    sendingMsg: false;
+}
+
+
 interface Project {
     id: string;
     name: string;
     description: string;
+    icon_url?: string; // Add this line
 }
-
 interface TeamMember {
     id: string;
     name: string;
@@ -92,12 +113,18 @@ const ProjectMembers = ({
                 className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
                 <span className="text-lg">→</span>
-                <span>العودة للمشاريع</span>
+                <span>اكتشف جميع المشاريع</span>
             </button>
 
             {/* Project title card */}
             <div className="rounded-2xl border border-border bg-card p-4 flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 text-2xl">📁</div>
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 text-2xl overflow-hidden">
+                    {project.icon_url ? (
+                        <img src={project.icon_url} alt={project.name} className="w-full h-full object-cover" />
+                    ) : (
+                        <span>📁</span>
+                    )}
+                </div>
                 <div>
                     <h3 className="font-bold text-lg text-foreground">{project.name}</h3>
                     {project.description && <p className="text-sm text-muted-foreground">{project.description}</p>}
@@ -178,6 +205,28 @@ const UnionProjects = () => {
     const [userRole, setUserRole] = useState<string | null>(null);
     const [showSearch, setShowSearch] = useState(false);
     const location = useLocation(); // 2. Initialize location
+    const navigate = useNavigate();
+
+    const [state, setState] = useState<TrackPageState>({
+        track: null,
+        userId: null,
+        loading: true,
+        currentPage: 1,
+        totalPages: 0,
+        bookmarkedPages: new Set(),
+        noteInput: '',
+        savingNote: false,
+        showAllNotes: false,
+        showSearch: false,
+        searchQuery: '',
+        chatInput: '',
+        sendingMsg: false,
+    });
+    const updateState = useCallback((updates: Partial<TrackPageState>) => {
+        setState((prev) => ({ ...prev, ...updates }));
+
+    }, []);
+
 
     useEffect(() => {
         const init = async () => {
@@ -226,12 +275,24 @@ const UnionProjects = () => {
 
     return (
         <div className="min-h-screen bg-background pb-24" dir="rtl">
-            <header className="sticky-header">
+            <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
                 <div className="p-4 max-w-screen-xl mx-auto">
                     <SmartTopBar onOpenSearch={() => setShowSearch(true)} />
+
+                    <div className="flex items-center justify-between mb-4">
+                        <button
+                            onClick={() => navigate('/home')}
+                            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                        >
+                            <ArrowRight className="h-5 w-5 text-slate-700" />
+                        </button>
+                        <h1 className="text-lg font-bold text-slate-900 flex-1 text-center px-4 line-clamp-1">
+                            {'مشاريع الاتحاد'}
+                        </h1>
+
+                    </div>
                 </div>
             </header>
-
             <style>{`
         @keyframes fadeSlideIn {
           from { opacity: 0; transform: translateY(18px) scale(0.97); }
@@ -287,7 +348,13 @@ const UnionProjects = () => {
                                     onClick={() => setSelectedProject(p)}
                                     className="w-full text-right rounded-2xl border border-border bg-card p-4 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200 flex items-center gap-4"
                                 >
-                                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 text-2xl">📁</div>
+                                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 text-2xl overflow-hidden">
+                                        {p.icon_url ? (
+                                            <img src={p.icon_url} alt={p.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <span>📁</span>
+                                        )}
+                                    </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="font-bold text-foreground truncate">{p.name}</p>
                                         {p.description && <p className="text-sm text-muted-foreground truncate mt-0.5">{p.description}</p>}

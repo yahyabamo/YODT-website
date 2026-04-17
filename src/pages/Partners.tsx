@@ -13,6 +13,7 @@ import { BottomNav } from '@/components/layout/BottomNav';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { SmartTopBar } from '@/components/layout/SmartTopBar';
+import { ArrowRight } from 'lucide-react';
 
 
 interface Partner {
@@ -108,9 +109,22 @@ const Partners = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <header className="sticky-header">
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
         <div className="p-4 max-w-screen-xl mx-auto">
           <SmartTopBar onOpenSearch={() => setShowSearch(true)} />
+
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={() => navigate(-1)}   // ← go back one step
+              className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+            >
+              <ArrowRight className="h-5 w-5 text-slate-700" />
+            </button>
+            <h1 className="text-lg font-bold text-slate-900 flex-1 text-center px-4 line-clamp-1">
+              {'الشركاء'}
+            </h1>
+
+          </div>
         </div>
       </header>
       <div className="px-4 py-4 max-w-lg mx-auto space-y-4">

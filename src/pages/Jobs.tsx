@@ -3,6 +3,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SmartTopBar } from '@/components/layout/SmartTopBar';
 import { BottomNav } from '@/components/layout/BottomNav';
+import { useNavigate } from 'react-router-dom';
+import { useCallback } from 'react';
+import { ArrowRight } from 'lucide-react';
+
+
+interface TrackPageState {
+  track: any;
+  userId: string | null;
+  loading: boolean;
+  currentPage: number;
+  totalPages: number;
+  bookmarkedPages: Set<number>;
+  noteInput: string;
+  savingNote: boolean;
+  showAllNotes: boolean;
+  showSearch: boolean;
+  searchQuery: string;
+
+  chatInput: string;
+  sendingMsg: boolean;
+}
+
 
 
 // ─── Cloudinary upload ────────────────────────────────────────────────────────
@@ -68,6 +90,28 @@ function ApplyModal({ job, onClose }: { job: Job; onClose: () => void }) {
   const cvRef = useRef<HTMLInputElement>(null);
   const cardRef = useRef<HTMLInputElement>(null);
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
+
+  const navigate = useNavigate();
+
+  const [state, setState] = useState<TrackPageState>({
+    track: null,
+    userId: null,
+    loading: true,
+    currentPage: 1,
+    totalPages: 0,
+    bookmarkedPages: new Set(),
+    noteInput: '',
+    savingNote: false,
+    showAllNotes: false,
+    showSearch: false,
+    searchQuery: '',
+    chatInput: '',
+    sendingMsg: false,
+  });
+  const updateState = useCallback((updates: Partial<TrackPageState>) => {
+    setState((prev) => ({ ...prev, ...updates }));
+
+  }, []);
 
   const [showSearch, setShowSearch] = useState(false);
 
@@ -141,24 +185,24 @@ function ApplyModal({ job, onClose }: { job: Job; onClose: () => void }) {
         dir="rtl">
 
         {/* Header */}
-        <div className="sticky top-0 z-10 px-6 pt-5 pb-4"
-          style={{ background: `linear-gradient(135deg,${cfg.color}20,${cfg.color}08)`, borderBottom: `2px solid ${cfg.color}25` }}>
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0"
-              style={{ background: `${cfg.color}18`, border: `1.5px solid ${cfg.color}30` }}>
-              {cfg.icon}
+        <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+          <div className="p-4 max-w-screen-xl mx-auto">
+            <SmartTopBar onOpenSearch={() => updateState({ showSearch: true })} />
+
+            <div className="flex items-center justify-between mb-4">
+              <button
+                onClick={() => navigate('/home')}
+                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <ArrowRight className="h-5 w-5 text-slate-700" />
+              </button>
+              <h1 className="text-lg font-bold text-slate-900 flex-1 text-center px-4 line-clamp-1">
+                {'الأنشطة'}
+              </h1>
+
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-extrabold uppercase tracking-widest m-0" style={{ color: cfg.color }}>
-                {cfg.label} — {job.company}
-              </p>
-              <h3 className="font-extrabold text-gray-900 m-0 text-[16px] leading-snug truncate">{job.title}</h3>
-            </div>
-            <button onClick={onClose}
-              className="w-8 h-8 rounded-full border-none cursor-pointer flex items-center justify-center text-gray-400 text-lg shrink-0 transition-colors hover:bg-gray-100"
-              style={{ background: "#f3f4f6" }}>✕</button>
           </div>
-        </div>
+        </header>
 
         {done ? (
           // ── Success State ──
@@ -499,6 +543,28 @@ export default function JobsPage() {
   const [search, setSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
 
+  const navigate = useNavigate();
+
+  const [state, setState] = useState<TrackPageState>({
+    track: null,
+    userId: null,
+    loading: true,
+    currentPage: 1,
+    totalPages: 0,
+    bookmarkedPages: new Set(),
+    noteInput: '',
+    savingNote: false,
+    showAllNotes: false,
+    showSearch: false,
+    searchQuery: '',
+    chatInput: '',
+    sendingMsg: false,
+  });
+  const updateState = useCallback((updates: Partial<TrackPageState>) => {
+    setState((prev) => ({ ...prev, ...updates }));
+
+  }, []);
+
   useEffect(() => {
     (async () => {
       try {
@@ -531,9 +597,22 @@ export default function JobsPage() {
   return (
     <div dir="rtl" className="min-h-screen bg-background transition-colors duration-300">
       {/* ── Header ── */}
-      <header className="sticky top-0 z-50 border-b border-border/60 bg-background/75 backdrop-blur-xl transition-colors duration-300">
-        <div className="max-w-screen-xl mx-auto px-4 py-3">
-          <SmartTopBar onOpenSearch={() => setShowSearch(true)} />
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div className="p-4 max-w-screen-xl mx-auto">
+          <SmartTopBar onOpenSearch={() => updateState({ showSearch: true })} />
+
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={() => navigate('/home')}
+              className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+            >
+              <ArrowRight className="h-5 w-5 text-slate-700" />
+            </button>
+            <h1 className="text-lg font-bold text-slate-900 flex-1 text-center px-4 line-clamp-1">
+              {'الوظائف'}
+            </h1>
+
+          </div>
         </div>
       </header>
 

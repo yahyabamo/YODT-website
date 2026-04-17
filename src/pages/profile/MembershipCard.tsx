@@ -8,6 +8,25 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { generateSecureToken, getTokenExpirySeconds } from '@/lib/qrToken';
 import { SmartTopBar } from '@/components/layout/SmartTopBar';
+import { useCallback } from 'react';
+import { ArrowRight } from 'lucide-react';
+
+interface TrackPageState {
+  track: any;
+  userId: string | null;
+  loading: boolean;
+  currentPage: number;
+  totalPages: number;
+  bookmarkedPages: Set<number>;
+  noteInput: string;
+  savingNote: boolean;
+  showAllNotes: boolean;
+  showSearch: boolean;
+  searchQuery: string;
+
+  chatInput: string;
+  sendingMsg: boolean;
+}
 
 interface Profile {
   id: string;
@@ -36,6 +55,29 @@ const MembershipCard = () => {
   const [expirySeconds, setExpirySeconds] = useState(60);
   const [showSearch, setShowSearch] = useState(false);
   const verifyUrl = `${window.location.origin}/verify/${qrToken}`;
+
+  const [state, setState] = useState<TrackPageState>({
+    track: null,
+    userId: null,
+    loading: true,
+    currentPage: 1,
+    totalPages: 0,
+    bookmarkedPages: new Set(),
+    noteInput: '',
+    savingNote: false,
+    showAllNotes: false,
+    showSearch: false,
+    searchQuery: '',
+    chatInput: '',
+    sendingMsg: false,
+  });
+  const updateState = useCallback((updates: Partial<TrackPageState>) => {
+    setState((prev) => ({ ...prev, ...updates }));
+
+  }, []);
+
+
+
 
   useEffect(() => {
     if (authLoading) return;
@@ -398,9 +440,22 @@ const MembershipCard = () => {
       <div className="mc-page" dir="rtl">
 
         {/* Sticky top bar */}
-        <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
+        <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
           <div className="p-4 max-w-screen-xl mx-auto">
-            <SmartTopBar onOpenSearch={() => setShowSearch(true)} />
+            <SmartTopBar onOpenSearch={() => updateState({ showSearch: true })} />
+
+            <div className="flex items-center justify-between mb-4">
+              <button
+                onClick={() => navigate('/profile')}
+                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <ArrowRight className="h-5 w-5 text-slate-700" />
+              </button>
+              <h1 className="text-lg font-bold text-slate-900 flex-1 text-center px-4 line-clamp-1">
+                {'بطاقة العضوية'}
+              </h1>
+
+            </div>
           </div>
         </header>
 
@@ -557,5 +612,6 @@ const MembershipCard = () => {
     </>
   );
 };
+
 
 export default MembershipCard;
