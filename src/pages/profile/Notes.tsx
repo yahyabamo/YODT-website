@@ -39,7 +39,7 @@ const Notes = () => {
   }, [user, authLoading, navigate]);
 
   const activeNote = notes.find(n => n.id === activeNoteId) ?? null;
-  const gender = user ? null : localStorage.getItem('userGender');
+  const gender = user?.gender ?? localStorage.getItem('gender');
   const isStudent = gender === 'male';
 
   // ── Open a note ──────────────────────────────────────────────────────────
@@ -146,7 +146,7 @@ const Notes = () => {
   // ── Notes List ────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-background pb-24" dir="rtl">
-      <PageHeader title="مذكّراتي" showBack />
+      <PageHeader title="ملاحظاتي" showBack />
 
       <div className="px-4 py-4 space-y-4 max-w-lg mx-auto">
         {/* Privacy Notice */}

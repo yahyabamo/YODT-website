@@ -7,7 +7,7 @@ import {
     Users, ShieldCheck, Vote,
     HeartHandshake, Compass, Clapperboard,
     Briefcase, Map, GraduationCap, BookOpen,
-    MessageSquare, TrendingUp, Handshake, Tag, BarChart
+    MessageSquare, TrendingUp, Handshake, Tag, BarChart, Layout, FileText
 } from "lucide-react";
 
 const B = "#8B1A2A"; // Primary Brand Color
@@ -50,6 +50,8 @@ export const navGroups = [
             { id: "jobadmin", path: "/admin/jobadmin", label: "إدارة الوظائف", icon: Briefcase, permission: null, adminOnly: false },
             { id: "appsmapadmin", path: "/admin/appsmapadmin", label: "تطبيقات وخرائط", icon: Map, permission: null, adminOnly: false },
             { id: "guideadmin", path: "/admin/guideadmin", label: "الدليل والأسئلة", icon: BookOpen, permission: null, adminOnly: false },
+            { id: "homepage", path: "/admin/homepage", label: "مدير الصفحة الرئيسية", icon: Layout, permission: null, adminOnly: true },
+            { id: "info-cms", path: "/admin/info-cms", label: "إدارة المحتوى", icon: FileText, permission: null, adminOnly: true },
         ]
     },
     {

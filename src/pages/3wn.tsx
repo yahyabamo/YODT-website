@@ -7,6 +7,27 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, Camera, User, Send, Check, Calendar, Store, Gift } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
+
+
+interface TrackPageState {
+    track: any;
+    userId: string | null;
+    loading: boolean;
+    currentPage: number;
+    totalPages: number;
+    bookmarkedPages: Set<number>;
+    noteInput: string;
+    savingNote: false;
+    showAllNotes: false;
+    showSearch: false;
+    searchQuery: string;
+
+    chatInput: string;
+    sendingMsg: false;
+}
 
 // ─── Cloudinary Upload ────────────────────────────────────────────────────────
 async function uploadFile(file: File): Promise<string> {
@@ -198,6 +219,28 @@ export default function Awn() {
     const [filter, setFilter] = useState("الكل");
     const [showSearch, setShowSearch] = useState(false);
 
+    const navigate = useNavigate();
+
+    const [state, setState] = useState<TrackPageState>({
+        track: null,
+        userId: null,
+        loading: true,
+        currentPage: 1,
+        totalPages: 0,
+        bookmarkedPages: new Set(),
+        noteInput: '',
+        savingNote: false,
+        showAllNotes: false,
+        showSearch: false,
+        searchQuery: '',
+        chatInput: '',
+        sendingMsg: false,
+    });
+    const updateState = useCallback((updates: Partial<TrackPageState>) => {
+        setState((prev) => ({ ...prev, ...updates }));
+
+    }, []);
+
     useEffect(() => {
         supabase.from("services").select("*").order("sort_order")
             .then(({ data }) => { setServices(data || []); setLoading(false); });
@@ -206,11 +249,25 @@ export default function Awn() {
     const categories = ["الكل", ...Array.from(new Set(services.map(s => s.category)))];
     const filtered = filter === "الكل" ? services : services.filter(s => s.category === filter);
 
+
     return (
         <div dir="rtl" className="min-h-screen bg-background transition-colors duration-300">
-            <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
+            <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
                 <div className="p-4 max-w-screen-xl mx-auto">
                     <SmartTopBar onOpenSearch={() => setShowSearch(true)} />
+
+                    <div className="flex items-center justify-between mb-4">
+                        <button
+                            onClick={() => navigate(-1)}   // ← go back one step
+                            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                        >
+                            <ArrowRight className="h-5 w-5 text-slate-700" />
+                        </button>
+                        <h1 className="text-lg font-bold text-slate-900 flex-1 text-center px-4 line-clamp-1">
+                            {'عون'}
+                        </h1>
+
+                    </div>
                 </div>
             </header>
 

@@ -4,6 +4,26 @@ import { supabase } from '@/integrations/supabase/client'
 import type { Course, UserCourseProgress, Certificate } from '@/integrations/supabase/academy.types'
 import { GraduationCap, BookOpen, Trophy, Clock, Download, Play, ChevronLeft } from 'lucide-react'
 import { SmartTopBar } from '@/components/layout/SmartTopBar';
+import { useCallback } from 'react';
+import { ArrowRight } from 'lucide-react';
+
+
+interface TrackPageState {
+    track: any;
+    userId: string | null;
+    loading: boolean;
+    currentPage: number;
+    totalPages: number;
+    bookmarkedPages: Set<number>;
+    noteInput: string;
+    savingNote: boolean;
+    showAllNotes: boolean;
+    showSearch: boolean;
+    searchQuery: string;
+
+    chatInput: string;
+    sendingMsg: boolean;
+}
 
 interface EnrichedProgress extends UserCourseProgress {
     course: Course
@@ -22,6 +42,25 @@ export default function MyLearningPage() {
     const [certs, setCerts] = useState<EnrichedCert[]>([])
     const [loading, setLoading] = useState(true)
     const [showSearch, setShowSearch] = useState(false)
+    const [state, setState] = useState<TrackPageState>({
+        track: null,
+        userId: null,
+        loading: true,
+        currentPage: 1,
+        totalPages: 0,
+        bookmarkedPages: new Set(),
+        noteInput: '',
+        savingNote: false,
+        showAllNotes: false,
+        showSearch: false,
+        searchQuery: '',
+        chatInput: '',
+        sendingMsg: false,
+    });
+    const updateState = useCallback((updates: Partial<TrackPageState>) => {
+        setState((prev) => ({ ...prev, ...updates }));
+
+    }, []);
 
     useEffect(() => {
         load()
@@ -89,9 +128,22 @@ export default function MyLearningPage() {
         <div className="min-h-screen pb-20" style={{ background: '#F8F7F5', fontFamily: "'Cairo', sans-serif" }} dir="rtl">
 
             {/* ── Header ── */}
-            <header className="sticky-header">
+            <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
                 <div className="p-4 max-w-screen-xl mx-auto">
                     <SmartTopBar onOpenSearch={() => setShowSearch(true)} />
+
+                    <div className="flex items-center justify-between mb-4">
+                        <button
+                            onClick={() => navigate('/academy')}
+                            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                        >
+                            <ArrowRight className="h-5 w-5 text-slate-700" />
+                        </button>
+                        <h1 className="text-lg font-bold text-slate-900 flex-1 text-center px-4 line-clamp-1">
+                            {' تعلّمي'}
+                        </h1>
+
+                    </div>
                 </div>
             </header>
             <div

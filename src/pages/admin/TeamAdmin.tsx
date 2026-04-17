@@ -37,6 +37,7 @@ interface Project {
     id: string;
     name: string;
     description: string;
+    icon_url?: string; // Add this line
 }
 
 // ─── Shared Tab Button ────────────────────────────────────────────────────────
@@ -156,7 +157,7 @@ const MembersTab = ({ teamType }: { teamType: 'current' | 'founding' | 'external
                                     <div className="flex items-center gap-1.5 mt-0.5">
                                         {m.description && <p className="text-[11px] text-[#9ca3af] truncate">{m.description}</p>}
                                         <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${m.gender === 'female' ? 'bg-pink-100 text-pink-700' : 'bg-blue-100 text-blue-700'}`}>
-                                            {m.gender === 'female' ? 'أنثى' : 'ذكر'}
+                                            {m.gender === 'female' ? 'انثى' : 'ذكر'}
                                         </span>
                                     </div>
                                 </div>
@@ -217,10 +218,10 @@ const MembersTab = ({ teamType }: { teamType: 'current' | 'founding' | 'external
         </div>
     );
 };
-
 // ─── Projects Tab ─────────────────────────────────────────────────────────────
 const ProjectsTab = () => {
-    const EMPTY_PROJECT = { name: '', description: '' };
+    // Add icon_url to the empty state
+    const EMPTY_PROJECT = { name: '', description: '', icon_url: '' };
 
     const [projects, setProjects] = useState<Project[]>([]);
     const [allMembers, setAllMembers] = useState<TeamMember[]>([]);
@@ -230,6 +231,8 @@ const ProjectsTab = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [editTarget, setEditTarget] = useState<Project | null>(null);
     const [form, setForm] = useState({ ...EMPTY_PROJECT });
+    // NEW: State for the uploaded project icon
+    const [projectIcon, setProjectIcon] = useState<File | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [assignModal, setAssignModal] = useState(false);
@@ -253,14 +256,21 @@ const ProjectsTab = () => {
 
     useEffect(() => { fetchAll(); }, []);
 
-    const openAdd = () => { setEditTarget(null); setForm({ ...EMPTY_PROJECT }); setModalOpen(true); };
-    const openEdit = (p: Project) => { setEditTarget(p); setForm({ name: p.name, description: p.description }); setModalOpen(true); };
+    // Clear icon state when opening modals
+    const openAdd = () => { setEditTarget(null); setForm({ ...EMPTY_PROJECT }); setProjectIcon(null); setModalOpen(true); };
+    const openEdit = (p: Project) => { setEditTarget(p); setForm({ name: p.name, description: p.description, icon_url: p.icon_url || '' }); setProjectIcon(null); setModalOpen(true); };
 
     const handleSave = async () => {
         if (!form.name.trim()) { toast.error('اسم المشروع مطلوب'); return; }
         setSaving(true);
         try {
-            const payload = { name: form.name.trim(), description: form.description.trim() };
+            // Handle image upload if a new file was selected
+            let finalIconUrl = form.icon_url;
+            if (projectIcon) {
+                finalIconUrl = await uploadImage(projectIcon, "project_icons");
+            }
+
+            const payload = { name: form.name.trim(), description: form.description.trim(), icon_url: finalIconUrl };
             if (editTarget) {
                 const { error } = await supabase.from('union_projects').update(payload).eq('id', editTarget.id);
                 if (error) throw error;
@@ -323,7 +333,16 @@ const ProjectsTab = () => {
                     <div className="bg-white rounded-2xl shadow-sm border border-[#f0f0f0] overflow-hidden">
                         {projects.map((p, i) => (
                             <div key={p.id} className={`flex items-center gap-4 px-4 py-3 ${i !== projects.length - 1 ? 'border-b border-[#f3f4f6]' : ''}`}>
-                                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl" style={{ background: '#fdf2f4' }}>📁</div>
+
+                                {/* Updated Icon Display */}
+                                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl overflow-hidden" style={{ background: '#fdf2f4' }}>
+                                    {p.icon_url ? (
+                                        <img src={p.icon_url} alt={p.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <span>📁</span>
+                                    )}
+                                </div>
+
                                 <div className="flex-1 min-w-0">
                                     <p className="font-bold text-[#111] truncate text-[14px]">{p.name}</p>
                                     {p.description && <p className="text-[12px] text-[#9ca3af] truncate">{p.description}</p>}
@@ -345,11 +364,26 @@ const ProjectsTab = () => {
                 <div className="space-y-4">
                     <Inp label="اسم المشروع *" value={form.name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, name: e.target.value }))} placeholder="اسم المشروع" />
                     <Tex label="وصف المشروع" value={form.description} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setForm(f => ({ ...f, description: e.target.value }))} placeholder="وصف مختصر (اختياري)" rows={3} />
+
+                    {/* NEW: Image Upload Input */}
+                    <div>
+                        <label className="block text-[13px] font-semibold text-[#374151] mb-1.5">أيقونة المشروع</label>
+                        <input type="file" accept="image/*" onChange={(e) => setProjectIcon(e.target.files?.[0] || null)} className="w-full p-2 border border-[#e5e7eb] rounded-xl text-[14px] bg-white" />
+                        {form.icon_url && !projectIcon && (
+                            <div className="mt-2 flex items-center gap-2">
+                                <img src={form.icon_url} alt="preview" className="w-10 h-10 rounded-xl object-cover border border-[#e5e7eb]" />
+                                <span className="text-xs text-[#6b7280]">الأيقونة الحالية</span>
+                            </div>
+                        )}
+                    </div>
+
                     <button onClick={handleSave} disabled={saving} className="w-full py-3 rounded-xl border-none font-bold cursor-pointer text-sm text-white hover:opacity-90 disabled:opacity-60" style={{ background: ACCENT }}>
                         {saving ? 'جاري الحفظ...' : editTarget ? 'حفظ التعديلات' : 'إضافة المشروع'}
                     </button>
                 </div>
             </Modal>
+
+            {/* ... Rest of the Modals (Delete & Assign Members) remain exactly the same ... */}
 
             {/* Delete Modal */}
             <Modal open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title="تأكيد الحذف">
@@ -365,12 +399,10 @@ const ProjectsTab = () => {
             </Modal>
 
             {/* Assign Members Modal */}
-            {/* Updated Assign Members Modal */}
             <Modal open={assignModal} onClose={() => setAssignModal(false)} title={`أعضاء: ${assignProject?.name}`}>
                 <div className="space-y-4">
 
-                    {/* --- NEW: Quick Add External Member --- */}
-                    {/* --- NEW: Quick Add External Member with Image & Description --- */}
+                    {/* Quick Add External Member */}
                     <div className="p-4 bg-secondary/20 rounded-xl border border-dashed border-primary/30 space-y-3">
                         <p className="text-[11px] font-bold text-primary">إضافة عضو خارجي (متعاون) للمشروع:</p>
 
@@ -414,12 +446,10 @@ const ProjectsTab = () => {
                                 setIsQuickAdding(true);
                                 try {
                                     let imageUrl = "";
-                                    // 1. Upload to Cloudinary if a file is selected
                                     if (extFile) {
                                         imageUrl = await uploadImage(extFile, "external_members");
                                     }
 
-                                    // 2. Insert into union_team_members
                                     const { data, error } = await supabase
                                         .from('union_team_members')
                                         .insert([{
@@ -435,7 +465,6 @@ const ProjectsTab = () => {
 
                                     if (error) throw error;
 
-                                    // 3. Update UI
                                     setAllMembers(prev => [...prev, data]);
                                     setAssignedIds(prev => [...prev, data.id]);
                                     setExtForm({ name: '', role: '', description: '' });
@@ -452,7 +481,7 @@ const ProjectsTab = () => {
                             {isQuickAdding ? <Spinner /> : '+ إضافة العضو للقائمة'}
                         </button>
                     </div>
-                    {/* --- Existing: List of Members --- */}
+                    {/* Existing: List of Members */}
                     <div className="max-h-60 overflow-y-auto space-y-2 border border-[#e5e7eb] rounded-xl p-2">
                         {allMembers.map(m => {
                             const checked = assignedIds.includes(m.id);

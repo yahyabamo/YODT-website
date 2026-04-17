@@ -6,8 +6,25 @@ import { BookOpen, Clock, Search, GraduationCap, Users, Trophy, ArrowLeft } from
 import { SmartTopBar } from '@/components/layout/SmartTopBar';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
+import { useCallback } from 'react';
 
 
+interface TrackPageState {
+    track: any;
+    userId: string | null;
+    loading: boolean;
+    currentPage: number;
+    totalPages: number;
+    bookmarkedPages: Set<number>;
+    noteInput: string;
+    savingNote: boolean;
+    showAllNotes: boolean;
+    showSearch: boolean;
+    searchQuery: string;
+
+    chatInput: string;
+    sendingMsg: boolean;
+}
 
 const CATEGORIES = ['الكل', 'برمجة', 'تصميم', 'تسويق', 'لغات', 'ريادة أعمال', 'مهارات شخصية']
 
@@ -28,6 +45,25 @@ export default function AcademyPage() {
     const [stats, setStats] = useState({ courses: 0, students: 0, certs: 0 })
     const [showSearch, setShowSearch] = useState(false);
     const navigate = useNavigate();
+    const [state, setState] = useState<TrackPageState>({
+        track: null,
+        userId: null,
+        loading: true,
+        currentPage: 1,
+        totalPages: 0,
+        bookmarkedPages: new Set(),
+        noteInput: '',
+        savingNote: false,
+        showAllNotes: false,
+        showSearch: false,
+        searchQuery: '',
+        chatInput: '',
+        sendingMsg: false,
+    });
+    const updateState = useCallback((updates: Partial<TrackPageState>) => {
+        setState((prev) => ({ ...prev, ...updates }));
+
+    }, []);
 
 
 
@@ -62,9 +98,22 @@ export default function AcademyPage() {
 
     return (
         <div className="min-h-screen" style={{ background: '#F8F7F5', fontFamily: "'Cairo', sans-serif" }} dir="rtl">
-            <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
+            <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
                 <div className="p-4 max-w-screen-xl mx-auto">
-                    <SmartTopBar onOpenSearch={() => setShowSearch(true)} />
+                    <SmartTopBar onOpenSearch={() => updateState({ showSearch: true })} />
+
+                    <div className="flex items-center justify-between mb-4">
+                        <button
+                            onClick={() => navigate('/home')}
+                            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                        >
+                            <ArrowRight className="h-5 w-5 text-slate-700" />
+                        </button>
+                        <h1 className="text-lg font-bold text-slate-900 flex-1 text-center px-4 line-clamp-1">
+                            {' أكاديمية الاتحاد'}
+                        </h1>
+
+                    </div>
                 </div>
             </header>
 
