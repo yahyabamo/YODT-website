@@ -2,8 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { fetchUniversityById, InfoUniversity } from '@/service/infoCMS';
+import { useLanguage } from '@/context/LanguageContext';
+import { commonText, pagesText, getField } from '@/i18n/pages';
 
 export default function UniversityDetail() {
+  const { language: lang } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [uni, setUni] = useState<InfoUniversity | null>(null);
@@ -29,9 +32,9 @@ export default function UniversityDetail() {
   if (error || !uni) return (
     <div style={{ background: 'var(--bg, #07080b)', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px', direction: 'rtl' }}>
       <div style={{ fontSize: '4rem' }}>🎓</div>
-      <h2 style={{ color: 'var(--text, #f0ece4)' }}>لم يتم العثور على الجامعة</h2>
+      <h2 style={{ color: 'var(--text, #f0ece4)' }}>{commonText.universityNotFound[lang]}</h2>
       <button onClick={() => navigate('/universities')} style={{ padding: '10px 20px', borderRadius: '10px', background: '#7a1c1c', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
-        قائمة الجامعات
+        {commonText.universitiesList[lang]}
       </button>
     </div>
   );
@@ -63,14 +66,14 @@ export default function UniversityDetail() {
           }}
         >
           <ArrowRight size={16} />
-          <span>العودة للجامعات</span>
+          <span>{commonText.returnToUniversities[lang]}</span>
         </button>
       </div>
 
       {/* Hero image */}
       {uni.image_url && (
         <div style={{ width: '100%', height: '320px', overflow: 'hidden', position: 'relative' }}>
-          <img src={uni.image_url} alt={uni.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img src={uni.image_url} alt={getField(uni, 'name', lang)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(transparent 30%, var(--bg, #07080b))' }} />
         </div>
       )}
@@ -80,21 +83,21 @@ export default function UniversityDetail() {
         <div style={{ marginBottom: '32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px', flexWrap: 'wrap' }}>
             <span style={{ background: '#1d4ed8', color: '#fff', padding: '4px 12px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: 700 }}>
-              📍 {uni.location}
+              📍 {getField(uni, 'location', lang)}
             </span>
             {uni.established && (
               <span style={{ color: '#c8a84b', fontSize: '0.75rem', fontWeight: 600 }}>
-                🏛️ تأسست {uni.established}
+                🏛️ {pagesText.universities.established[lang]} {uni.established}
               </span>
             )}
             {uni.student_count && (
               <span style={{ color: 'var(--text-3)', fontSize: '0.75rem' }}>
-                👥 {uni.student_count} طالب
+                👥 {uni.student_count} {commonText.studentWord[lang]}
               </span>
             )}
           </div>
           <h1 style={{ color: 'var(--text, #f0ece4)', fontSize: 'clamp(1.6rem, 4vw, 2.4rem)', fontWeight: 800, lineHeight: 1.25 }}>
-            {uni.name}
+            {getField(uni, 'name', lang)}
           </h1>
         </div>
 
@@ -104,10 +107,10 @@ export default function UniversityDetail() {
           borderRadius: '16px', padding: '28px', marginBottom: '24px',
         }}>
           <h2 style={{ color: '#c8a84b', fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px' }}>
-            نبذة عن الجامعة
+            {commonText.aboutUniversity[lang]}
           </h2>
           <p style={{ color: 'var(--text-2)', fontSize: '0.93rem', lineHeight: 1.85, whiteSpace: 'pre-line' }}>
-            {uni.description}
+            {getField(uni, 'description', lang)}
           </p>
         </div>
 
@@ -118,7 +121,7 @@ export default function UniversityDetail() {
             borderRadius: '16px', padding: '28px', marginBottom: '24px',
           }}>
             <h2 style={{ color: '#c8a84b', fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px' }}>
-              التخصصات المتاحة
+              {commonText.availableSpecialties[lang]}
             </h2>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
               {specialtiesList.map(s => (
@@ -149,7 +152,7 @@ export default function UniversityDetail() {
               transition: 'all 0.2s ease',
             }}
           >
-            🌐 زيارة الموقع الرسمي ↗
+            🌐 {commonText.visitWebsite[lang]} ↗
           </a>
         )}
       </div>

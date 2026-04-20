@@ -1,12 +1,43 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface FinalCTAProps {
     onOpenModal: () => void;
 }
 
+const ctaStats = [
+    { num: '+100', ar: 'عضو نشط', en: 'Active Members', tr: 'Aktif Üye' },
+    { num: '+10', ar: 'شريك استراتيجي', en: 'Strategic Partners', tr: 'Stratejik Ortak' },
+    { num: '+20', ar: 'فعالية سنوياً', en: 'Events Per Year', tr: 'Yıllık Etkinlik' },
+];
+
+const ctaText = {
+    title: {
+        ar: 'انضم اليوم وكن جزءًا من',
+        en: 'Join Today and Be Part of a',
+        tr: 'Bugün Katılın ve Parçası Olun',
+    },
+    titleHighlight: {
+        ar: 'مجتمع طلابي يصنع الفرق',
+        en: 'Student Community That Makes a Difference',
+        tr: 'Fark Yaratan Bir Öğrenci Topluluğunun',
+    },
+    subtitle: {
+        ar: 'استفد من دعم لا محدود، خصومات حصرية، وشبكة علاقات قوية تبدأ اليوم.',
+        en: 'Benefit from unlimited support, exclusive discounts, and a powerful network starting today.',
+        tr: 'Bugün itibaren sınırsız destek, özel indirimler ve güçlü bir ağdan yararlanın.',
+    },
+    registerBtn: {
+        ar: 'سجل واحصل على عضويتك',
+        en: 'Register Your Free Membership',
+        tr: 'Ücretsiz Üyeliğine Kayıt Ol',
+    },
+} as const;
+
 export const FinalCTA: React.FC<FinalCTAProps> = ({ onOpenModal }) => {
     const navigate = useNavigate();
+    const { language: lang } = useLanguage();
 
     return (
         <section
@@ -65,14 +96,13 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ onOpenModal }) => {
                         marginBottom: '16px',
                     }}
                 >
-                    <span className="ar-only">انضم اليوم وكن جزءًا من<br /><span style={{ color: 'var(--gold)' }}>مجتمع طلابي يصنع الفرق</span></span>
-                    <span className="en-only">Join Today and Be Part of a<br /><span style={{ color: 'var(--gold)' }}>Student Community That Makes a Difference</span></span>
+                    {ctaText.title[lang]}<br />
+                    <span style={{ color: 'var(--gold)' }}>{ctaText.titleHighlight[lang]}</span>
                 </h2>
 
                 {/* Subtitle */}
                 <p style={{ color: 'var(--text-2)', fontSize: '0.97rem', lineHeight: 1.8, marginBottom: '36px' }}>
-                    <span className="ar-only">استفد من دعم لا محدود، خصومات حصرية، وشبكة علاقات قوية تبدأ اليوم.</span>
-                    <span className="en-only">Benefit from unlimited support, exclusive discounts, and a powerful network starting today.</span>
+                    {ctaText.subtitle[lang]}
                 </p>
 
                 {/* CTA Button with pulse glow */}
@@ -92,8 +122,7 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ onOpenModal }) => {
                         <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
                         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                     </svg>
-                    <span className="ar-only">سجل واحصل على عضويتك </span>
-                    <span className="en-only">Register Your Free Membership</span>
+                    <span>{ctaText.registerBtn[lang]}</span>
                 </button>
 
                 {/* Free note */}
@@ -102,21 +131,15 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ onOpenModal }) => {
                         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                         <polyline points="22 4 12 14.01 9 11.01" />
                     </svg>
-
                 </div>
 
                 {/* Social proof stats */}
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', flexWrap: 'wrap', paddingTop: '24px', borderTop: '1px solid var(--border)' }}>
-                    {[
-                        { num: '+100', labelAr: 'عضو نشط', labelEn: 'Active Members' },
-                        { num: '+10', labelAr: 'شريك استراتيجي', labelEn: 'Strategic Partners' },
-                        { num: '+20', labelAr: 'فعالية سنوياً', labelEn: 'Events Per Year' },
-                    ].map((s) => (
-                        <div key={s.labelAr} style={{ textAlign: 'center' }}>
+                    {ctaStats.map((s) => (
+                        <div key={s.ar} style={{ textAlign: 'center' }}>
                             <div style={{ fontFamily: 'var(--f-en)', fontSize: '1.5rem', fontWeight: 700, color: 'var(--red-400)', lineHeight: 1 }}>{s.num}</div>
-                            <div style={{ fontSize: '0.78rem', color: 'var(--text-3)', marginTop: '4px', fontFamily: 'var(--f-ar)' }}>
-                                <span className="ar-only">{s.labelAr}</span>
-                                <span className="en-only">{s.labelEn}</span>
+                            <div style={{ fontSize: '0.78rem', color: 'var(--text-3)', marginTop: '4px' }}>
+                                {s[lang]}
                             </div>
                         </div>
                     ))}

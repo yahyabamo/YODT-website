@@ -4,6 +4,9 @@ import { ArrowRight } from 'lucide-react';
 import { InfoHero } from '@/components/features/info/InfoHero';
 import { InfoCard } from '@/components/features/info/InfoCard';
 import { fetchUniversities, InfoUniversity } from '@/service/infoCMS';
+import { fetchHeroImages } from '@/service/heroImages';
+import { useLanguage } from '@/context/LanguageContext';
+import { pagesText, commonText, getField } from '@/i18n/pages';
 
 function Skeleton() {
   return (
@@ -18,8 +21,10 @@ function Skeleton() {
 }
 
 export default function Universities() {
+  const { language: lang } = useLanguage();
   const navigate = useNavigate();
   const [universities, setUniversities] = useState<InfoUniversity[]>([]);
+  const [heroImages, setHeroImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,11 +32,24 @@ export default function Universities() {
       .then(setUniversities)
       .catch(console.error)
       .finally(() => setLoading(false));
+    fetchHeroImages('universities')
+      .then(rows => setHeroImages(rows.map(r => r.image_url)))
+      .catch(console.error);
     window.scrollTo(0, 0);
   }, []);
 
   return (
-    <div style={{ background: 'var(--bg, #07080b)', minHeight: '100vh', paddingTop: '72px' }}>
+    <div style={{ background: 'var(--bg, #07080b)', minHeight: '100vh' }}>
+
+      {/* Hero — flush with navbar, no gap */}
+      <InfoHero
+        eyebrow={pagesText.universities.heroEyebrow[lang]}
+        title={pagesText.universities.heroTitle[lang]}
+        description={pagesText.universities.heroDesc[lang]}
+        gradient="linear-gradient(135deg, #07080b 0%, #0b1020 40%, #07080b 100%)"
+        backgroundImages={heroImages}
+      />
+
       {/* Return button */}
       <div style={{ maxWidth: '1260px', margin: '0 auto', padding: '24px clamp(16px, 4vw, 40px) 0' }}>
         <button
@@ -53,22 +71,15 @@ export default function Universities() {
           }}
         >
           <ArrowRight size={16} />
-          <span>العودة للرئيسية</span>
+          <span>{commonText.returnToHome[lang]}</span>
         </button>
       </div>
-
-      <InfoHero
-        eyebrow="جامعات إسطنبول"
-        title="اختر جامعتك في إسطنبول"
-        description="دليل شامل بأبرز الجامعات التركية في إسطنبول — مواصفاتها، تخصصاتها، وكل ما تحتاج معرفته"
-        gradient="linear-gradient(135deg, #07080b 0%, #0b1020 40%, #07080b 100%)"
-      />
 
       <section style={{ maxWidth: '1260px', margin: '0 auto', padding: '64px clamp(16px, 4vw, 40px) 80px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}>
           <div style={{ height: '1px', flex: 1, background: 'var(--border)' }} />
           <span style={{ color: '#c8a84b', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-            الجامعات ({loading ? '…' : universities.length})
+            {pagesText.universities.listTitle[lang]} ({loading ? '…' : universities.length})
           </span>
           <div style={{ height: '1px', flex: 1, background: 'var(--border)' }} />
         </div>
@@ -83,20 +94,20 @@ export default function Universities() {
               <InfoCard
                 key={u.id}
                 id={u.id!}
-                name={u.name}
-                bio={u.description}
+                name={getField(u, 'name', lang)}
+                bio={getField(u, 'description', lang)}
                 image_url={u.image_url}
-                badge={u.location}
+                badge={getField(u, 'location', lang)}
                 badgeColor="#1d4ed8"
                 detailPath={`/universities/${u.id}`}
-                extraInfo={u.established ? `تأسست ${u.established}` : undefined}
+                extraInfo={u.established ? `${pagesText.universities.established[lang]} ${u.established}` : undefined}
               />
             ))}
           </div>
         ) : (
           <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--text-3)' }}>
             <div style={{ fontSize: '4rem', marginBottom: '16px' }}>🎓</div>
-            <p style={{ fontSize: '0.95rem' }}>سيتم إضافة الجامعات قريباً</p>
+            <p style={{ fontSize: '0.95rem' }}>{commonText.noUniversities[lang]}</p>
           </div>
         )}
       </section>

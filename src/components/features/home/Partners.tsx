@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchPartners, type HomepagePartner } from '@/service/homepageCMS';
+import { useLanguage } from '@/context/LanguageContext';
+import { getField } from '@/i18n/pages';
 
 // ── Skeleton item ──────────────────────────────────────────────────────────────
 function SkeletonItem() {
@@ -11,10 +13,19 @@ function SkeletonItem() {
     );
 }
 
+const partnerText = {
+    eyebrow: { ar: 'شركاء النجاح', en: 'Partners of Success', tr: 'Başarı Ortakları' },
+    title: { ar: 'شركاؤنا الاستراتيجيون', en: 'Our Strategic Partners', tr: 'Stratejik Ortaklarımız' },
+    desc: {
+        ar: 'نفخر بشراكاتنا مع مؤسسات بارزة في إسطنبول تدعم الطلاب اليمنيين.',
+        en: 'Proud partners with prominent institutions in Istanbul supporting Yemeni students.',
+        tr: "Yemenli öğrencileri destekleyen İstanbul'daki önde gelen kurumlarla ortaklıklarımızla gurur duyuyoruz.",
+    },
+    empty: { ar: 'لا يوجد شركاء حالياً', en: 'No partners at the moment', tr: 'Şu an ortak bulunmuyor' },
+} as const;
+
 const PartnerItem = ({ partner, lang }: { partner: HomepagePartner; lang: string }) => {
-    const name = lang === 'en' ? (partner.name_en || partner.name_ar)
-        : lang === 'tr' ? (partner.name_tr || partner.name_ar)
-        : partner.name_ar;
+    const name = getField(partner, 'name', lang);
 
     const content = (
         <div className="marquee-partner-item">
@@ -33,10 +44,9 @@ const PartnerItem = ({ partner, lang }: { partner: HomepagePartner; lang: string
 };
 
 export const Partners = () => {
+    const { language: lang } = useLanguage();
     const [partnersList, setPartnersList] = useState<HomepagePartner[]>([]);
     const [loading, setLoading] = useState(true);
-
-    const lang = document.documentElement.getAttribute('lang') ?? 'ar';
 
     useEffect(() => {
         fetchPartners()
@@ -55,21 +65,15 @@ export const Partners = () => {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '14px' }}>
                     <div style={{ height: '1px', width: '32px', background: 'var(--gold)' }} />
                     <span style={{ color: 'var(--gold)', fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', fontFamily: 'var(--f-ui)' }}>
-                        <span className="ar-only">شركاء النجاح</span>
-                        <span className="en-only">Partners of Success</span>
-                        <span className="tr-only">Başarı Ortakları</span>
+                        {partnerText.eyebrow[lang]}
                     </span>
                     <div style={{ height: '1px', width: '32px', background: 'var(--gold)' }} />
                 </div>
                 <h2 className="heading-md" style={{ marginBottom: '10px' }}>
-                    <span className="ar-only">شركاؤنا الاستراتيجيون</span>
-                    <span className="en-only">Our Strategic Partners</span>
-                    <span className="tr-only">Stratejik Ortaklarımız</span>
+                    {partnerText.title[lang]}
                 </h2>
                 <p style={{ color: 'var(--text-3)', fontSize: '0.88rem', maxWidth: '500px', margin: '0 auto' }}>
-                    <span className="ar-only">نفخر بشراكاتنا مع مؤسسات بارزة في إسطنبول تدعم الطلاب اليمنيين.</span>
-                    <span className="en-only">Proud partners with prominent institutions in Istanbul supporting Yemeni students.</span>
-                    <span className="tr-only">Yemenli öğrencileri destekleyen İstanbul'daki önde gelen kurumlarla ortaklıklarımızla gurur duyuyoruz.</span>
+                    {partnerText.desc[lang]}
                 </p>
             </div>
 
@@ -82,7 +86,9 @@ export const Partners = () => {
                             ? doubled.map((partner, i) => (
                                 <PartnerItem key={`${partner.id}-${i}`} partner={partner} lang={lang} />
                             ))
-                            : <p style={{ color: 'var(--text-3)', textAlign: 'center', padding: '0 20px' }}>لا يوجد شركاء حالياً</p>
+                            : <p style={{ color: 'var(--text-3)', textAlign: 'center', padding: '0 20px' }}>
+                                {partnerText.empty[lang]}
+                            </p>
                     }
                 </div>
             </div>

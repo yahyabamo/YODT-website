@@ -4,30 +4,11 @@ import { ArrowRight } from 'lucide-react';
 import { InfoHero } from '@/components/features/info/InfoHero';
 import { ArticleCard } from '@/components/features/info/ArticleCard';
 import { fetchArticles, InfoArticle } from '@/service/infoCMS';
+import { fetchHeroImages } from '@/service/heroImages';
+import { useLanguage } from '@/context/LanguageContext';
+import { aboutIstanbulText, commonText, getField } from '@/i18n/pages';
 
-const STATIC_SECTIONS = [
-  {
-    icon: '🕌',
-    title: 'مدينة العالم والتاريخ',
-    body: `إسطنبول — المدينة التي تجمع بين قارتين، وتحمل في أحجارها آلاف السنين من الحضارة الإنسانية. من القسطنطينية العظيمة إلى عاصمة الخلافة العثمانية إلى باب الشرق الحديث، تبقى إسطنبول مدينة الأحلام والتاريخ في آنٍ واحد.
-    
-تستقطب إسطنبول ملايين الزوار سنوياً، وتحتضن مئات الآلاف من الطلاب الدوليين الذين يجدون فيها بيئةً علمية حافلة بالفرص، ومجتمعاً إنسانياً دافئاً يرحّب بالجميع.`,
-  },
-  {
-    icon: '🎨',
-    title: 'الثقافة والحياة اليومية',
-    body: `تتميز إسطنبول بمزيجها الفريد من الثقافة الشرقية والغربية، حيث تجد في شوارعها تناغماً بين الأصالة والمعاصرة. أسواقها التاريخية كالبازار الكبير وبازار التوابل تجاور المراكز التجارية الحديثة والمطاعم العالمية.
 
-الحياة الاجتماعية في إسطنبول غنية ومتنوعة — من المقاهي الصاخبة على ضفاف البوسفور، إلى الحفلات الموسيقية والمعارض الفنية، وصولاً إلى المهرجانات الثقافية الدولية على مدار العام.`,
-  },
-  {
-    icon: '🚇',
-    title: 'السكن والمواصلات وأسلوب الحياة',
-    body: `تمتلك إسطنبول شبكة مواصلات عامة من بين أفضل المدن العالمية، تشمل المترو، والترام، والحافلات، والعبّارات التي تربط ضفتي المدينة الأوروبية والآسيوية. بطاقة إسطنبول (İstanbulkart) تتيح لك التنقل بتكلفة منخفضة جداً.
-
-السكن الطلابي متاح بأسعار مختلفة تبدأ من السكن الجامعي المدعوم وحتى الشقق الخاصة. أحياء مثل باشاك شهير، وكايت هانه، وفاتح، وبيلك دوزو تُعدّ من أكثر الأحياء شعبيةً بين الطلاب العرب.`,
-  },
-];
 
 function SectionBlock({ icon, title, body }: { icon: string; title: string; body: string }) {
   return (
@@ -77,8 +58,10 @@ function Skeleton() {
 }
 
 export default function AboutIstanbul() {
+  const { language: lang } = useLanguage();
   const navigate = useNavigate();
   const [articles, setArticles] = useState<InfoArticle[]>([]);
+  const [heroImages, setHeroImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -86,11 +69,24 @@ export default function AboutIstanbul() {
       .then(setArticles)
       .catch(console.error)
       .finally(() => setLoading(false));
+    fetchHeroImages('istanbul')
+      .then(rows => setHeroImages(rows.map(r => r.image_url)))
+      .catch(console.error);
     window.scrollTo(0, 0);
   }, []);
 
   return (
-    <div style={{ background: 'var(--bg, #07080b)', minHeight: '100vh', paddingTop: '72px' }}>
+    <div style={{ background: 'var(--bg, #07080b)', minHeight: '100vh' }}>
+
+      {/* Hero — flush with navbar, no gap */}
+      <InfoHero
+        eyebrow={aboutIstanbulText.heroEyebrow[lang]}
+        title={aboutIstanbulText.heroTitle[lang]}
+        description={aboutIstanbulText.heroDesc[lang]}
+        gradient="linear-gradient(135deg, #07080b 0%, #1a0505 40%, #07080b 100%)"
+        backgroundImages={heroImages}
+      />
+
       {/* Return button */}
       <div style={{ maxWidth: '1260px', margin: '0 auto', padding: '24px clamp(16px, 4vw, 40px) 0' }}>
         <button
@@ -112,30 +108,23 @@ export default function AboutIstanbul() {
           }}
         >
           <ArrowRight size={16} />
-          <span>العودة للرئيسية</span>
+          <span>{commonText.returnToHome[lang]}</span>
         </button>
       </div>
-
-      <InfoHero
-        eyebrow="عن إسطنبول"
-        title="إسطنبول — بوابة الشرق"
-        description="اكتشف سحر إسطنبول وتاريخها العريق، ودليلك الشامل للحياة الطلابية في أجمل مدن العالم"
-        gradient="linear-gradient(135deg, #07080b 0%, #1a0505 40%, #07080b 100%)"
-      />
 
       {/* Static content */}
       <section style={{ maxWidth: '900px', margin: '0 auto', padding: '64px clamp(16px, 4vw, 40px)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}>
           <div style={{ height: '1px', flex: 1, background: 'var(--border)' }} />
           <span style={{ color: '#c8a84b', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-            دليلك إلى إسطنبول
+            {aboutIstanbulText.guideTitle[lang]}
           </span>
           <div style={{ height: '1px', flex: 1, background: 'var(--border)' }} />
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {STATIC_SECTIONS.map(section => (
-            <SectionBlock key={section.title} {...section} />
+          {aboutIstanbulText.staticSections.map((section, idx) => (
+            <SectionBlock key={idx} icon={section.icon} title={section.title[lang]} body={section.body[lang]} />
           ))}
         </div>
       </section>
@@ -145,7 +134,7 @@ export default function AboutIstanbul() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}>
           <div style={{ height: '1px', flex: 1, background: 'var(--border)' }} />
           <span style={{ color: '#c8a84b', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-            مقالات عن إسطنبول
+            {aboutIstanbulText.articlesTitle[lang]}
           </span>
           <div style={{ height: '1px', flex: 1, background: 'var(--border)' }} />
         </div>
@@ -161,7 +150,7 @@ export default function AboutIstanbul() {
         ) : (
           <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-3, #706c66)' }}>
             <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📰</div>
-            <p style={{ fontSize: '0.9rem' }}>لا توجد مقالات متاحة حالياً</p>
+            <p style={{ fontSize: '0.9rem' }}>{commonText.noArticles[lang]}</p>
           </div>
         )}
       </section>

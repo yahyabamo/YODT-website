@@ -1,6 +1,84 @@
 import React from 'react';
+import { useLanguage } from '@/context/LanguageContext';
+
+const pillars = [
+    {
+        icon: '🎓',
+        ar: 'الدعم الأكاديمي',
+        en: 'Academic Support',
+        tr: 'Akademik Destek',
+        descAr: 'توجيه في اختيار الجامعات وإجراءات القبول',
+        descEn: 'Guidance on universities and admission procedures',
+        descTr: 'Üniversite seçimi ve kabul prosedürleri konusunda rehberlik',
+    },
+    {
+        icon: '🌐',
+        ar: 'بناء المجتمع',
+        en: 'Community Building',
+        tr: 'Topluluk Oluşturma',
+        descAr: 'بيئة اجتماعية داعمة تجمع الطلاب اليمنيين',
+        descEn: 'A supportive social environment connecting students',
+        descTr: 'Öğrencileri bir araya getiren destekleyici bir sosyal ortam',
+    },
+    {
+        icon: '🧭',
+        ar: 'التوجيه والمساعدة',
+        en: 'Guidance & Assistance',
+        tr: 'Rehberlik ve Yardım',
+        descAr: 'المساعدة في الإقامة والحياة اليومية في تركيا',
+        descEn: 'Assistance with residence and daily life in Turkey',
+        descTr: "Türkiye'de ikamet ve günlük yaşam konusunda yardım",
+    },
+];
+
+const stats = [
+    { value: '+100', ar: 'عضو مسجل', en: 'Members', tr: 'Üye' },
+    { value: '+10', ar: 'شريك', en: 'Partners', tr: 'Ortak' },
+    { value: '+20', ar: 'فعالية سنوية', en: 'Annual Events', tr: 'Yıllık Etkinlik' },
+    { value: '∞', ar: 'دعم مستمر', en: 'Ongoing Support', tr: 'Sürekli Destek' },
+];
+
+const facts = [
+    {
+        icon: '📍',
+        labelAr: 'المقر الرئيسي',
+        labelEn: 'Headquarters',
+        labelTr: 'Genel Merkez',
+        valueAr: 'إسطنبول، تركيا',
+        valueEn: 'Istanbul, Turkey',
+        valueTr: 'İstanbul, Türkiye',
+    },
+];
+
+const aboutText = {
+    eyebrow: { ar: 'من نحن', en: 'About Us', tr: 'Hakkımızda' },
+    title: {
+        ar: 'اتحاد يبني جسورًا\nبين الطلاب',
+        en: 'Building Bridges\nBetween Students',
+        tr: 'Öğrenciler Arasında\nKöprüler İnşa Ediyoruz',
+    },
+    p1: {
+        ar: 'تأسس اتحاد الطلاب اليمنيين في تركيا – فرع إسطنبول كمنظومة دعم شاملة للطلاب اليمنيين، نؤمن أن كل طالب يستحق بيئة داعمة تُعينه على النجاح الأكاديمي والاندماج الاجتماعي.',
+        en: 'The Yemeni Students Union in Turkey – Istanbul Branch was founded as a comprehensive support system for Yemeni students. We believe every student deserves a supportive environment to succeed academically and socially.',
+        tr: "Türkiye'deki Yemenli Öğrenciler Birliği – İstanbul Şubesi, Yemenli öğrenciler için kapsamlı bir destek sistemi olarak kurulmuştur. Her öğrencinin akademik olarak başarılı olması ve toplumla bütünleşmesi için destekleyici bir ortamı hak ettiğine inanıyoruz.",
+    },
+    p2: {
+        ar: 'نعمل على ربط الطلاب بالموارد اللازمة — من المعلومات الجامعية إلى الإجراءات القانونية والسكنية.',
+        en: 'We connect students to essential resources — from university information to legal procedures and housing support.',
+        tr: 'Öğrencileri gerekli kaynaklara bağlıyoruz — üniversite bilgilerinden yasal prosedürlere ve konut desteğine kadar.',
+    },
+    cardSubtitle: {
+        ar: 'متواجدون دوماً لخدمتكم',
+        en: 'Always here to serve you',
+        tr: 'Her zaman hizmetinizdeyiz',
+    },
+} as const;
 
 export const About = () => {
+    const { language: lang } = useLanguage();
+
+    const titleLines = aboutText.title[lang].split('\n');
+
     return (
         <section id="about" className="section-pad" style={{ background: 'var(--bg)', position: 'relative', overflow: 'hidden' }}>
             {/* Full-section Yemen pattern overlay */}
@@ -39,42 +117,26 @@ export const About = () => {
                         <div className="flex items-center gap-3 mb-5">
                             <div style={{ height: '1px', width: '32px', background: 'var(--gold)' }} />
                             <span style={{ color: 'var(--gold)', fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-                                <span className="ar-only">من نحن</span>
-                                <span className="en-only">About Us</span>
+                                {aboutText.eyebrow[lang]}
                             </span>
                         </div>
 
                         <h2 className="heading-lg" style={{ marginBottom: '16px', fontSize: 'clamp(1.5rem, 3vw, 2.1rem)' }}>
-                            <span className="ar-only">اتحاد يبني جسورًا<br />بين الطلاب</span>
-                            <span className="en-only">Building Bridges<br />Between Students</span>
+                            {titleLines[0]}{titleLines[1] && <><br />{titleLines[1]}</>}
                         </h2>
 
                         <div style={{ height: '2px', width: '48px', background: 'var(--red-700)', borderRadius: '2px', marginBottom: '20px' }} />
 
                         <p style={{ fontSize: '0.97rem', color: 'var(--text-2)', lineHeight: '1.85', marginBottom: '16px' }}>
-                            <span className="ar-only">
-                                تأسس اتحاد الطلاب اليمنيين في تركيا – فرع إسطنبول كمنظومة دعم شاملة للطلاب اليمنيين، نؤمن أن كل طالب يستحق بيئة داعمة تُعينه على النجاح الأكاديمي والاندماج الاجتماعي.
-                            </span>
-                            <span className="en-only">
-                                The Yemeni Students Union in Turkey – Istanbul Branch was founded as a comprehensive support system for Yemeni students. We believe every student deserves a supportive environment to succeed academically and socially.
-                            </span>
+                            {aboutText.p1[lang]}
                         </p>
                         <p style={{ fontSize: '0.97rem', color: 'var(--text-2)', lineHeight: '1.85', marginBottom: '32px' }}>
-                            <span className="ar-only">
-                                نعمل على ربط الطلاب بالموارد اللازمة — من المعلومات الجامعية إلى الإجراءات القانونية والسكنية.
-                            </span>
-                            <span className="en-only">
-                                We connect students to essential resources — from university information to legal procedures and housing support.
-                            </span>
+                            {aboutText.p2[lang]}
                         </p>
 
                         {/* Pillar cards */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            {[
-                                { icon: '🎓', ar: 'الدعم الأكاديمي', en: 'Academic Support', descAr: 'توجيه في اختيار الجامعات وإجراءات القبول', descEn: 'Guidance on universities and admission procedures' },
-                                { icon: '🌐', ar: 'بناء المجتمع', en: 'Community Building', descAr: 'بيئة اجتماعية داعمة تجمع الطلاب اليمنيين', descEn: 'A supportive social environment connecting students' },
-                                { icon: '🧭', ar: 'التوجيه والمساعدة', en: 'Guidance & Assistance', descAr: 'المساعدة في الإقامة والحياة اليومية في تركيا', descEn: 'Assistance with residence and daily life in Turkey' },
-                            ].map((pillar) => (
+                            {pillars.map((pillar) => (
                                 <div
                                     key={pillar.ar}
                                     style={{
@@ -93,12 +155,10 @@ export const About = () => {
                                     <span style={{ fontSize: '1.4rem', lineHeight: 1, marginTop: '2px', flexShrink: 0 }}>{pillar.icon}</span>
                                     <div>
                                         <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text)', marginBottom: '3px' }}>
-                                            <span className="ar-only">{pillar.ar}</span>
-                                            <span className="en-only">{pillar.en}</span>
+                                            {pillar[lang]}
                                         </div>
                                         <div style={{ fontSize: '0.8rem', color: 'var(--text-3)', lineHeight: 1.6 }}>
-                                            <span className="ar-only">{pillar.descAr}</span>
-                                            <span className="en-only">{pillar.descEn}</span>
+                                            {lang === 'ar' ? pillar.descAr : lang === 'en' ? pillar.descEn : pillar.descTr}
                                         </div>
                                     </div>
                                 </div>
@@ -141,20 +201,14 @@ export const About = () => {
                                         YÖDT
                                     </div>
                                     <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)' }}>
-                                        <span className="ar-only">متواجدون دوماً لخدمتكم</span>
-                                        <span className="en-only">Always here to serve you</span>
+                                        {aboutText.cardSubtitle[lang]}
                                     </div>
                                 </div>
                             </div>
 
                             {/* Stats grid */}
                             <div style={{ padding: '24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                                {[
-                                    { value: '+100', labelAr: 'عضو مسجل', labelEn: 'Members' },
-                                    { value: '+10', labelAr: 'شريك', labelEn: 'Partners' },
-                                    { value: '+20', labelAr: 'فعالية سنوية', labelEn: 'Annual Events' },
-                                    { value: '∞', labelAr: 'دعم مستمر', labelEn: 'Ongoing Support' },
-                                ].map((stat) => (
+                                {stats.map((stat) => (
                                     <div
                                         key={stat.value}
                                         style={{
@@ -167,8 +221,7 @@ export const About = () => {
                                     >
                                         <div style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--text)', lineHeight: 1 }}>{stat.value}</div>
                                         <div style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginTop: '6px' }}>
-                                            <span className="ar-only">{stat.labelAr}</span>
-                                            <span className="en-only">{stat.labelEn}</span>
+                                            {stat[lang]}
                                         </div>
                                     </div>
                                 ))}
@@ -176,9 +229,7 @@ export const About = () => {
 
                             {/* Bottom fact rows */}
                             <div style={{ padding: '0 24px 24px' }}>
-                                {[
-                                    { icon: '📍', labelAr: 'المقر الرئيسي', labelEn: 'Headquarters', valueAr: 'إسطنبول، تركيا', valueEn: 'Istanbul, Turkey' },
-                                ].map((fact) => (
+                                {facts.map((fact) => (
                                     <div
                                         key={fact.labelAr}
                                         style={{
@@ -194,12 +245,10 @@ export const About = () => {
                                     >
                                         <span style={{ color: 'var(--text-3)' }}>
                                             {fact.icon}&nbsp;
-                                            <span className="ar-only">{fact.labelAr}</span>
-                                            <span className="en-only">{fact.labelEn}</span>
+                                            {lang === 'ar' ? fact.labelAr : lang === 'en' ? fact.labelEn : fact.labelTr}
                                         </span>
                                         <span style={{ fontWeight: 600, color: 'var(--text)' }}>
-                                            <span className="ar-only">{fact.valueAr}</span>
-                                            <span className="en-only">{fact.valueEn}</span>
+                                            {lang === 'ar' ? fact.valueAr : lang === 'en' ? fact.valueEn : fact.valueTr}
                                         </span>
                                     </div>
                                 ))}
@@ -208,8 +257,6 @@ export const About = () => {
                     </div>
                 </div>
             </div>
-
-
         </section>
     );
 };

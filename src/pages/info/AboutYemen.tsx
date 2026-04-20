@@ -4,30 +4,11 @@ import { ArrowRight } from 'lucide-react';
 import { InfoHero } from '@/components/features/info/InfoHero';
 import { ArticleCard } from '@/components/features/info/ArticleCard';
 import { fetchArticles, InfoArticle } from '@/service/infoCMS';
+import { fetchHeroImages } from '@/service/heroImages';
+import { useLanguage } from '@/context/LanguageContext';
+import { aboutYemenText, commonText, getField } from '@/i18n/pages';
 
-const STATIC_SECTIONS = [
-  {
-    icon: '🇾🇪',
-    title: 'اليمن السعيد — أرض الحضارة والتاريخ',
-    body: `اليمن، ذلك البلد العريق الذي شهد ميلاد حضارات إنسانية راسخة، من مملكة سبأ الأسطورية إلى حضرموت ذات الطراز المعماري الفريد. أرضٌ تفخر بلغة القرآن الكريم، وبتاريخ لم يكتبه الزمن إلا بمداد الذهب.
 
-اليمنيون المقيمون في إسطنبول يحملون معهم هذا الإرث الحضاري العميق، ويسعون يومياً إلى نقله للأجيال القادمة وإثراء التجربة الإنسانية المشتركة في ربوع هذه المدينة الكبيرة.`,
-  },
-  {
-    icon: '🏛️',
-    title: 'الحضارة اليمنية عبر التاريخ',
-    body: `شهد اليمن قيام حضارات عريقة أسهمت في تشكيل الثقافة الإنسانية؛ فمملكة سبأ التي ثبّتت اسمها في الكتب السماوية، ودولة المعين التجارية التي حكمت طرق التوابل، والممالك الحميرية والقتبانية والحضرمية، كلها شواهد على عراقة وعمق الحضارة اليمنية.
-
-الآثار اليمنية، كالمدرج ومدينة شبام "ناطحات سحاب الطين"، مدرجةٌ على قائمة اليونسكو للتراث الإنساني المشترك، وهي شاهدٌ دائم على عبقرية الإنسان اليمني.`,
-  },
-  {
-    icon: '🤝',
-    title: 'الجالية اليمنية في إسطنبول',
-    body: `تُعدّ الجالية اليمنية في إسطنبول من بين أكثر الجاليات العربية تماسكاً وتنظيماً في المدينة. يتوزع أبناؤها في مختلف أحياء إسطنبول، ويحافظون على هويتهم الثقافية من خلال فعاليات وتجمعات منتظمة تجمع بين الترابط الاجتماعي والنمو المهني.
-
-اتحاد الطلاب اليمنيين في إسطنبول يمثّل الرابط الأقوى بين أبناء الجالية الطلابية، ويوفر لهم بيئةً داعمة تساعدهم على الاندماج الإيجابي في الحياة التركية مع الحفاظ على انتمائهم وهويتهم.`,
-  },
-];
 
 function SectionBlock({ icon, title, body }: { icon: string; title: string; body: string }) {
   return (
@@ -76,8 +57,10 @@ function Skeleton() {
 }
 
 export default function AboutYemen() {
+  const { language: lang } = useLanguage();
   const navigate = useNavigate();
   const [articles, setArticles] = useState<InfoArticle[]>([]);
+  const [heroImages, setHeroImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -85,11 +68,24 @@ export default function AboutYemen() {
       .then(setArticles)
       .catch(console.error)
       .finally(() => setLoading(false));
+    fetchHeroImages('yemen')
+      .then(rows => setHeroImages(rows.map(r => r.image_url)))
+      .catch(console.error);
     window.scrollTo(0, 0);
   }, []);
 
   return (
-    <div style={{ background: 'var(--bg, #07080b)', minHeight: '100vh', paddingTop: '72px' }}>
+    <div style={{ background: 'var(--bg, #07080b)', minHeight: '100vh' }}>
+
+      {/* Hero — flush with navbar, no gap */}
+      <InfoHero
+        eyebrow={aboutYemenText.heroEyebrow[lang]}
+        title={aboutYemenText.heroTitle[lang]}
+        description={aboutYemenText.heroDesc[lang]}
+        gradient="linear-gradient(135deg, #07080b 0%, #051a0c 40%, #07080b 100%)"
+        backgroundImages={heroImages}
+      />
+
       {/* Return button */}
       <div style={{ maxWidth: '1260px', margin: '0 auto', padding: '24px clamp(16px, 4vw, 40px) 0' }}>
         <button
@@ -111,29 +107,22 @@ export default function AboutYemen() {
           }}
         >
           <ArrowRight size={16} />
-          <span>العودة للرئيسية</span>
+          <span>{commonText.returnToHome[lang]}</span>
         </button>
       </div>
-
-      <InfoHero
-        eyebrow="عن اليمن"
-        title="اليمن السعيد — موطن الحضارة"
-        description="رحلة في عمق التاريخ والثقافة اليمنية، واكتشاف دور الجالية اليمنية في إسطنبول"
-        gradient="linear-gradient(135deg, #07080b 0%, #051a0c 40%, #07080b 100%)"
-      />
 
       <section style={{ maxWidth: '900px', margin: '0 auto', padding: '64px clamp(16px, 4vw, 40px)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}>
           <div style={{ height: '1px', flex: 1, background: 'var(--border)' }} />
           <span style={{ color: '#c8a84b', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-            اليمن وتاريخها
+            {aboutYemenText.guideTitle[lang]}
           </span>
           <div style={{ height: '1px', flex: 1, background: 'var(--border)' }} />
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {STATIC_SECTIONS.map(section => (
-            <SectionBlock key={section.title} {...section} />
+          {aboutYemenText.staticSections.map((section, idx) => (
+            <SectionBlock key={idx} icon={section.icon} title={section.title[lang]} body={section.body[lang]} />
           ))}
         </div>
       </section>
@@ -142,7 +131,7 @@ export default function AboutYemen() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}>
           <div style={{ height: '1px', flex: 1, background: 'var(--border)' }} />
           <span style={{ color: '#c8a84b', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-            مقالات عن اليمن
+            {aboutYemenText.articlesTitle[lang]}
           </span>
           <div style={{ height: '1px', flex: 1, background: 'var(--border)' }} />
         </div>
@@ -158,7 +147,7 @@ export default function AboutYemen() {
         ) : (
           <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-3)' }}>
             <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📰</div>
-            <p style={{ fontSize: '0.9rem' }}>لا توجد مقالات متاحة حالياً</p>
+            <p style={{ fontSize: '0.9rem' }}>{commonText.noArticles[lang]}</p>
           </div>
         )}
       </section>

@@ -4,6 +4,8 @@ import { ArrowRight } from 'lucide-react';
 import { InfoHero } from '@/components/features/info/InfoHero';
 import { InfoCard } from '@/components/features/info/InfoCard';
 import { fetchStudents, InfoStudent } from '@/service/infoCMS';
+import { useLanguage } from '@/context/LanguageContext';
+import { pagesText, commonText, getField } from '@/i18n/pages';
 
 function Skeleton() {
   return (
@@ -18,6 +20,7 @@ function Skeleton() {
 }
 
 export default function Students() {
+  const { language: lang } = useLanguage();
   const navigate = useNavigate();
   const [students, setStudents] = useState<InfoStudent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,14 +56,14 @@ export default function Students() {
           }}
         >
           <ArrowRight size={16} />
-          <span>العودة للرئيسية</span>
+          <span>{commonText.returnToHome[lang]}</span>
         </button>
       </div>
 
       <InfoHero
-        eyebrow="طلابنا المتميزون"
-        title="نخبة الطلاب اليمنيين في إسطنبول"
-        description="تعرّف على الطلاب المتميزين الذين يمثلون خير سفراء لليمن في تركيا — إنجازاتهم وتخصصاتهم وقصص نجاحهم"
+        eyebrow={pagesText.students.heroEyebrow[lang]}
+        title={pagesText.students.heroTitle[lang]}
+        description={pagesText.students.heroDesc[lang]}
         gradient="linear-gradient(135deg, #07080b 0%, #1a0f00 40%, #07080b 100%)"
       />
 
@@ -68,7 +71,7 @@ export default function Students() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}>
           <div style={{ height: '1px', flex: 1, background: 'var(--border)' }} />
           <span style={{ color: '#c8a84b', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-            الطلاب المتميزون ({loading ? '…' : students.length})
+            {pagesText.students.listTitle[lang]} ({loading ? '…' : students.length})
           </span>
           <div style={{ height: '1px', flex: 1, background: 'var(--border)' }} />
         </div>
@@ -83,8 +86,8 @@ export default function Students() {
               <InfoCard
                 key={s.id}
                 id={s.id!}
-                name={s.name}
-                bio={s.bio}
+                name={getField(s, 'name', lang)}
+                bio={getField(s, 'bio', lang)}
                 image_url={s.image_url}
                 badge={s.major}
                 badgeColor="#7a1c1c"
@@ -96,7 +99,7 @@ export default function Students() {
         ) : (
           <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--text-3)' }}>
             <div style={{ fontSize: '4rem', marginBottom: '16px' }}>⭐</div>
-            <p style={{ fontSize: '0.95rem' }}>سيتم إضافة الطلاب المتميزين قريباً</p>
+            <p style={{ fontSize: '0.95rem' }}>{commonText.noStudents[lang]}</p>
           </div>
         )}
       </section>

@@ -4,6 +4,7 @@ import { fetchIconById, upsertIcon, type InfoIcon } from '@/service/infoCMS';
 import { toast } from 'sonner';
 import { Medal, ChevronRight } from 'lucide-react';
 import { Spinner, Field, ActionBar, AdminPageHeader, inputStyle, textareaStyle } from './CMSShared';
+import { ImageUploader } from '@/components/admin/ImageUploader';
 
 export default function IconFormAdmin() {
   const { id } = useParams<{ id: string }>();
@@ -70,7 +71,12 @@ export default function IconFormAdmin() {
         <Field label="الجنسية"><input style={inputStyle} value={form.nationality} onChange={e => handleField('nationality', e.target.value)} /></Field>
         <Field label="السيرة الذاتية المفصلة"><textarea style={{ ...textareaStyle, minHeight: 120 }} value={form.bio} onChange={e => handleField('bio', e.target.value)} /></Field>
         <Field label="أبرز الأعمال والمساهمات"><textarea style={{ ...textareaStyle, minHeight: 100 }} value={form.notable_work} onChange={e => handleField('notable_work', e.target.value)} /></Field>
-        <Field label="رابط الصورة الشخصية (URL)"><input style={inputStyle} value={form.image_url ?? ''} onChange={e => handleField('image_url', e.target.value)} placeholder="https://..." /></Field>
+        <ImageUploader
+          value={form.image_url ?? ''}
+          onChange={url => handleField('image_url', url)}
+          folder="icons"
+          label="الصورة الشخصية"
+        />
         
         <div style={{ display: 'flex', gap: 24, alignItems: 'center', background: '#f9fafb', padding: '16px 20px', borderRadius: 12 }}>
           <div style={{ flex: 1 }}>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, GraduationCap, Users, Medal, Trophy, ChevronLeft } from 'lucide-react';
+import { FileText, GraduationCap, Users, Medal, Trophy, ChevronLeft, Image } from 'lucide-react';
 import { B } from './info/CMSShared';
 
 const SECTIONS = [
@@ -43,6 +43,14 @@ const SECTIONS = [
     icon: Trophy, 
     path: '/admin/info/achievements',
     color: '#ec4899'
+  },
+  {
+    id: 'hero-images',
+    title: 'خلفيات صفحات Hero',
+    description: 'أضف صوراً متعددة لخلفية قسم البطل في كل صفحة — عرض شرائح تلقائي',
+    icon: Image,
+    path: '/admin/info/hero-images',
+    color: '#f97316',
   },
 ];
 

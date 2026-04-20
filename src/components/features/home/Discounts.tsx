@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchDiscounts, type HomepageDiscount } from '@/service/homepageCMS';
+import { useLanguage } from '@/context/LanguageContext';
+import { getField } from '@/i18n/pages';
 
 // ── Skeleton shimmer card ──────────────────────────────────────────────────────
 function SkeletonCard() {
@@ -18,21 +20,37 @@ function SkeletonCard() {
     );
 }
 
+const discountsText = {
+    eyebrow: { ar: 'تخفيضات الأعضاء', en: 'Member Discounts', tr: 'Üye İndirimleri' },
+    title: {
+        ar: 'وفر أكثر مع بطاقة العضوية',
+        en: 'Save More With Your Membership',
+        tr: 'Üyelik Kartınla Daha Fazla Tasarruf Et',
+    },
+    desc: {
+        ar: 'استمتع بخصومات حصرية من شركاء الاتحاد في إسطنبول.',
+        en: 'Enjoy exclusive discounts from union partners across Istanbul.',
+        tr: "İstanbul genelinde birlik ortaklarından özel indirimlerden yararlanın.",
+    },
+    partnerCTA: {
+        ar: 'انضم لشبكة شركائنا وقدم خصومات للطلاب اليمنيين.',
+        en: 'Join our partner network and offer discounts to Yemeni students.',
+        tr: 'Ortak ağımıza katılın ve Yemenli öğrencilere indirim sunun.',
+    },
+    contactUs: { ar: 'تواصل معنا', en: 'Contact Us', tr: 'Bize Ulaşın' },
+} as const;
+
 
 export const Discounts = () => {
+    const { language: lang } = useLanguage();
     const [categories, setCategories] = useState<HomepageDiscount[]>([]);
     const [loading, setLoading] = useState(true);
     const [fetchError, setFetchError] = useState(false);
-    // Detect current language from <html lang="...">
-    const lang = document.documentElement.getAttribute('lang') ?? 'ar';
 
     useEffect(() => {
         setFetchError(false);
         fetchDiscounts()
-            .then(data => {
-                // console.log('[Discounts] fetched', data.length, 'rows:', JSON.stringify(data));
-                setCategories(data);
-            })
+            .then(data => setCategories(data))
             .catch(err => {
                 console.error('[Discounts] fetch ERROR:', err);
                 setFetchError(true);
@@ -50,22 +68,16 @@ export const Discounts = () => {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '16px' }}>
                             <div style={{ height: '1px', width: '32px', background: 'var(--gold)' }} />
                             <span style={{ color: 'var(--gold)', fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-                                <span className="ar-only">تخفيضات الأعضاء</span>
-                                <span className="en-only">Member Discounts</span>
-                                <span className="tr-only">Üye İndirimleri</span>
+                                {discountsText.eyebrow[lang]}
                             </span>
                             <div style={{ height: '1px', width: '32px', background: 'var(--gold)' }} />
                         </div>
 
                         <h2 className="heading-lg" style={{ marginBottom: '12px', fontSize: 'clamp(1.4rem, 3vw, 1.9rem)' }}>
-                            <span className="ar-only">وفر أكثر مع بطاقة العضوية</span>
-                            <span className="en-only">Save More With Your Membership</span>
-                            <span className="tr-only">Üyelik Kartınla Daha Fazla Tasarruf Et</span>
+                            {discountsText.title[lang]}
                         </h2>
                         <p style={{ color: 'var(--text-2)', fontSize: '0.93rem', maxWidth: '480px', margin: '0 auto' }}>
-                            <span className="ar-only">استمتع بخصومات حصرية من شركاء الاتحاد في إسطنبول.</span>
-                            <span className="en-only">Enjoy exclusive discounts from union partners across Istanbul.</span>
-                            <span className="tr-only">İstanbul genelinde birlik ortaklarından özel indirimlerden yararlanın.</span>
+                            {discountsText.desc[lang]}
                         </p>
                     </div>
 
@@ -74,9 +86,9 @@ export const Discounts = () => {
                         {loading
                             ? [0, 1, 2].map(i => <SkeletonCard key={i} />)
                             : categories.map((cat) => {
-                                const catTitle = lang === 'en' ? (cat.title_en || cat.title_ar) : lang === 'tr' ? (cat.title_tr || cat.title_ar) : cat.title_ar;
-                                const catLabel = lang === 'en' ? (cat.label_en || cat.label_ar) : lang === 'tr' ? (cat.label_tr || cat.label_ar) : cat.label_ar;
-                                const catDesc = lang === 'en' ? (cat.desc_en || cat.desc_ar) : lang === 'tr' ? (cat.desc_tr || cat.desc_ar) : cat.desc_ar;
+                                const catTitle = getField(cat, 'title', lang);
+                                const catLabel = getField(cat, 'label', lang);
+                                const catDesc = getField(cat, 'desc', lang);
                                 return (
                                     <div
                                         key={cat.id}
@@ -142,9 +154,7 @@ export const Discounts = () => {
                         >
                             <div style={{ fontSize: '1.8rem', marginBottom: '12px' }}>🤝</div>
                             <p style={{ fontSize: '0.9rem', color: 'var(--text-2)', lineHeight: 1.7, marginBottom: '16px' }}>
-                                <span className="ar-only">انضم لشبكة شركائنا وقدم خصومات للطلاب اليمنيين.</span>
-                                <span className="en-only">Join our partner network and offer discounts to Yemeni students.</span>
-                                <span className="tr-only">Ortak ağımıza katılın ve Yemenli öğrencilere indirim sunun.</span>
+                                {discountsText.partnerCTA[lang]}
                             </p>
                             <a
                                 href="#"
@@ -161,9 +171,7 @@ export const Discounts = () => {
                                     textDecoration: 'none',
                                 }}
                             >
-                                <span className="ar-only">تواصل معنا</span>
-                                <span className="en-only">Contact Us</span>
-                                <span className="tr-only">Bize Ulaşın</span>
+                                {discountsText.contactUs[lang]}
                             </a>
                         </div>
                     </div>

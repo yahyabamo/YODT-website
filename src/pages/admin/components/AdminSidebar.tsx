@@ -35,6 +35,13 @@ export const navGroups = [
         ]
     },
     {
+        title: "ادارة الصفحة الخارجية", // Matches "خدمات وأدوات" grid
+        items: [
+            { id: "homepage", path: "/admin/homepage", label: "مدير الصفحة الرئيسية", icon: Layout, permission: null, adminOnly: true },
+            { id: "info-cms", path: "/admin/info-cms", label: "إدارة المحتوى", icon: FileText, permission: null, adminOnly: true },
+        ]
+    },
+    {
         title: "مشاريع الاتحاد", // Matches "مشاريع الاتحاد" list
         items: [
             { id: "3wn-admin", path: "/admin/3wnAdmin", label: "إدارة عون", icon: HeartHandshake, permission: "3wn", adminOnly: false },
@@ -50,8 +57,6 @@ export const navGroups = [
             { id: "jobadmin", path: "/admin/jobadmin", label: "إدارة الوظائف", icon: Briefcase, permission: null, adminOnly: false },
             { id: "appsmapadmin", path: "/admin/appsmapadmin", label: "تطبيقات وخرائط", icon: Map, permission: null, adminOnly: false },
             { id: "guideadmin", path: "/admin/guideadmin", label: "الدليل والأسئلة", icon: BookOpen, permission: null, adminOnly: false },
-            { id: "homepage", path: "/admin/homepage", label: "مدير الصفحة الرئيسية", icon: Layout, permission: null, adminOnly: true },
-            { id: "info-cms", path: "/admin/info-cms", label: "إدارة المحتوى", icon: FileText, permission: null, adminOnly: true },
         ]
     },
     {
