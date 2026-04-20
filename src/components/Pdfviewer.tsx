@@ -18,32 +18,17 @@ import { cn } from '@/lib/utils';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { pdfjs, Document, Page } from 'react-pdf';
 
-// Correct CSS imports for react-pdf v9+
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
-// ─── PDF.js Worker ────────────────────────────────────────────────────────────
-// IMPORTANT: react-pdf bundles its own pdfjs-dist version internally.
-// We must point the worker to react-pdf's OWN copy to avoid API/Worker version mismatch.
-// Using the root pdfjs-dist (a different version) causes:
-//   "The API version X does not match the Worker version Y"
-if (typeof window !== 'undefined') {
-    pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-        // This resolves to react-pdf's nested pdfjs-dist, not the root package
-        'react-pdf/node_modules/pdfjs-dist/build/pdf.worker.min.mjs',
-        import.meta.url
-    ).toString();
-}
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 
 // ─── Windowed Rendering Constants ─────────────────────────────────────────────
-/** How many pages to render above and below the current page */
 const PAGE_BUFFER = 4;
-
-/** Estimated A4 page height in pixels at scale=1 (used for placeholder sizing) */
 const A4_PAGE_HEIGHT_PX = 842;
 
 // ─── Device Detection ─────────────────────────────────────────────────────────
-function getDeviceInfo(): { isMobile: boolean; isIOS: boolean } {
+export function getDeviceInfo() {
     if (typeof window === 'undefined') return { isMobile: false, isIOS: false };
     const ua = navigator.userAgent;
     const isIOS = /iphone|ipad|ipod/i.test(ua);
@@ -62,44 +47,94 @@ export interface PDFViewerProps {
     onTotalPagesChange?: (pages: number) => void;
 }
 
-// ─── ROOT EXPORT: Hybrid Dispatcher ─────────────────────────────────────────────
-// Automatically routes mobile users to the native viewer and desktop to react-pdf
+// ─── ROOT EXPORT: Hybrid Dispatcher ───────────────────────────────────────────
 export default function PDFViewer(props: PDFViewerProps) {
     const { isMobile } = useMemo(() => getDeviceInfo(), []);
-
-    if (isMobile) {
-        return <MobilePDFViewer {...props} />;
-    }
+    if (isMobile) return <MobilePDFViewer {...props} />;
     return <DesktopPDFViewer {...props} />;
 }
 
 // ─── MOBILE VIEWER ────────────────────────────────────────────────────────────
-// Uses an iframe for native rendering (iOS WKWebView renders PDFs natively).
-// Falls back to an "Open PDF" button when the iframe cannot load the file.
+// Uses an iframe for native rendering. Falls back to an "Open PDF" button.
+// Page state is tracked via swipes (iOS WKWebView can't report scroll position).
 function MobilePDFViewer({
     url,
     isBookmarked = false,
     onBookmarkToggle,
+    onPageChange,
+    onTotalPagesChange,
     currentPage,
 }: PDFViewerProps) {
     const [iframeState, setIframeState] = useState<'loading' | 'loaded' | 'error'>('loading');
     const { isIOS } = useMemo(() => getDeviceInfo(), []);
 
+    // Internal page state so swipe gestures stay in sync even if parent
+    // is slow to propagate `currentPage` back via onPageChange.
+    const [localPage, setLocalPage] = useState(currentPage);
+    const localPageRef = useRef(currentPage);
+    const totalPagesRef = useRef<number | null>(null);
+
+    // Keep local page in sync when parent drives currentPage externally
+    useEffect(() => {
+        if (currentPage !== localPageRef.current) {
+            localPageRef.current = currentPage;
+            setLocalPage(currentPage);
+        }
+    }, [currentPage]);
+
     const openExternal = useCallback(() => {
         window.open(url, '_blank', 'noopener,noreferrer');
     }, [url]);
 
-    return (
-        <div className="relative flex flex-col bg-gradient-to-b from-gray-900 to-gray-800 rounded-2xl overflow-hidden shadow-2xl h-[72vh]">
+    // ── Swipe handling ────────────────────────────────────────────────────────
+    const touchStartX = useRef(0);
+    const touchStartY = useRef(0);
 
+    const handleTouchStart = useCallback((e: React.TouchEvent) => {
+        touchStartX.current = e.touches[0].clientX;
+        touchStartY.current = e.touches[0].clientY;
+    }, []);
+
+    const handleTouchEnd = useCallback(
+        (e: React.TouchEvent) => {
+            const dx = e.changedTouches[0].clientX - touchStartX.current;
+            const dy = e.changedTouches[0].clientY - touchStartY.current;
+            // Only count as horizontal swipe if horizontal delta dominates
+            if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy)) return;
+
+            const max = totalPagesRef.current ?? Infinity;
+            const next =
+                dx < 0
+                    ? Math.min(localPageRef.current + 1, max)  // swipe left → next
+                    : Math.max(localPageRef.current - 1, 1);   // swipe right → prev
+
+            if (next === localPageRef.current) return;
+            localPageRef.current = next;
+            setLocalPage(next);
+            onPageChange?.(next);
+        },
+        [onPageChange]
+    );
+
+    return (
+        <div
+            className="relative flex flex-col bg-gradient-to-b from-gray-900 to-gray-800 rounded-2xl overflow-hidden shadow-2xl h-[72vh]"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+        >
             {/* ── Mobile Toolbar ── */}
             <div className="flex items-center justify-between px-4 py-3 bg-black/60 border-b border-white/10 flex-shrink-0">
                 <div className="flex items-center gap-2">
                     <BookOpen className="h-4 w-4 text-white/60" />
                     <span className="text-white/70 text-xs font-medium">قارئ الكتب</span>
+                    {/* Page indicator */}
+                    <span className="text-white/40 text-xs font-mono">
+                        {localPage}
+                        {totalPagesRef.current ? ` / ${totalPagesRef.current}` : ''}
+                    </span>
                 </div>
                 <div className="flex items-center gap-2">
-                    {/* Bookmark toggle — synced with parent state */}
+                    {/* Bookmark — uses localPage so it always targets the visible page */}
                     <button
                         className={cn(
                             'p-2 rounded-full transition-colors',
@@ -107,7 +142,7 @@ function MobilePDFViewer({
                                 ? 'text-yellow-400 bg-yellow-400/10'
                                 : 'text-white/60 hover:text-white hover:bg-white/10'
                         )}
-                        onClick={() => onBookmarkToggle?.(currentPage)}
+                        onClick={() => onBookmarkToggle?.(localPageRef.current)}
                         title={isBookmarked ? 'إزالة الإشارة المرجعية' : 'إضافة إشارة مرجعية'}
                     >
                         {isBookmarked
@@ -116,7 +151,6 @@ function MobilePDFViewer({
                         }
                     </button>
 
-                    {/* Primary CTA — always visible on mobile */}
                     <Button
                         size="sm"
                         className="bg-red-600 hover:bg-red-700 text-white text-xs h-8 gap-1.5 px-3"
@@ -128,20 +162,18 @@ function MobilePDFViewer({
                 </div>
             </div>
 
-            {/* ── iOS Hint Banner ── */}
+            {/* ── iOS swipe hint ── */}
             {isIOS && (
                 <div className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-950/60 border-b border-blue-500/20 flex-shrink-0">
                     <Smartphone className="h-3 w-3 text-blue-300 flex-shrink-0" />
                     <p className="text-blue-200 text-xs">
-                        اضغط <strong>فتح PDF</strong> لعرض الكتاب في تطبيق القراءة على iOS
+                        اسحب يساراً/يميناً للتنقل بين الصفحات · اضغط <strong>فتح PDF</strong> للقراءة الكاملة
                     </p>
                 </div>
             )}
 
             {/* ── Content Area ── */}
             <div className="flex-1 relative overflow-hidden">
-
-                {/* Loading overlay */}
                 {iframeState === 'loading' && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-950 z-10 gap-3">
                         <Loader2 className="h-9 w-9 animate-spin text-red-500" />
@@ -149,7 +181,6 @@ function MobilePDFViewer({
                     </div>
                 )}
 
-                {/* iframe — native PDF rendering (works on iOS & Android) */}
                 {iframeState !== 'error' ? (
                     <iframe
                         src={url}
@@ -161,11 +192,9 @@ function MobilePDFViewer({
                         onError={() => setIframeState('error')}
                         title="PDF Viewer"
                         allow="fullscreen"
-                        // Prevent iframe from navigating the parent page
                         sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
                     />
                 ) : (
-                    /* ── iframe Failed — Fallback CTA ── */
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-950 gap-6 px-8">
                         <div className="text-center space-y-3">
                             <div className="w-16 h-16 bg-red-900/30 rounded-full flex items-center justify-center mx-auto">
@@ -191,10 +220,6 @@ function MobilePDFViewer({
 }
 
 // ─── DESKTOP VIEWER ───────────────────────────────────────────────────────────
-// Uses react-pdf with windowed virtualization: only renders PAGE_BUFFER pages
-// above and below the current page. Placeholder divs maintain scroll position
-// for all other pages. A lightweight debounced scroll handler tracks which page
-// is in view and dynamically shifts the render window.
 function DesktopPDFViewer({
     url,
     currentPage,
@@ -209,17 +234,16 @@ function DesktopPDFViewer({
     const [scale, setScale] = useState(1);
     const [displayPage, setDisplayPage] = useState(currentPage);
     const [renderError, setRenderError] = useState<string | null>(null);
-
-    // Track actual rendered page height dynamically (updated after first page renders)
     const [pageHeight, setPageHeight] = useState(A4_PAGE_HEIGHT_PX);
 
-    const containerRef = useRef<HTMLDivElement>(null);      // outer wrapper — used for fullscreen
-    const scrollRef = useRef<HTMLDivElement>(null);           // inner overflow-auto div — ACTUALLY scrolls
-    // Maps pageNumber → its wrapper div (includes placeholder divs)
+    const containerRef = useRef<HTMLDivElement>(null);
+    // ✅ FIX 1: scrollRef is properly used — attached to the scrollable div below
+    const scrollRef = useRef<HTMLDivElement>(null);
+    // Maps pageNumber → its wrapper div (for offsetTop-based scroll detection)
     const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map());
     const scrollDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const isExternalNavRef = useRef(false); // flag: navigation came from buttons, not scroll
-    // Ref mirror of displayPage — avoids stale closures in debounced scroll handler
+    const isExternalNavRef = useRef(false);
+    // Ref mirror of displayPage — avoids stale closures in the debounced handler
     const displayPageRef = useRef(currentPage);
 
     const openExternal = useCallback(() => {
@@ -236,23 +260,21 @@ function DesktopPDFViewer({
         return set;
     }, [displayPage, numPages]);
 
-    // ── Keep displayPageRef in sync with displayPage state ──────────────────────
+    // Keep displayPageRef mirror in sync
     useEffect(() => {
         displayPageRef.current = displayPage;
     }, [displayPage]);
 
-    // ── Sync ext. currentPage → displayPage + scroll ──────────────────────────
+    // ── Sync external currentPage prop → internal state + scroll ─────────────
     useEffect(() => {
         if (currentPage === displayPageRef.current) return;
         isExternalNavRef.current = true;
-        setDisplayPage(currentPage);
         displayPageRef.current = currentPage;
-        // Scroll after state update + React render
+        setDisplayPage(currentPage);
         setTimeout(() => {
             const el = pageRefs.current.get(currentPage);
             const scroller = scrollRef.current;
             if (el && scroller) {
-                // Use scrollTop directly to avoid re-triggering scroll detection
                 scroller.scrollTop = el.offsetTop - 12;
             }
             isExternalNavRef.current = false;
@@ -276,10 +298,8 @@ function DesktopPDFViewer({
         setRenderError(`فشل تحميل الملف: ${error.message}`);
     }, []);
 
-    // ── Scroll-based page tracker ─────────────────────────────────────────────
-    // NOTE: We read from scrollRef (the actual scrollable div), not containerRef
-    // (the outer wrapper which has scrollTop = 0 always).
-    // We use displayPageRef to avoid stale closures in the debounce callback.
+    // ✅ FIX 2: Scroll handler — reads scrollRef (the actual scrolling element)
+    //           and finds the page whose midpoint is closest to the viewport midpoint.
     const handleScroll = useCallback(() => {
         if (isExternalNavRef.current) return;
         const scroller = scrollRef.current;
@@ -291,14 +311,11 @@ function DesktopPDFViewer({
             const scroller = scrollRef.current;
             if (!scroller) return;
 
-            // Midpoint of the visible viewport (in content-space coords)
             const viewMid = scroller.scrollTop + scroller.clientHeight / 2;
             let bestPage = displayPageRef.current;
             let bestDist = Infinity;
 
             pageRefs.current.forEach((el, pageNum) => {
-                // offsetTop is relative to the inner scrollable container
-                // (it has position:relative, making it the offset parent)
                 const elMid = el.offsetTop + el.offsetHeight / 2;
                 const dist = Math.abs(elMid - viewMid);
                 if (dist < bestDist) {
@@ -315,7 +332,7 @@ function DesktopPDFViewer({
         }, 150);
     }, [numPages, onPageChange]);
 
-    // ── Button-driven navigation ──────────────────────────────────────────────
+    // ── Button / programmatic navigation ─────────────────────────────────────
     const goToPage = useCallback(
         (page: number) => {
             const next = Math.max(1, Math.min(page, numPages ?? page));
@@ -343,17 +360,21 @@ function DesktopPDFViewer({
         });
     }, []);
 
-    // ── Fullscreen (Desktop only; iOS Safari doesn't support this API) ─────────
+    // ── Fullscreen ────────────────────────────────────────────────────────────
     const toggleFullscreen = useCallback(async () => {
         if (!containerRef.current) return;
         try {
             if (!isFullscreen) {
-                const el = containerRef.current as any;
+                const el = containerRef.current as HTMLDivElement & {
+                    webkitRequestFullscreen?: () => Promise<void>;
+                };
                 if (el.requestFullscreen) await el.requestFullscreen();
                 else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
                 setIsFullscreen(true);
             } else {
-                const doc = document as any;
+                const doc = document as Document & {
+                    webkitExitFullscreen?: () => Promise<void>;
+                };
                 if (doc.exitFullscreen) await doc.exitFullscreen();
                 else if (doc.webkitExitFullscreen) await doc.webkitExitFullscreen();
                 setIsFullscreen(false);
@@ -366,25 +387,32 @@ function DesktopPDFViewer({
     // ── Keyboard shortcuts ────────────────────────────────────────────────────
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
-            if (e.key === 'ArrowLeft') goToPage(displayPage + 1);
-            else if (e.key === 'ArrowRight') goToPage(displayPage - 1);
+            if (e.key === 'ArrowLeft') goToPage(displayPageRef.current + 1);
+            else if (e.key === 'ArrowRight') goToPage(displayPageRef.current - 1);
             else if (e.key === '+' || e.key === '=') handleZoom('in');
             else if (e.key === '-') handleZoom('out');
             else if (e.key === 'f' || e.key === 'F') toggleFullscreen();
         };
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
-    }, [displayPage, goToPage, handleZoom, toggleFullscreen]);
+        // displayPage intentionally omitted — we use displayPageRef to avoid re-registering
+    }, [goToPage, handleZoom, toggleFullscreen]);
 
-    // ── Cleanup debounce on unmount ───────────────────────────────────────────
+    // ── Cleanup debounce timer on unmount ─────────────────────────────────────
     useEffect(() => {
         return () => {
             if (scrollDebounceRef.current) clearTimeout(scrollDebounceRef.current);
         };
     }, []);
 
-    // ── Height of a placeholder (approximated, reflects current scale) ────────
-    const placeholderHeight = Math.round(pageHeight * scale);
+    // ✅ FIX 3: ref callback to register each page wrapper in pageRefs
+    const setPageRef = useCallback((pageNum: number) => (el: HTMLDivElement | null) => {
+        if (el) {
+            pageRefs.current.set(pageNum, el);
+        } else {
+            pageRefs.current.delete(pageNum);
+        }
+    }, []);
 
     return (
         <div
@@ -394,7 +422,7 @@ function DesktopPDFViewer({
                 isFullscreen ? 'fixed inset-0 z-50 rounded-none' : 'h-[65vh] md:h-[75vh]'
             )}
         >
-            {/* ── Decorative Background Orbs ── */}
+            {/* Decorative background orbs */}
             <div className="absolute top-0 left-0 w-32 h-32 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute bottom-0 right-0 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -434,7 +462,7 @@ function DesktopPDFViewer({
                         </Button>
                     </div>
 
-                    {/* Center: Zoom Controls (hidden on small screens) */}
+                    {/* Center: Zoom Controls */}
                     <div className="hidden sm:flex items-center gap-1 flex-shrink-0">
                         <Button
                             size="icon"
@@ -444,7 +472,7 @@ function DesktopPDFViewer({
                             disabled={scale <= 0.5}
                             title="تصغير"
                         >
-                            <ChevronRight className="h-4 w-4 rotate-180" />
+                            <span className="font-bold text-base leading-none">−</span>
                         </Button>
                         <div className="text-white font-mono text-xs px-2 min-w-[42px] text-center">
                             {Math.round(scale * 100)}%
@@ -457,13 +485,13 @@ function DesktopPDFViewer({
                             disabled={scale >= 3}
                             title="تكبير"
                         >
-                            <ChevronLeft className="h-4 w-4 rotate-180" />
+                            <span className="font-bold text-base leading-none">+</span>
                         </Button>
                     </div>
 
                     {/* Right: Actions */}
                     <div className="flex items-center gap-1 flex-shrink-0">
-                        {/* Bookmark */}
+                        {/* ✅ FIX 4: Bookmark always uses displayPageRef.current (the live value) */}
                         <Button
                             size="icon"
                             variant="ghost"
@@ -473,7 +501,7 @@ function DesktopPDFViewer({
                                     ? 'text-yellow-400 hover:bg-yellow-400/20'
                                     : 'text-white/70 hover:bg-white/10 hover:text-white'
                             )}
-                            onClick={() => onBookmarkToggle?.(displayPage)}
+                            onClick={() => onBookmarkToggle?.(displayPageRef.current)}
                             title={isBookmarked ? 'إزالة الإشارة المرجعية' : 'إضافة إشارة مرجعية'}
                         >
                             {isBookmarked
@@ -482,7 +510,6 @@ function DesktopPDFViewer({
                             }
                         </Button>
 
-                        {/* Fullscreen */}
                         <Button
                             size="icon"
                             variant="ghost"
@@ -493,7 +520,6 @@ function DesktopPDFViewer({
                             {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
                         </Button>
 
-                        {/* Open External */}
                         <Button
                             size="icon"
                             variant="ghost"
@@ -508,7 +534,7 @@ function DesktopPDFViewer({
             </div>
 
             {/* ── PDF Scrollable Container ── */}
-            {/* ref={scrollRef} — this is the ACTUAL scrolling element, used for scrollTop reads/writes */}
+            {/* ✅ FIX 1 applied here: ref={scrollRef} + onScroll={handleScroll} */}
             <div
                 ref={scrollRef}
                 className="flex-1 w-full overflow-auto bg-gray-950 relative"
@@ -564,63 +590,47 @@ function DesktopPDFViewer({
                                 </div>
                             }
                         >
+                            {/* ✅ FIX 3 applied here: each page wrapper registers itself in pageRefs */}
                             {numPages &&
-                                Array.from({ length: numPages }, (_, i) => i + 1).map((pageNum) => {
-                                    const isInWindow = windowedPages.has(pageNum);
-                                    return (
-                                        <div
-                                            key={pageNum}
-                                            data-page={pageNum}
-                                            ref={(el) => {
-                                                if (el) pageRefs.current.set(pageNum, el);
-                                                else pageRefs.current.delete(pageNum);
-                                            }}
-                                            className="mb-4 flex justify-center"
-                                        >
-                                            {isInWindow ? (
-                                                /* Rendered Page */
-                                                <Page
-                                                    pageNumber={pageNum}
-                                                    scale={scale}
-                                                    renderTextLayer
-                                                    renderAnnotationLayer
-                                                    onRenderSuccess={
-                                                        // Capture actual page height after first render
-                                                        pageNum === 1
-                                                            ? (page) => {
-                                                                  const h = page.height ?? A4_PAGE_HEIGHT_PX;
-                                                                  setPageHeight(h);
-                                                              }
-                                                            : undefined
-                                                    }
-                                                />
-                                            ) : (
-                                                /* Placeholder — maintains scroll position for out-of-window pages */
-                                                <div
-                                                    style={{
-                                                        width: `${Math.round(595 * scale)}px`,
-                                                        height: `${placeholderHeight}px`,
-                                                        backgroundColor: 'rgb(7, 11, 22)',
-                                                        borderRadius: '4px',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                    }}
-                                                >
-                                                    <span className="text-gray-700 text-xs font-mono select-none">
-                                                        {pageNum}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
+                                Array.from({ length: numPages }, (_, i) => i + 1).map((pageNum) => (
+                                    <div
+                                        key={pageNum}
+                                        ref={setPageRef(pageNum)}
+                                        className="mb-4 flex justify-center"
+                                    >
+                                        {windowedPages.has(pageNum) ? (
+                                            <Page
+                                                pageNumber={pageNum}
+                                                scale={scale}
+                                                renderTextLayer={true}
+                                                renderAnnotationLayer={true}
+                                                onRenderSuccess={
+                                                    // Capture real page height from the first rendered page
+                                                    pageNum === 1
+                                                        ? (page) => setPageHeight(page.height)
+                                                        : undefined
+                                                }
+                                            />
+                                        ) : (
+                                            // Placeholder keeps the layout height for non-rendered pages
+                                            // so scrollTop positions remain accurate
+                                            <div
+                                                style={{
+                                                    width: 600 * scale,
+                                                    height: pageHeight * scale,
+                                                    background: 'transparent',
+                                                }}
+                                            />
+                                        )}
+                                    </div>
+                                ))
+                            }
                         </Document>
                     </div>
                 )}
             </div>
 
-            {/* ── Small-screen bottom bar (sm breakpoint edge case) ── */}
+            {/* Small-screen external link fallback */}
             <div className="sm:hidden absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2">
                 <Button
                     size="sm"
