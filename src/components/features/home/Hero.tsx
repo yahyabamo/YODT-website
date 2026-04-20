@@ -1,17 +1,55 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '@/assets/logo.png';
-import { JambiyaDivider } from './JambiyaDivider';
-
-// ... inside the component function
+import { useLanguage } from '@/context/LanguageContext';
 
 interface HeroProps {
     onOpenModal: () => void;
 }
 
+const heroContent = {
+    eyebrow: {
+        ar: 'اتحاد الطلاب اليمنيين · إسطنبول',
+        en: 'Yemeni Students Union · Istanbul',
+        tr: 'Yemenli Öğrenciler Birliği · İstanbul',
+    },
+    titleLine1: {
+        ar: 'معًا نبني',
+        en: 'Together We Build',
+        tr: 'Birlikte İnşa Ediyoruz',
+    },
+    titleHighlight: {
+        ar: 'مجتمعًا طلابيًا أقوى',
+        en: 'A Stronger Community',
+        tr: 'Daha Güçlü Bir Topluluk',
+    },
+    titleLine3: {
+        ar: '',
+        en: 'In Turkey',
+        tr: "Türkiye'de",
+    },
+    desc: {
+        ar: 'نحن اتحاد طلابي يمني في إسطنبول يهدف إلى دعم الطلاب اليمنيين في جميع مراحل حياتهم الأكاديمية والمعيشية في تركيا — من قبول الجامعة حتى التخرج وما بعده.',
+        en: 'We are a Yemeni student union in Istanbul dedicated to supporting Yemeni students at every stage of their academic and daily life in Turkey — from university admission through graduation and beyond.',
+        tr: "İstanbul'daki Yemenli öğrenci birliği olarak Türkiye'deki her akademik ve günlük yaşam aşamasında — üniversite kabulünden mezuniyete ve ötesine — Yemenli öğrencileri desteklemeye kendimizi adadık.",
+    },
+    registerBtn: {
+        ar: 'سجل واحصل على عضويتك الآن',
+        en: 'Register Your Free Membership',
+        tr: 'Ücretsiz Üyeliğine Kayıt Ol',
+    },
+    stats: [
+        { num: '+100', ar: 'عضو مسجل', en: 'Members', tr: 'Üye' },
+        { num: '+10', ar: 'شريك استراتيجي', en: 'Partners', tr: 'Stratejik Ortak' },
+    ],
+} as const;
+
 export const Hero: React.FC<HeroProps> = ({ onOpenModal }) => {
     const navigate = useNavigate();
+    const { language: lang } = useLanguage();
+
+    const t = heroContent;
+
     return (
         <>
             <section id="hero">
@@ -26,32 +64,16 @@ export const Hero: React.FC<HeroProps> = ({ onOpenModal }) => {
                     <div className="hero-left">
                         <div className="hero-eyebrow">
                             <div className="eyebrow-line"></div>
-                            <span className="eyebrow-text ar-only">اتحاد الطلاب اليمنيين · إسطنبول</span>
-                            <span className="eyebrow-text en-only">Yemeni Students Union · Istanbul</span>
+                            <span className="eyebrow-text">{t.eyebrow[lang]}</span>
                         </div>
 
                         <h1 className="hero-title">
-                            <span className="ar-only">
-                                معًا نبني<br />
-                                <span className="hero-title-highlight">مجتمعًا طلابيًا أقوى</span><br />
-                            </span>
-                            <span className="en-only">
-                                Together We Build<br />
-                                <span className="hero-title-highlight">A Stronger Community</span><br />
-                                In Turkey
-                            </span>
+                            {t.titleLine1[lang]}<br />
+                            <span className="hero-title-highlight">{t.titleHighlight[lang]}</span>
+                            {t.titleLine3[lang] && <><br />{t.titleLine3[lang]}</>}
                         </h1>
 
-
-
-                        <p className="hero-desc">
-                            <span className="ar-only">
-                                نحن اتحاد طلابي يمني في إسطنبول يهدف إلى دعم الطلاب اليمنيين في جميع مراحل حياتهم الأكاديمية والمعيشية في تركيا — من قبول الجامعة حتى التخرج وما بعده.
-                            </span>
-                            <span className="en-only">
-                                We are a Yemeni student union in Istanbul dedicated to supporting Yemeni students at every stage of their academic and daily life in Turkey — from university admission through graduation and beyond.
-                            </span>
-                        </p>
+                        <p className="hero-desc">{t.desc[lang]}</p>
 
                         <div className="hero-actions">
                             <button className="btn btn-primary" onClick={() => navigate('/login')}>
@@ -61,86 +83,31 @@ export const Hero: React.FC<HeroProps> = ({ onOpenModal }) => {
                                     <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
                                     <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                                 </svg>
-                                <span className="ar-only">سجل واحصل على عضويتك الآن</span>
-                                <span className="en-only">Register Your Free Membership</span>
+                                <span>{t.registerBtn[lang]}</span>
                             </button>
                         </div>
 
                         <div className="hero-stats">
-                            <div className="hero-stat-item">
-                                <div className="hero-stat-num">+100</div>
-                                <div className="hero-stat-label ar-only">عضو مسجل</div>
-                                <div className="hero-stat-label en-only">Members</div>
-                            </div>
-                            <div className="hero-stat-item">
-                                <div className="hero-stat-num">+10</div>
-                                <div className="hero-stat-label ar-only">شريك استراتيجي</div>
-                                <div className="hero-stat-label en-only">Partners</div>
-                            </div>
-
+                            {t.stats.map(s => (
+                                <div key={s.num} className="hero-stat-item">
+                                    <div className="hero-stat-num">{s.num}</div>
+                                    <div className="hero-stat-label">{s[lang]}</div>
+                                </div>
+                            ))}
                         </div>
+                        <div
+                            style={{
+                                position: 'absolute',
+                                inset: 0,
+                                backgroundImage: 'url(/assets/yemen-pattern.svg)',
+                                backgroundSize: '80px 80px',
+                                opacity: 0.05,
+                                pointerEvents: 'none',
+                            }}
+                        />
                     </div>
-
-                    {/* <div className="hero-visual">
-                    <div className="hero-card">
-                        <div className="hero-card-header">
-                            <div className="logo-mark">
-                                <img src={logo} alt="الاتحاد" className="w-full h-full object-contain" />
-
-                            </div>
-                            <div className="hero-card-title ar-only">مزايا العضوية </div>
-                            <div className="hero-card-title en-only">Free Membership Benefits</div>
-                            <div className="hero-card-sub ar-only">انضم اليوم وكن جزءا من الفريق</div>
-                            <div className="hero-card-sub en-only">Join today and be part of the team</div>
-                        </div>
-                        <div className="hero-card-body">
-                            <div className="member-benefit">
-                                <div className="benefit-icon">🎓</div>
-                                <div className="benefit-text ar-only">دليل شامل للجامعات التركية</div>
-                                <div className="benefit-text en-only">Full Turkish Universities Guide</div>
-                            </div>
-                            <div className="member-benefit">
-                                <div className="benefit-icon">💳</div>
-                                <div className="benefit-text ar-only">تخفيضات حصرية للأعضاء</div>
-                                <div className="benefit-text en-only">Exclusive Member Discounts</div>
-                            </div>
-                            <div className="member-benefit">
-                                <div className="benefit-icon">🤝</div>
-                                <div className="benefit-text ar-only">شبكة علاقات طلابية واسعة</div>
-                                <div className="benefit-text en-only">Wide Student Network Access</div>
-                            </div>
-                            <div className="member-benefit">
-                                <div className="benefit-icon">📋</div>
-                                <div className="benefit-text ar-only">إرشادات الإقامة والوثائق</div>
-                                <div className="benefit-text en-only">Residence & Document Guidance</div>
-                            </div>
-                        </div>
-                        <div className="hero-card-footer">
-                            <button className="btn btn-primary" onClick={() => navigate('/login')}>
-                                <span className="ar-only">سجل عضويتك الآن</span>
-                                <span className="en-only">Register Now</span>
-                            </button>
-                        </div>
-                    </div> */}
-                    {/* Floating badge */}
-                    {/* <div className="hero-badge-float">
-                        <div className="badge-icon">🏆</div>
-                        <div className="badge-info">
-                            <div className="badge-num">+100</div>
-                            <div className="badge-label ar-only">فعالية منظمة</div>
-                            <div className="badge-label en-only">Events Organized</div>
-                        </div>
-                    </div> */}
-
-                    {/* </div> */}
                 </div>
-
-
             </section>
-
-
         </>
     );
 };
-
-

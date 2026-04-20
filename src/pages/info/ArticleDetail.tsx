@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { fetchArticleById, InfoArticle } from '@/service/infoCMS';
+import { useLanguage } from '@/context/LanguageContext';
+import { commonText, getField } from '@/i18n/pages';
 
 const CATEGORY_LABELS: Record<string, { ar: string; color: string }> = {
   istanbul: { ar: 'إسطنبول', color: '#2563eb' },
@@ -10,6 +12,7 @@ const CATEGORY_LABELS: Record<string, { ar: string; color: string }> = {
 };
 
 export default function ArticleDetail() {
+  const { language: lang } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [article, setArticle] = useState<InfoArticle | null>(null);
@@ -38,9 +41,9 @@ export default function ArticleDetail() {
   if (error || !article) return (
     <div style={{ background: 'var(--bg, #07080b)', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px', direction: 'rtl' }}>
       <div style={{ fontSize: '4rem' }}>📰</div>
-      <h2 style={{ color: 'var(--text, #f0ece4)', fontSize: '1.25rem', fontWeight: 700 }}>لم يتم العثور على المقال</h2>
+      <h2 style={{ color: 'var(--text, #f0ece4)', fontSize: '1.25rem', fontWeight: 700 }}>{commonText.articleNotFound[lang]}</h2>
       <button onClick={() => navigate(-1)} style={{ padding: '10px 20px', borderRadius: '10px', background: '#7a1c1c', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
-        العودة
+        {commonText.returnToHome[lang]}
       </button>
     </div>
   );
@@ -79,7 +82,7 @@ export default function ArticleDetail() {
           }}
         >
           <ArrowRight size={16} />
-          <span>العودة للمقالات</span>
+          <span>{commonText.returnToArticles[lang]}</span>
         </button>
       </div>
 
@@ -88,7 +91,7 @@ export default function ArticleDetail() {
         <div style={{ width: '100%', height: '420px', overflow: 'hidden', position: 'relative' }}>
           <img
             src={article.image_url}
-            alt={article.title}
+            alt={getField(article, 'title', lang)}
             style={{ width: '100%', height: '420px', objectFit: 'cover' }}
           />
           <div style={{
@@ -110,7 +113,7 @@ export default function ArticleDetail() {
           )}
           {article.author && (
             <span style={{ color: '#c8a84b', fontSize: '0.75rem', fontWeight: 600 }}>
-              ✍ {article.author}
+              ✍ {getField(article, 'author', lang)}
             </span>
           )}
         </div>
@@ -120,17 +123,17 @@ export default function ArticleDetail() {
           color: 'var(--text, #f0ece4)', fontSize: 'clamp(1.5rem, 4vw, 2.2rem)',
           fontWeight: 800, lineHeight: 1.3, marginBottom: '20px',
         }}>
-          {article.title}
+          {getField(article, 'title', lang)}
         </h1>
 
         {/* Excerpt (lead) */}
-        {article.excerpt && (
+        {getField(article, 'excerpt', lang) && (
           <p style={{
             color: '#c8a84b', fontSize: '1.05rem', lineHeight: 1.75,
             fontWeight: 500, marginBottom: '32px',
             borderRight: '3px solid #c8a84b', paddingRight: '16px',
           }}>
-            {article.excerpt}
+            {getField(article, 'excerpt', lang)}
           </p>
         )}
 
@@ -142,8 +145,58 @@ export default function ArticleDetail() {
           color: 'var(--text-2, #b8b4ac)', fontSize: '0.95rem',
           lineHeight: 1.9, whiteSpace: 'pre-line',
         }}>
-          {article.content}
+          {getField(article, 'content', lang)}
         </div>
+
+        {/* Content images gallery */}
+        {(article.content_images ?? []).length > 0 && (
+          <div style={{ marginTop: 48 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+              <div style={{ height: '1px', flex: 1, background: 'var(--border)' }} />
+              <span style={{ color: '#c8a84b', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                📷 {lang === 'ar' ? 'معرض الصور' : lang === 'tr' ? 'Galeri' : 'Gallery'}
+              </span>
+              <div style={{ height: '1px', flex: 1, background: 'var(--border)' }} />
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: (article.content_images ?? []).length === 1
+                ? '1fr'
+                : 'repeat(auto-fill, minmax(220px, 1fr))',
+              gap: 12,
+            }}>
+              {(article.content_images ?? []).map((url, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    borderRadius: 12, overflow: 'hidden',
+                    border: '1px solid var(--border, rgba(255,255,255,0.07))',
+                    transition: 'transform 0.25s ease, box-shadow 0.25s ease',
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLElement).style.transform = 'scale(1.02)';
+                    (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(0,0,0,0.4)';
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
+                    (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+                  }}
+                >
+                  <img
+                    src={url}
+                    alt={`${getField(article, 'title', lang)} — ${idx + 1}`}
+                    style={{
+                      width: '100%',
+                      height: (article.content_images ?? []).length === 1 ? '400px' : '200px',
+                      objectFit: 'cover', display: 'block',
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </article>
     </div>
   );

@@ -1,6 +1,6 @@
-﻿import { useState, useEffect } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { User, Shield, Calendar, Award, RefreshCw, Sparkles } from 'lucide-react';
+import { User, Shield, RefreshCw, Sparkles, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { useAuth } from '@/context/AuthContext';
@@ -8,8 +8,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { generateSecureToken, getTokenExpirySeconds } from '@/lib/qrToken';
 import { SmartTopBar } from '@/components/layout/SmartTopBar';
-import { useCallback } from 'react';
-import { ArrowRight } from 'lucide-react';
 
 interface TrackPageState {
   track: any;
@@ -23,7 +21,6 @@ interface TrackPageState {
   showAllNotes: boolean;
   showSearch: boolean;
   searchQuery: string;
-
   chatInput: string;
   sendingMsg: boolean;
 }
@@ -53,31 +50,17 @@ const MembershipCard = () => {
   const [loading, setLoading] = useState(true);
   const [qrToken, setQrToken] = useState('');
   const [expirySeconds, setExpirySeconds] = useState(60);
-  const [showSearch, setShowSearch] = useState(false);
-  const verifyUrl = `${window.location.origin}/verify/${qrToken}`;
 
   const [state, setState] = useState<TrackPageState>({
-    track: null,
-    userId: null,
-    loading: true,
-    currentPage: 1,
-    totalPages: 0,
-    bookmarkedPages: new Set(),
-    noteInput: '',
-    savingNote: false,
-    showAllNotes: false,
-    showSearch: false,
-    searchQuery: '',
-    chatInput: '',
-    sendingMsg: false,
+    track: null, userId: null, loading: true, currentPage: 1, totalPages: 0,
+    bookmarkedPages: new Set(), noteInput: '', savingNote: false,
+    showAllNotes: false, showSearch: false, searchQuery: '', chatInput: '', sendingMsg: false,
   });
   const updateState = useCallback((updates: Partial<TrackPageState>) => {
     setState((prev) => ({ ...prev, ...updates }));
-
   }, []);
 
-
-
+  const verifyUrl = `${window.location.origin}/verify/${qrToken}`;
 
   useEffect(() => {
     if (authLoading) return;
@@ -87,16 +70,13 @@ const MembershipCard = () => {
   const fetchProfile = async () => {
     if (!user) return;
     try {
-      const { data, error } = await supabase
-        .from('profiles').select('*').eq('id', user.id).single();
+      const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
       if (error) throw error;
       if (data) { setProfile(data as Profile); refreshToken(data.id); }
     } catch (error) {
       console.error('Error fetching profile:', error);
       toast.error('حدث خطأ في تحميل البيانات');
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   const refreshToken = (userId?: string) => {
@@ -126,14 +106,14 @@ const MembershipCard = () => {
   if (!profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">لم يتم العثور على الملف الشخصي</p>
+        <p className="text-muted-foreground" style={{ fontFamily: 'Tajawal, sans-serif' }}>لم يتم العثور على الملف الشخصي</p>
       </div>
     );
   }
 
   const fmt = (iso: string) => {
     const d = new Date(iso);
-    return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
+    return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
   };
 
   const joinDate = profile.created_at ? fmt(profile.created_at) : 'غير محدد';
@@ -145,464 +125,420 @@ const MembershipCard = () => {
       return fmt(e.toISOString());
     })();
 
-  const verificationCode = `🇾🇪-${profile.id.slice(0, 8)}-2026`;
+  const memberId = `🇾🇪-${profile.id.slice(0, 8).toUpperCase()}-2026`;
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=IBM+Plex+Mono:wght@400;600&display=swap');
 
-        /* ── ALL colors come from CSS variables → auto light/dark ── */
-
-        .mc-page {
+        .mc3-page {
           min-height: 100vh;
           background: var(--background);
-          padding-bottom: 96px;
+          padding-bottom: 100px;
           font-family: 'Tajawal', sans-serif;
         }
 
-        /* ── Main card shell ── */
-        .mc-card {
+        .mc3-topbar {
+          position: sticky;
+          top: 0;
+          z-index: 50;
+          background: var(--background);
+          border-bottom: 1px solid var(--border);
+          backdrop-filter: blur(14px);
+          padding: 12px 16px;
+        }
+
+        /* ══ CARD SHELL ══ */
+        .mc3-card {
+          width: 100%;
+          max-width: 360px;
+          border-radius: 28px;
+          overflow: hidden;
+          position: relative;
           background: var(--card);
           border: 1px solid var(--border);
-          border-radius: 26px;
-          overflow: hidden;
-          position: relative;
-          transition: transform 0.25s ease, box-shadow 0.25s ease;
-          box-shadow:
-            0 1px 3px rgba(0,0,0,0.06),
-            0 10px 40px rgba(0,0,0,0.08),
-            0 0 0 1px rgba(255,255,255,0.5) inset;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 20px 60px rgba(0,0,0,0.1);
         }
-        .dark .mc-card {
-          box-shadow:
-            0 1px 3px rgba(0,0,0,0.3),
-            0 10px 40px rgba(0,0,0,0.4),
-            0 0 0 1px rgba(255,255,255,0.04) inset;
-        }
-        .mc-card:hover {
-          transform: translateY(-3px);
-          box-shadow:
-            0 2px 6px rgba(0,0,0,0.08),
-            0 20px 60px rgba(0,0,0,0.13),
-            0 0 0 1px rgba(255,255,255,0.6) inset;
-        }
-        .dark .mc-card:hover {
-          box-shadow:
-            0 2px 6px rgba(0,0,0,0.4),
-            0 20px 60px rgba(0,0,0,0.5),
-            0 0 0 1px rgba(255,255,255,0.07) inset;
+        .dark .mc3-card {
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 20px 60px rgba(0,0,0,0.45);
         }
 
-        /* ── Gradient header using primary ── */
-        .mc-header {
-          background: linear-gradient(135deg,
-            hsl(var(--primary)) 0%,
-            hsl(var(--primary) / 0.82) 100%
-          );
-          padding: 20px 20px 80px;   /* extra bottom padding so avatar is centered on edge */
+        /* ══ HEADER ══ */
+        .mc3-header {
+          background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.78) 100%);
+          padding: 18px 18px 52px;
           position: relative;
           overflow: hidden;
         }
-        /* shine overlay */
-        .mc-header::before {
+        .mc3-header::before {
           content: '';
           position: absolute; inset: 0;
-          background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 55%);
+          background: linear-gradient(135deg, rgba(255,255,255,0.16) 0%, transparent 55%);
           pointer-events: none;
         }
-        /* decorative circle */
-        .mc-header::after {
+        .mc3-header::after {
           content: '';
           position: absolute;
-          top: -70px; right: -50px;
-          width: 220px; height: 220px;
+          top: -60px; right: -55px;
+          width: 200px; height: 200px;
           border-radius: 50%;
-          background: rgba(255,255,255,0.07);
+          background: rgba(255,255,255,0.06);
           pointer-events: none;
         }
-
-        /* ── Active member badge ── */
-        .mc-badge {
-          background: rgba(255,255,255,0.22);
-          border: 1px solid rgba(255,255,255,0.4);
-          color: #fff;
-          font-family: 'Tajawal', sans-serif;
-          font-size: 12px;
-          font-weight: 700;
-          padding: 5px 12px;
-          border-radius: 20px;
+        .mc3-header-circle2 {
+          position: absolute;
+          bottom: -30px; left: -30px;
+          width: 110px; height: 110px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.05);
+          pointer-events: none;
+        }
+        .mc3-org-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          position: relative;
+          z-index: 2;
+        }
+        .mc3-org-logo { display: flex; align-items: center; gap: 9px; }
+        .mc3-emblem {
+          width: 36px; height: 36px;
+          border-radius: 10px;
+          background: rgba(255,255,255,0.2);
+          border: 1px solid rgba(255,255,255,0.3);
+          display: flex; align-items: center; justify-content: center;
+          backdrop-filter: blur(4px);
+        }
+        .mc3-org-name { color: #fff; font-size: 12px; font-weight: 700; line-height: 1.2; }
+        .mc3-org-sub  { color: rgba(255,255,255,0.65); font-size: 9.5px; margin-top: 1px; }
+        .mc3-active-badge {
           display: inline-flex;
           align-items: center;
           gap: 5px;
+          background: rgba(255,255,255,0.18);
+          border: 1px solid rgba(255,255,255,0.35);
+          border-radius: 20px;
+          padding: 4px 10px;
           backdrop-filter: blur(4px);
         }
-        .mc-dot {
-          width: 7px; height: 7px;
-          border-radius: 50%;
-          background: #86efac;
-          box-shadow: 0 0 8px #4ade80;
-          animation: mc-dot-pulse 2s ease-in-out infinite;
+        .mc3-active-badge span { color: #fff; font-size: 10.5px; font-weight: 700; }
+        .mc3-dot {
+          width: 6px; height: 6px; border-radius: 50%;
+          background: #86efac; box-shadow: 0 0 7px #4ade80;
+          animation: mc3-pulse 2s ease-in-out infinite;
         }
-        @keyframes mc-dot-pulse {
+        @keyframes mc3-pulse {
           0%,100% { opacity:1; transform:scale(1); }
-          50%     { opacity:0.5; transform:scale(0.75); }
+          50%      { opacity:0.5; transform:scale(0.7); }
         }
 
-        /* ── Avatar area ──
-           The outer div just reserves space.
-           The ring SVG rotates. The <img> is absolutely positioned
-           and has its own transform:none so it is ALWAYS still.
-        ── */
-        .mc-avatar-area {
+        /* ══ AVATAR ══ */
+        .mc3-avatar-area {
           display: flex;
           justify-content: center;
-          /* pull it up so avatar overlaps header bottom */
-          margin-top: -76px;
+          margin-top: -52px;
           position: relative;
           z-index: 10;
         }
-        .mc-avatar-shell {
-          position: relative;
-          width: 160px;
-          height: 160px;
+        .mc3-avatar-shell { position: relative; width: 108px; height: 108px; }
+        .mc3-ring-svg {
+          position: absolute; inset: 0;
+          width: 100%; height: 100%;
+          animation: mc3-ring 5s linear infinite;
         }
-        /* The spinning ring — only this element rotates */
-        .mc-ring-svg {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          animation: mc-ring 5s linear infinite;
-        }
-        @keyframes mc-ring {
-          from { transform: rotate(0deg); }
-          to   { transform: rotate(360deg); }
-        }
-        /* Photo container — absolutely positioned, transform: none! */
-        .mc-photo {
-          position: absolute;
-          inset: 6px;
+        @keyframes mc3-ring { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .mc3-photo {
+          position: absolute; inset: 5px;
           border-radius: 50%;
-          overflow: hidden;
           background: var(--muted);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          /* Critically: no transform, no animation */
+          overflow: hidden;
+          display: flex; align-items: center; justify-content: center;
           transform: none !important;
-          box-shadow: 0 6px 28px rgba(0,0,0,0.18);
+          box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+          border: 3px solid var(--card);
         }
-        .mc-photo img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          border-radius: 50%;
-          display: block;
-        }
+        .mc3-photo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
 
-        /* ── Body ── */
-        .mc-body {
-          padding: 0 20px 24px;
+        /* ══ BODY ══ */
+        .mc3-body {
+          padding: 6px 18px 20px;
           display: flex;
           flex-direction: column;
           align-items: center;
         }
-
-        .mc-divider {
-          width: 100%;
-          height: 1px;
-          background: var(--border);
-          margin: 18px 0;
+        .mc3-name {
+          color: var(--foreground);
+          font-size: 18px; font-weight: 800;
+          text-align: center; line-height: 1.25;
+          margin-top: 8px; margin-bottom: 2px;
         }
-
-        /* ── QR box ── */
-        .mc-qr-box {
-          background: #ffffff;
-          border-radius: 18px;
-          padding: 14px;
-          position: relative;
-          box-shadow:
-            0 6px 24px rgba(0,0,0,0.1),
-            0 0 0 1.5px hsl(var(--primary) / 0.3);
-          animation: mc-qr-glow 3s ease-in-out infinite;
+        .mc3-university {
+          color: var(--muted-foreground);
+          font-size: 11px; text-align: center;
         }
-        @keyframes mc-qr-glow {
-          0%,100% {
-            box-shadow: 0 6px 24px rgba(0,0,0,0.1), 0 0 0 1.5px hsl(var(--primary) / 0.3);
-          }
-          50% {
-            box-shadow: 0 6px 24px rgba(0,0,0,0.12), 0 0 0 2px hsl(var(--primary) / 0.6), 0 0 20px hsl(var(--primary) / 0.12);
-          }
-        }
-
-        /* corner brackets */
-        .mc-c { position:absolute; width:18px; height:18px; border-style:solid; border-color:hsl(var(--primary)); }
-        .mc-c-tl { top:5px; left:5px;   border-width:3px 0 0 3px; border-radius:4px 0 0 0; }
-        .mc-c-tr { top:5px; right:5px;  border-width:3px 3px 0 0; border-radius:0 4px 0 0; }
-        .mc-c-bl { bottom:5px; left:5px;  border-width:0 0 3px 3px; border-radius:0 0 0 4px; }
-        .mc-c-br { bottom:5px; right:5px; border-width:0 3px 3px 0; border-radius:0 0 4px 0; }
-
-        /* scan line */
-        .mc-scan {
-          position: absolute;
-          left: 10px; right: 10px;
-          height: 2px;
-          background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.7), transparent);
-          border-radius: 2px;
-          animation: mc-scan 2.2s ease-in-out infinite;
-        }
-        @keyframes mc-scan {
-          0%   { top:10px; opacity:0; }
-          8%   { opacity:1; }
-          92%  { opacity:1; }
-          100% { top:calc(100% - 10px); opacity:0; }
-        }
-
-        /* timer pill */
-        .mc-timer-pill {
-          background: var(--card);
-          border: 1px solid hsl(var(--primary) / 0.35);
-          border-radius: 20px;
-          padding: 5px 12px;
+        .mc3-id-chip {
           display: inline-flex;
           align-items: center;
-          gap: 5px;
-          font-size: 12px;
-          font-weight: 700;
+          background: hsl(var(--primary) / 0.08);
+          border: 1px solid hsl(var(--primary) / 0.2);
+          border-radius: 8px;
+          padding: 5px 12px;
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 11px;
           color: hsl(var(--primary));
-          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+          letter-spacing: 0.5px;
+          direction: ltr;
+          margin-top: 8px;
         }
-        @keyframes mc-spin { to { transform: rotate(360deg); } }
-        .mc-spin { animation: mc-spin 2s linear infinite; display:block; }
 
-        /* verification chip */
-        .mc-chip {
+        /* ══ STATS ══ */
+        .mc3-stats {
+          width: 100%;
+          display: grid;
+          grid-template-columns: 1fr 1px 1fr 1px 1fr;
           background: var(--muted);
           border: 1px solid var(--border);
-          border-radius: 10px;
-          padding: 8px 18px;
-          font-size: 12px;
-          font-family: 'Courier New', monospace;
-          color: var(--muted-foreground);
-          letter-spacing: 1px;
+          border-radius: 16px;
+          overflow: hidden;
+          margin-top: 14px;
+        }
+        .mc3-sdiv { background: var(--border); }
+        .mc3-stat { padding: 10px 6px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .mc3-stat-val { font-size: 11.5px; font-weight: 800; color: var(--foreground); direction: ltr; letter-spacing: -0.2px; }
+        .mc3-stat-val.primary { color: hsl(var(--primary)); }
+        .mc3-stat-lbl { font-size: 8.5px; color: var(--muted-foreground); text-align: center; }
+
+        /* ══ DIVIDER ══ */
+        .mc3-divider { width: 100%; height: 1px; background: var(--border); margin: 14px 0; }
+
+        /* ══ QR ══ */
+        .mc3-qr-wrap { width: 100%; display: flex; align-items: center; gap: 14px; }
+        .mc3-qr-box {
+          flex-shrink: 0;
+          position: relative;
+          width: 106px; height: 106px;
+          border-radius: 16px; padding: 9px;
+          background: #ffffff;
+          box-shadow: 0 0 0 1.5px hsl(var(--primary)/0.35), 0 6px 20px rgba(0,0,0,0.12);
+          animation: mc3-qr-breathe 3s ease-in-out infinite;
+        }
+        @keyframes mc3-qr-breathe {
+          0%,100% { box-shadow: 0 0 0 1.5px hsl(var(--primary)/0.35), 0 6px 20px rgba(0,0,0,0.12); }
+          50%      { box-shadow: 0 0 0 2.5px hsl(var(--primary)/0.6), 0 6px 24px rgba(0,0,0,0.14), 0 0 18px hsl(var(--primary)/0.1); }
+        }
+        .mc3-scan {
+          position: absolute; left: 7px; right: 7px;
+          height: 1.5px;
+          background: linear-gradient(90deg, transparent, hsl(var(--primary)/0.75), transparent);
+          animation: mc3-scan 2.3s ease-in-out infinite;
+          pointer-events: none;
+        }
+        @keyframes mc3-scan {
+          0%   { top: 7px; opacity: 0; }
+          8%   { opacity: 1; }
+          92%  { opacity: 1; }
+          100% { top: calc(100% - 7px); opacity: 0; }
+        }
+        .mc3-br { position: absolute; width: 12px; height: 12px; border-style: solid; border-color: hsl(var(--primary)); }
+        .mc3-br-tl { top:3px; left:3px;    border-width:2px 0 0 2px; border-radius:3px 0 0 0; }
+        .mc3-br-tr { top:3px; right:3px;   border-width:2px 2px 0 0; border-radius:0 3px 0 0; }
+        .mc3-br-bl { bottom:3px; left:3px;  border-width:0 0 2px 2px; border-radius:0 0 0 3px; }
+        .mc3-br-br { bottom:3px; right:3px; border-width:0 2px 2px 0; border-radius:0 0 3px 0; }
+
+        .mc3-qr-meta { flex: 1; display: flex; flex-direction: column; gap: 7px; }
+        .mc3-qr-title { color: var(--foreground); font-size: 12.5px; font-weight: 700; }
+        .mc3-qr-sub { color: var(--muted-foreground); font-size: 9.5px; line-height: 1.5; }
+        .mc3-timer {
+          display: inline-flex; align-items: center; gap: 5px;
+          background: hsl(var(--primary)/0.08);
+          border: 1px solid hsl(var(--primary)/0.25);
+          border-radius: 20px; padding: 4px 10px;
+          align-self: flex-start;
+        }
+        .mc3-timer span { color: hsl(var(--primary)); font-size: 11px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; }
+        @keyframes mc3-spin { to { transform: rotate(360deg); } }
+        .mc3-spin { animation: mc3-spin 2s linear infinite; }
+        .mc3-secure { color: var(--muted-foreground); font-size: 9px; }
+
+        /* ══ FOOTER ══ */
+        .mc3-footer {
+          background: hsl(var(--primary)/0.06);
+          border-top: 1px solid hsl(var(--primary)/0.15);
+          padding: 9px 18px;
+          display: flex; align-items: center; justify-content: space-between;
           direction: ltr;
         }
+        .mc3-footer-text { color: hsl(var(--primary)/0.5); font-size: 8.5px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; }
+        .mc3-footer-year { color: hsl(var(--primary)); font-size: 11px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1px; }
 
-        /* info rows */
-        .mc-row {
-          background: var(--muted);
-          border: 1px solid var(--border);
-          border-radius: 14px;
-          padding: 11px 14px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          transition: border-color 0.18s;
+        /* ══ INSTRUCTIONS ══ */
+        .mc3-instr {
+          max-width: 360px; width: 100%;
+          background: var(--card); border: 1px solid var(--border);
+          border-radius: 20px; padding: 14px 16px;
         }
-        .mc-row:hover { border-color: hsl(var(--primary) / 0.4); }
-        .mc-icon {
-          width: 32px; height: 32px;
-          border-radius: 10px;
-          background: hsl(var(--primary) / 0.1);
-          border: 1px solid hsl(var(--primary) / 0.2);
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
+        .mc3-instr-title {
+          color: var(--foreground); font-size: 12px; font-weight: 700;
+          margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
         }
-        .mc-pts {
-          font-weight: 800; font-size: 15px;
-          background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.65));
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
+        .mc3-step-row {
+          display: flex; align-items: flex-start; gap: 10px;
+          padding: 7px 0; border-bottom: 1px solid var(--border);
         }
-
-        /* instructions card */
-        .mc-instr {
-          background: var(--card);
-          border: 1px solid var(--border);
-          border-radius: 20px;
-          padding: 18px 20px;
-          box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        .mc3-step-row:last-child { border-bottom: none; padding-bottom: 0; }
+        .mc3-step-num {
+          width: 22px; height: 22px; border-radius: 50%;
+          background: hsl(var(--primary)/0.1); border: 1px solid hsl(var(--primary)/0.3);
+          color: hsl(var(--primary)); font-size: 10px; font-weight: 800;
+          display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
-        .mc-step {
-          width: 26px; height: 26px;
-          border-radius: 50%;
-          background: hsl(var(--primary) / 0.1);
-          border: 1px solid hsl(var(--primary) / 0.3);
-          color: hsl(var(--primary));
-          font-size: 12px; font-weight: 700;
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
-        }
+        .mc3-step-text { color: var(--muted-foreground); font-size: 11.5px; line-height: 1.55; padding-top: 2px; }
       `}</style>
 
-      <div className="mc-page" dir="rtl">
+      <div className="mc3-page" dir="rtl">
 
-        {/* Sticky top bar */}
-        <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
-          <div className="p-4 max-w-screen-xl mx-auto">
+        {/* ── Top Bar ── */}
+        <header className="mc3-topbar">
+          <div className="max-w-screen-xl mx-auto">
             <SmartTopBar onOpenSearch={() => updateState({ showSearch: true })} />
-
-            <div className="flex items-center justify-between mb-4">
-              <button
-                onClick={() => navigate('/profile')}
-                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-              >
-                <ArrowRight className="h-5 w-5 text-slate-700" />
+            <div className="flex items-center justify-between mt-3">
+              <button onClick={() => navigate('/profile')} className="p-2 rounded-xl hover:bg-muted transition-colors">
+                <ArrowRight className="h-4 w-4 text-foreground/70" />
               </button>
-              <h1 className="text-lg font-bold text-slate-900 flex-1 text-center px-4 line-clamp-1">
-                {'بطاقة العضوية'}
+              <h1 className="text-sm font-bold flex-1 text-center px-4 text-foreground" style={{ fontFamily: 'Tajawal, sans-serif' }}>
+                بطاقة العضوية
               </h1>
-
+              <div className="w-8" />
             </div>
           </div>
         </header>
 
-        <div className="px-4 py-6 max-w-sm mx-auto space-y-4">
+        <div className="px-4 pt-6 pb-6 flex flex-col items-center gap-4 max-w-sm mx-auto">
 
-          {/* ════ MEMBERSHIP CARD ════ */}
-          <div className="mc-card">
+          {/* ═══════════ CARD ═══════════ */}
+          <div className="mc3-card">
 
             {/* Header */}
-            <div className="mc-header">
-              <div className="flex items-center justify-between relative z-10">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/20 border border-white/30">
-                    <Shield className="w-5 h-5 text-white" />
+            <div className="mc3-header">
+              <div className="mc3-header-circle2" />
+              <div className="mc3-org-row">
+                <div className="mc3-org-logo">
+                  <div className="mc3-emblem">
+                    <Shield className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <p className="text-white font-bold text-[15px] leading-none">اتحاد الطلاب اليمنيين</p>
-                    <p className="text-white/70 text-[11px] mt-0.5">فرع إسطنبول — تركيا</p>
+                    <div className="mc3-org-name">اتحاد الطلاب اليمنيين</div>
+                    <div className="mc3-org-sub">فرع إسطنبول — تركيا 🇹🇷</div>
                   </div>
                 </div>
-                <div className="mc-badge">
-                  <span className="mc-dot" />
-                  عضو فعال
+                <div className="mc3-active-badge">
+                  <span className="mc3-dot" />
+                  <span>عضو فعّال</span>
                 </div>
               </div>
             </div>
 
-            {/* Avatar — overlaps header / body boundary */}
-            <div className="mc-avatar-area">
-              <div className="mc-avatar-shell">
-                {/* Spinning ring only */}
-                <svg className="mc-ring-svg" viewBox="0 0 160 160">
-                  {/* <defs>
-                    <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="100%">
+            {/* Avatar */}
+            <div className="mc3-avatar-area">
+              <div className="mc3-avatar-shell">
+                <svg className="mc3-ring-svg" viewBox="0 0 108 108">
+                  <defs>
+                    <linearGradient id="mc3rg" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="1" />
-                      <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="0.5" />
-                      <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.1" />
+                      <stop offset="55%" stopColor="hsl(var(--primary))" stopOpacity="0.45" />
+                      <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.08" />
                     </linearGradient>
-                  </defs> */}
-                  <circle cx="80" cy="80" r="74"
-                    fill="none"
-                    stroke="url(#rg)"
-                    strokeWidth="4.5"
-                    strokeLinecap="round"
-                    strokeDasharray="260 205"
+                  </defs>
+                  <circle cx="54" cy="54" r="50" fill="none"
+                    stroke="url(#mc3rg)" strokeWidth="3.5"
+                    strokeLinecap="round" strokeDasharray="180 135"
                   />
                 </svg>
-                {/* Static photo — absolutely positioned, NEVER rotates */}
-                <div className="mc-photo">
+                <div className="mc3-photo">
                   {profile.avatar_url
                     ? <img src={profile.avatar_url} alt={profile.full_name} />
-                    : <User className="w-16 h-16 text-muted-foreground" />
+                    : <User className="w-10 h-10 text-muted-foreground" />
                   }
                 </div>
               </div>
             </div>
 
             {/* Body */}
-            <div className="mc-body">
-              <h2 className="text-foreground font-bold text-2xl text-center leading-tight mt-3">
-                {profile.full_name}
-              </h2>
-              <p className="text-muted-foreground text-sm mt-1 text-center">
-                {profile.university || 'الجامعة غير محددة'}
-              </p>
+            <div className="mc3-body">
+              <div className="mc3-name">{profile.full_name}</div>
+              <div className="mc3-university">{profile.university || 'الجامعة غير محددة'}</div>
+              <div className="mc3-id-chip">{memberId}</div>
 
-              <div className="mc-divider" />
+              {/* Stats */}
+              <div className="mc3-stats">
+                <div className="mc3-stat">
+                  <span className="mc3-stat-val">{joinDate.slice(-4)}</span>
+                  <span className="mc3-stat-lbl">انضمام</span>
+                </div>
+                <div className="mc3-sdiv" />
+                <div className="mc3-stat">
+                  <span className="mc3-stat-val" style={{ fontSize: '10px' }}>{validUntil}</span>
+                  <span className="mc3-stat-lbl">صالحة حتى</span>
+                </div>
+                <div className="mc3-sdiv" />
+                <div className="mc3-stat">
+                  <span className="mc3-stat-val primary">{profile.total_points}</span>
+                  <span className="mc3-stat-lbl">نقطة</span>
+                </div>
+              </div>
+
+              <div className="mc3-divider" />
 
               {/* QR */}
-              <p className="text-muted-foreground text-xs mb-4 text-center">
-                امسح رمز QR للتحقق من العضوية
-              </p>
-
-              <div className="mc-qr-box relative">
-                <div className="mc-c mc-c-tl" />
-                <div className="mc-c mc-c-tr" />
-                <div className="mc-c mc-c-bl" />
-                <div className="mc-c mc-c-br" />
-                <div className="mc-scan" />
-                <QRCodeSVG value={verifyUrl} size={145} level="H" includeMargin={false} className="relative z-10 block" />
-              </div>
-
-              {/* Timer + note */}
-              <div className="flex flex-col items-center gap-1.5 mt-4">
-                <div className="mc-timer-pill">
-                  <RefreshCw className="w-3.5 h-3.5 mc-spin" />
-                  <span>{expirySeconds}s</span>
+              <div className="mc3-qr-wrap">
+                <div className="mc3-qr-box">
+                  <div className="mc3-br mc3-br-tl" />
+                  <div className="mc3-br mc3-br-tr" />
+                  <div className="mc3-br mc3-br-bl" />
+                  <div className="mc3-br mc3-br-br" />
+                  <div className="mc3-scan" />
+                  <QRCodeSVG value={verifyUrl} size={88} level="H" includeMargin={false}
+                    style={{ position: 'relative', zIndex: 1, display: 'block' }} />
                 </div>
-                <p className="text-muted-foreground text-[11px] text-center">
-                  🔒 يتجدد الرمز تلقائياً كل دقيقة
-                </p>
-              </div>
-
-              {/* Verification code */}
-              <div className="mc-chip mt-3">  <p className="text-muted-foreground text-[11px] text-center">
-                رقم العضوية
-              </p> {verificationCode}</div>
-
-              <div className="mc-divider" />
-
-              {/* Info rows */}
-              <div className="w-full space-y-2.5">
-                <div className="mc-row">
-                  <div className="flex items-center gap-3">
-                    <div className="mc-icon"><Calendar className="w-4 h-4 text-primary" /></div>
-                    <span className="text-muted-foreground text-sm">تاريخ الانضمام</span>
+                <div className="mc3-qr-meta">
+                  <div>
+                    <div className="mc3-qr-title">تحقق من العضوية</div>
+                    <div className="mc3-qr-sub">امسح الرمز للتحقق الفوري من هوية العضو</div>
                   </div>
-                  <span className="text-foreground text-sm font-semibold" style={{ direction: 'ltr' }}>{joinDate}</span>
-                </div>
-
-                <div className="mc-row">
-                  <div className="flex items-center gap-3">
-                    <div className="mc-icon"><Shield className="w-4 h-4 text-primary" /></div>
-                    <span className="text-muted-foreground text-sm">صالحة حتى</span>
+                  <div className="mc3-timer">
+                    <RefreshCw className="w-3 h-3 mc3-spin" style={{ color: 'hsl(var(--primary))' }} />
+                    <span>{expirySeconds}s</span>
                   </div>
-                  <span className="text-foreground text-sm font-semibold" style={{ direction: 'ltr' }}>{validUntil}</span>
-                </div>
-
-                <div className="mc-row">
-                  <div className="flex items-center gap-3">
-                    <div className="mc-icon"><Award className="w-4 h-4 text-primary" /></div>
-                    <span className="text-muted-foreground text-sm">رصيد النقاط</span>
-                  </div>
-                  <span className="mc-pts">{profile.total_points} نقطة</span>
+                  <div className="mc3-secure">🔒 يتجدد تلقائياً كل دقيقة</div>
                 </div>
               </div>
+            </div>
+
+            {/* Footer */}
+            <div className="mc3-footer">
+              <span style={{ fontSize: '16px' }}>🇾🇪</span>
+              <span className="mc3-footer-text">YEMENI STUDENTS UNION · ISTANBUL</span>
+              <span className="mc3-footer-year">2026</span>
             </div>
           </div>
 
-          {/* ════ INSTRUCTIONS ════ */}
-          <div className="mc-instr">
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <h3 className="text-foreground font-bold text-sm">كيفية استخدام البطاقة</h3>
+          {/* ═══════════ INSTRUCTIONS ═══════════ */}
+          <div className="mc3-instr">
+            <div className="mc3-instr-title">
+              <Sparkles className="w-3.5 h-3.5 text-primary" />
+              كيفية استخدام البطاقة
             </div>
-            <div className="space-y-3">
-              {[
-                'أظهر هذه البطاقة عند زيارة الشركاء والداعمين',
-                'سيقوم الداعم بمسح رمز QR للتحقق من عضويتك',
-                'ستحصل على الخصم المخصص لأعضاء الاتحاد فوراً!',
-              ].map((step, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <div className="mc-step">{i + 1}</div>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{step}</p>
-                </div>
-              ))}
-            </div>
+            {[
+              'أظهر هذه البطاقة عند زيارة الشركاء والداعمين',
+              'سيقوم الداعم بمسح رمز QR للتحقق من عضويتك',
+              'ستحصل على الخصم المخصص لأعضاء الاتحاد فوراً!',
+            ].map((step, i) => (
+              <div key={i} className="mc3-step-row">
+                <div className="mc3-step-num">{i + 1}</div>
+                <p className="mc3-step-text">{step}</p>
+              </div>
+            ))}
           </div>
 
         </div>
@@ -612,6 +548,5 @@ const MembershipCard = () => {
     </>
   );
 };
-
 
 export default MembershipCard;

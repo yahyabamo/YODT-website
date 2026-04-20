@@ -126,6 +126,7 @@ import IconsAdmin from "./pages/admin/info/IconsAdmin";
 import IconFormAdmin from "./pages/admin/info/IconFormAdmin";
 import AchievementsAdmin from "./pages/admin/info/AchievementsAdmin";
 import AchievementFormAdmin from "./pages/admin/info/AchievementFormAdmin";
+import HeroImagesAdmin from "./pages/admin/info/HeroImagesAdmin";
 import DiscountsTabAdmin from "./pages/admin/homepage/DiscountsTab";
 import ActivitiesTabAdmin from "./pages/admin/homepage/ActivitiesTab";
 import PartnersTabAdmin from "./pages/admin/homepage/PartnersTab";
@@ -266,6 +267,7 @@ const App = () => (
                   <Route path="info/achievements" element={<AchievementsAdmin />} />
                   <Route path="info/achievements/new" element={<AchievementFormAdmin />} />
                   <Route path="info/achievements/:id" element={<AchievementFormAdmin />} />
+                  <Route path="info/hero-images" element={<HeroImagesAdmin />} />
 
                   {/* Make sure imports above are un-commented to use these! */}
                   <Route path="info/articles" element={<ArticlesAdmin />} />

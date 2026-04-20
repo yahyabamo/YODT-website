@@ -4,6 +4,7 @@ import { Menu, X, Sun, Moon } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { useTheme } from '@/context/ThemeContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { navbarText } from '@/i18n/pages';
 
 export const Navbar: React.FC = () => {
     const { theme, toggleTheme } = useTheme();
@@ -29,12 +30,12 @@ export const Navbar: React.FC = () => {
     }, []);
 
     const infoLinks = [
-        { path: '/about-istanbul', ar: 'عن إسطنبول', en: 'About Istanbul' },
-        { path: '/about-yemen', ar: 'عن اليمن', en: 'About Yemen' },
-        { path: '/universities', ar: 'جامعات إسطنبول', en: 'Universities' },
-        { path: '/students', ar: 'طلابنا المتميزون', en: 'Our Students' },
-        { path: '/icons', ar: 'رموزنا', en: 'Our Icons' },
-        { path: '/achievements', ar: 'إنجازات الاتحاد', en: 'Achievements' },
+        { path: '/about-istanbul', key: 'aboutIstanbul' as const },
+        { path: '/about-yemen', key: 'aboutYemen' as const },
+        { path: '/universities', key: 'universities' as const },
+        { path: '/students', key: 'ourStudents' as const },
+        { path: '/icons', key: 'ourIcons' as const },
+        { path: '/achievements', key: 'achievements' as const },
     ];
 
     const isActive = (path: string) =>
@@ -78,7 +79,7 @@ export const Navbar: React.FC = () => {
                 }}
             >
                 <div style={{
-                    maxWidth: '1280px',
+                    maxWidth: '1980px',
                     margin: '0 auto',
                     padding: '0 clamp(16px, 5vw, 40px)',
                     height: '70px',
@@ -90,7 +91,7 @@ export const Navbar: React.FC = () => {
                     {/* Logo */}
                     <a
                         href="#"
-                        onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                        onClick={(e) => { navigate('/'); e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                         style={{
                             display: 'flex',
                             alignItems: 'center',
@@ -115,17 +116,15 @@ export const Navbar: React.FC = () => {
                         </div>
 
                         <div style={{ lineHeight: 1.25, minWidth: 0 }}>
-                            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: primaryText, whiteSpace: 'nowrap' }}>
-                                <span className="ar-only">اتحاد الطلاب اليمنيين</span>
-                                <span className="en-only">Yemeni Students Union</span>
+                            <div style={{ fontSize: '1.25rem', display: 'flex', flexDirection: 'column' }}>
+                                {navbarText.unionName[lang]}
                             </div>
                             <div style={{
                                 fontSize: '0.73rem',
                                 color: transparent ? 'rgba(255,255,255,0.55)' : isDark ? 'rgba(237,234,228,0.45)' : 'rgba(26,18,8,0.55)',
                                 whiteSpace: 'nowrap'
                             }}>
-                                <span className="ar-only">فرع إسطنبول · تركيا</span>
-                                <span className="en-only">Istanbul Branch · Turkey</span>
+                                {navbarText.branchName[lang]}
                             </div>
                         </div>
                     </a>
@@ -163,8 +162,7 @@ export const Navbar: React.FC = () => {
                                             }
                                         }}
                                     >
-                                        <span className="ar-only">{link.ar}</span>
-                                        <span className="en-only">{link.en}</span>
+                                        {navbarText.links[link.key][lang]}
                                     </button>
                                 </li>
                             );
@@ -182,7 +180,7 @@ export const Navbar: React.FC = () => {
                             borderRadius: '10px',
                             overflow: 'hidden',
                         }}>
-                            {(['ar', 'en'] as const).map(l => (
+                            {(['ar', 'en', 'tr'] as const).map(l => (
                                 <button
                                     key={l}
                                     onClick={() => setLang(l)}
@@ -227,7 +225,7 @@ export const Navbar: React.FC = () => {
                             onClick={() => navigate('/login')}
                             className="hidden sm:block"
                             style={{
-                                padding: '9px 20px',
+                                padding: '9px 10px',
                                 borderRadius: '10px',
                                 background: '#7a1c1c',
                                 color: '#ffffff',
@@ -239,8 +237,7 @@ export const Navbar: React.FC = () => {
                                 boxShadow: '0 4px 14px rgba(122,28,28,0.35)',
                             }}
                         >
-                            <span className="ar-only">سجل الآن</span>
-                            <span className="en-only">Register</span>
+                            {navbarText.buttons.register[lang]}
                         </button>
 
                         {/* Hamburger */}
@@ -306,8 +303,7 @@ export const Navbar: React.FC = () => {
                                     transition: 'all 0.2s ease',
                                 }}
                             >
-                                <span className="ar-only">{link.ar}</span>
-                                <span className="en-only">{link.en}</span>
+                                {navbarText.links[link.key][lang]}
                             </button>
                         );
                     })}
@@ -352,8 +348,7 @@ export const Navbar: React.FC = () => {
                                 boxShadow: '0 6px 20px rgba(122,28,28,0.45)',
                             }}
                         >
-                            <span className="ar-only">سجل واحصل على العضوية</span>
-                            <span className="en-only">Join Now - Free</span>
+                            {navbarText.buttons.joinNow[lang]}
                         </button>
                     </div>
                 </div>

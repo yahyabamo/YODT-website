@@ -4,6 +4,7 @@ import { fetchAllAchievements, upsertAchievement, type InfoAchievement } from '@
 import { toast } from 'sonner';
 import { Trophy, ChevronRight } from 'lucide-react';
 import { Spinner, Field, ActionBar, AdminPageHeader, inputStyle, textareaStyle } from './CMSShared';
+import { ImageUploader } from '@/components/admin/ImageUploader';
 
 export default function AchievementFormAdmin() {
   const { id } = useParams<{ id: string }>();
@@ -74,7 +75,12 @@ export default function AchievementFormAdmin() {
         </div>
 
         <Field label="وصف الإنجاز"><textarea style={{ ...textareaStyle, minHeight: 120 }} value={form.description} onChange={e => handleField('description', e.target.value)} /></Field>
-        <Field label="رابط الصورة (اختياري)"><input style={inputStyle} value={form.image_url ?? ''} onChange={e => handleField('image_url', e.target.value)} placeholder="https://..." /></Field>
+        <ImageUploader
+          value={form.image_url ?? ''}
+          onChange={url => handleField('image_url', url)}
+          folder="achievements"
+          label="صورة الإنجاز (اختياري)"
+        />
         
         <div style={{ display: 'flex', gap: 24, alignItems: 'center', background: '#f9fafb', padding: '16px 20px', borderRadius: 12 }}>
           <div style={{ flex: 1 }}>

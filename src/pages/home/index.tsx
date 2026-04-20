@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 import { Navbar } from '../../components/features/home/Navbar';
 import { Hero } from '../../components/features/home/Hero';
 import { About } from '../../components/features/home/About';
@@ -7,27 +8,14 @@ import { Guide } from '../../components/features/home/Guide';
 import { Activities } from '../../components/features/home/Activities';
 import { Discounts } from '../../components/features/home/Discounts';
 import { Partners } from '../../components/features/home/Partners';
-// import { MotivationalQuote } from '../../components/features/home/MotivationalQuote';
 import { FinalCTA } from '../../components/features/home/FinalCTA';
 import { Footer } from '../../components/features/home/Footer';
 
 const Index = () => {
-  const [lang, setLang] = useState('ar');
+  const { language: lang } = useLanguage();
   const [isDark, setIsDark] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-
-
-
-  // Initialize lang and theme on mount
-  useEffect(() => {
-    document.documentElement.setAttribute('lang', lang);
-    document.documentElement.setAttribute('data-lang', lang);
-    const btnAr = document.getElementById('btn-ar');
-    const btnEn = document.getElementById('btn-en');
-    if (btnAr) btnAr.classList.toggle('active', lang === 'ar');
-    if (btnEn) btnEn.classList.toggle('active', lang === 'en');
-  }, [lang]);
 
   useEffect(() => {
     // Respect the user's current theme — do NOT force dark mode

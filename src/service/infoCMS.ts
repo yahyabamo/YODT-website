@@ -22,9 +22,19 @@ import { supabase } from '@/integrations/supabase/client';
 export interface InfoArticle {
   id?: string;
   title: string;
+  title_ar?: string;
+  title_en?: string;
+  title_tr?: string;
   excerpt: string;
+  excerpt_ar?: string;
+  excerpt_en?: string;
+  excerpt_tr?: string;
   content: string;
+  content_ar?: string;
+  content_en?: string;
+  content_tr?: string;
   image_url?: string;
+  content_images?: string[];
   category: 'istanbul' | 'yemen' | 'general';
   author: string;
   is_published: boolean;
@@ -36,7 +46,13 @@ export interface InfoArticle {
 export interface InfoUniversity {
   id?: string;
   name: string;
+  name_ar?: string;
+  name_en?: string;
+  name_tr?: string;
   description: string;
+  description_ar?: string;
+  description_en?: string;
+  description_tr?: string;
   image_url?: string;
   website_url?: string;
   location: string;
@@ -52,7 +68,13 @@ export interface InfoUniversity {
 export interface InfoStudent {
   id?: string;
   name: string;
+  name_ar?: string;
+  name_en?: string;
+  name_tr?: string;
   bio: string;
+  bio_ar?: string;
+  bio_en?: string;
+  bio_tr?: string;
   image_url?: string;
   major: string;
   university: string;
@@ -68,7 +90,13 @@ export interface InfoStudent {
 export interface InfoIcon {
   id?: string;
   name: string;
+  name_ar?: string;
+  name_en?: string;
+  name_tr?: string;
   bio: string;
+  bio_ar?: string;
+  bio_en?: string;
+  bio_tr?: string;
   image_url?: string;
   field: string;
   notable_work: string;
@@ -83,7 +111,13 @@ export interface InfoIcon {
 export interface InfoAchievement {
   id?: string;
   title: string;
+  title_ar?: string;
+  title_en?: string;
+  title_tr?: string;
   description: string;
+  description_ar?: string;
+  description_en?: string;
+  description_tr?: string;
   image_url?: string;
   achievement_date: string;
   category: string;

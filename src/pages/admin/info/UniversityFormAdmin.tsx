@@ -4,6 +4,7 @@ import { fetchUniversityById, upsertUniversity, type InfoUniversity } from '@/se
 import { toast } from 'sonner';
 import { GraduationCap, ChevronRight } from 'lucide-react';
 import { Spinner, Field, ActionBar, AdminPageHeader, inputStyle, textareaStyle } from './CMSShared';
+import { ImageUploader } from '@/components/admin/ImageUploader';
 
 export default function UniversityFormAdmin() {
   const { id } = useParams<{ id: string }>();
@@ -75,7 +76,12 @@ export default function UniversityFormAdmin() {
 
         <Field label="الوصف التاريخي والأكاديمي"><textarea style={textareaStyle} value={form.description} onChange={e => handleField('description', e.target.value)} /></Field>
         <Field label="أبرز التخصصات (مفصولة بفواصل)"><input style={inputStyle} value={form.specialties ?? ''} onChange={e => handleField('specialties', e.target.value)} placeholder="الطب، الهندسة، الأعمال..." /></Field>
-        <Field label="رابط صورة الحرم الجامعي (URL)"><input style={inputStyle} value={form.image_url ?? ''} onChange={e => handleField('image_url', e.target.value)} placeholder="https://..." /></Field>
+        <ImageUploader
+          value={form.image_url ?? ''}
+          onChange={url => handleField('image_url', url)}
+          folder="universities"
+          label="صورة الحرم الجامعي"
+        />
         
         <div style={{ display: 'flex', gap: 24, alignItems: 'center', background: '#f9fafb', padding: '16px 20px', borderRadius: 12 }}>
           <div style={{ flex: 1 }}>

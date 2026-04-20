@@ -2,8 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { fetchIconById, InfoIcon } from '@/service/infoCMS';
+import { useLanguage } from '@/context/LanguageContext';
+import { commonText, getField } from '@/i18n/pages';
 
 export default function IconDetail() {
+  const { language: lang } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [icon, setIcon] = useState<InfoIcon | null>(null);
@@ -29,9 +32,9 @@ export default function IconDetail() {
   if (error || !icon) return (
     <div style={{ background: 'var(--bg, #07080b)', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px', direction: 'rtl' }}>
       <div style={{ fontSize: '4rem' }}>🏅</div>
-      <h2 style={{ color: 'var(--text, #f0ece4)' }}>لم يتم العثور على الشخصية</h2>
+      <h2 style={{ color: 'var(--text, #f0ece4)' }}>{commonText.iconNotFound[lang]}</h2>
       <button onClick={() => navigate('/icons')} style={{ padding: '10px 20px', borderRadius: '10px', background: '#7a1c1c', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
-        قائمة الرموز
+        {commonText.iconsList[lang]}
       </button>
     </div>
   );
@@ -61,7 +64,7 @@ export default function IconDetail() {
           }}
         >
           <ArrowRight size={16} />
-          <span>رموزنا</span>
+          <span>{commonText.returnToIcons[lang]}</span>
         </button>
       </div>
 
@@ -76,14 +79,14 @@ export default function IconDetail() {
             background: 'var(--bg-2)', border: '3px solid rgba(200,168,75,0.3)',
           }}>
             {icon.image_url ? (
-              <img src={icon.image_url} alt={icon.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src={icon.image_url} alt={getField(icon, 'name', lang)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
               <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem', opacity: 0.4 }}>🏅</div>
             )}
           </div>
           <div>
             <h1 style={{ color: 'var(--text, #f0ece4)', fontSize: 'clamp(1.5rem, 4vw, 2.2rem)', fontWeight: 800, marginBottom: '10px' }}>
-              {icon.name}
+              {getField(icon, 'name', lang)}
             </h1>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               <span style={{ background: '#92400e', color: '#fff', padding: '4px 12px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: 700 }}>
@@ -94,7 +97,7 @@ export default function IconDetail() {
               </span>
               {icon.birth_year && (
                 <span style={{ color: 'var(--text-3)', fontSize: '0.8rem' }}>
-                  مواليد {icon.birth_year}
+                  {commonText.bornIn[lang]} {icon.birth_year}
                 </span>
               )}
             </div>
@@ -104,24 +107,24 @@ export default function IconDetail() {
         {/* Bio */}
         <div style={{ background: 'var(--bg-1)', border: '1px solid var(--border)', borderRadius: '16px', padding: '28px', marginBottom: '20px' }}>
           <h2 style={{ color: '#c8a84b', fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px' }}>
-            السيرة الذاتية
+            {commonText.cv[lang]}
           </h2>
           <p style={{ color: 'var(--text-2)', fontSize: '0.93rem', lineHeight: 1.85, whiteSpace: 'pre-line' }}>
-            {icon.bio}
+            {getField(icon, 'bio', lang)}
           </p>
         </div>
 
         {/* Notable work */}
-        {icon.notable_work && (
+        {getField(icon, 'notable_work', lang) && (
           <div style={{
             background: 'rgba(200,168,75,0.08)', border: '1px solid rgba(200,168,75,0.2)',
             borderRadius: '16px', padding: '24px',
           }}>
             <h2 style={{ color: '#c8a84b', fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '12px' }}>
-              🌟 الأعمال والإنجازات البارزة
+              🌟 {commonText.notableWork[lang]}
             </h2>
             <p style={{ color: 'var(--text-2)', fontSize: '0.93rem', lineHeight: 1.75, whiteSpace: 'pre-line' }}>
-              {icon.notable_work}
+              {getField(icon, 'notable_work', lang)}
             </p>
           </div>
         )}

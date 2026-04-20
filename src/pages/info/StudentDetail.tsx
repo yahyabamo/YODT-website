@@ -2,8 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { fetchStudentById, InfoStudent } from '@/service/infoCMS';
+import { useLanguage } from '@/context/LanguageContext';
+import { commonText, getField } from '@/i18n/pages';
 
 export default function StudentDetail() {
+  const { language: lang } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [student, setStudent] = useState<InfoStudent | null>(null);
@@ -29,9 +32,9 @@ export default function StudentDetail() {
   if (error || !student) return (
     <div style={{ background: 'var(--bg, #07080b)', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px', direction: 'rtl' }}>
       <div style={{ fontSize: '4rem' }}>⭐</div>
-      <h2 style={{ color: 'var(--text, #f0ece4)' }}>لم يتم العثور على الطالب</h2>
+      <h2 style={{ color: 'var(--text, #f0ece4)' }}>{commonText.studentNotFound[lang]}</h2>
       <button onClick={() => navigate('/students')} style={{ padding: '10px 20px', borderRadius: '10px', background: '#7a1c1c', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
-        قائمة الطلاب
+        {commonText.studentsList[lang]}
       </button>
     </div>
   );
@@ -61,7 +64,7 @@ export default function StudentDetail() {
           }}
         >
           <ArrowRight size={16} />
-          <span>الطلاب المتميزون</span>
+          <span>{commonText.returnToStudents[lang]}</span>
         </button>
       </div>
 
@@ -76,14 +79,14 @@ export default function StudentDetail() {
             background: 'var(--bg-2)', border: '3px solid rgba(200,168,75,0.3)',
           }}>
             {student.image_url ? (
-              <img src={student.image_url} alt={student.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src={student.image_url} alt={getField(student, 'name', lang)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
               <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', opacity: 0.4 }}>👤</div>
             )}
           </div>
           <div>
             <h1 style={{ color: 'var(--text, #f0ece4)', fontSize: 'clamp(1.4rem, 4vw, 2rem)', fontWeight: 800, marginBottom: '8px' }}>
-              {student.name}
+              {getField(student, 'name', lang)}
             </h1>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               <span style={{ background: '#7a1c1c', color: '#fff', padding: '4px 12px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: 700 }}>
@@ -93,11 +96,11 @@ export default function StudentDetail() {
                 🎓 {student.university}
               </span>
               <span style={{ color: 'var(--text-3)', fontSize: '0.8rem' }}>
-                السنة: {student.academic_year}
+                {commonText.academicYear[lang]} {student.academic_year}
               </span>
               {student.gpa && (
                 <span style={{ color: '#c8a84b', fontSize: '0.8rem', fontWeight: 600 }}>
-                  المعدل: {student.gpa}
+                  {commonText.gpa[lang]} {student.gpa}
                 </span>
               )}
             </div>
@@ -107,24 +110,24 @@ export default function StudentDetail() {
         {/* Bio */}
         <div style={{ background: 'var(--bg-1)', border: '1px solid var(--border)', borderRadius: '16px', padding: '28px', marginBottom: '20px' }}>
           <h2 style={{ color: '#c8a84b', fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px' }}>
-            السيرة الذاتية
+            {commonText.cv[lang]}
           </h2>
           <p style={{ color: 'var(--text-2)', fontSize: '0.93rem', lineHeight: 1.85, whiteSpace: 'pre-line' }}>
-            {student.bio}
+            {getField(student, 'bio', lang)}
           </p>
         </div>
 
         {/* Achievement */}
-        {student.achievement && (
+        {getField(student, 'achievement', lang) && (
           <div style={{
             background: 'rgba(200,168,75,0.08)', border: '1px solid rgba(200,168,75,0.2)',
             borderRadius: '16px', padding: '24px',
           }}>
             <h2 style={{ color: '#c8a84b', fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '12px' }}>
-              🏆 الإنجاز البارز
+              🏆 {commonText.notableAchievement[lang]}
             </h2>
             <p style={{ color: 'var(--text-2)', fontSize: '0.93rem', lineHeight: 1.75, whiteSpace: 'pre-line' }}>
-              {student.achievement}
+              {getField(student, 'achievement', lang)}
             </p>
           </div>
         )}

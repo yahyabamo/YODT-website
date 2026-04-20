@@ -4,6 +4,10 @@ import { ArrowRight } from 'lucide-react';
 import { InfoHero } from '@/components/features/info/InfoHero';
 import { InfoCard } from '@/components/features/info/InfoCard';
 import { fetchIcons, InfoIcon } from '@/service/infoCMS';
+import { fetchHeroImages } from '@/service/heroImages';
+import { useLanguage } from '@/context/LanguageContext';
+import { pagesText, commonText, getField } from '@/i18n/pages';
+
 
 function Skeleton() {
   return (
@@ -18,8 +22,10 @@ function Skeleton() {
 }
 
 export default function Icons() {
+  const { language: lang } = useLanguage();
   const navigate = useNavigate();
   const [icons, setIcons] = useState<InfoIcon[]>([]);
+  const [heroImages, setHeroImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,11 +33,24 @@ export default function Icons() {
       .then(setIcons)
       .catch(console.error)
       .finally(() => setLoading(false));
+    fetchHeroImages('icons')
+      .then(rows => setHeroImages(rows.map(r => r.image_url)))
+      .catch(console.error);
     window.scrollTo(0, 0);
   }, []);
 
   return (
-    <div style={{ background: 'var(--bg, #07080b)', minHeight: '100vh', paddingTop: '72px' }}>
+    <div style={{ background: 'var(--bg, #07080b)', minHeight: '100vh' }}>
+
+      {/* Hero — flush with navbar, no gap */}
+      <InfoHero
+        eyebrow={pagesText.icons.heroEyebrow[lang]}
+        title={pagesText.icons.heroTitle[lang]}
+        description={pagesText.icons.heroDesc[lang]}
+        gradient="linear-gradient(135deg, #07080b 0%, #12100a 40%, #07080b 100%)"
+        backgroundImages={heroImages}
+      />
+
       {/* Return button */}
       <div style={{ maxWidth: '1260px', margin: '0 auto', padding: '24px clamp(16px, 4vw, 40px) 0' }}>
         <button
@@ -53,22 +72,15 @@ export default function Icons() {
           }}
         >
           <ArrowRight size={16} />
-          <span>العودة للرئيسية</span>
+          <span>{commonText.returnToHome[lang]}</span>
         </button>
       </div>
-
-      <InfoHero
-        eyebrow="رموزنا"
-        title="الرموز اليمنية — قدوة وإلهام"
-        description="تعرّف على أبرز الشخصيات اليمنية التي أثرت في مسيرة الحضارة الإنسانية — في العلم والأدب والفن والسياسة"
-        gradient="linear-gradient(135deg, #07080b 0%, #12100a 40%, #07080b 100%)"
-      />
 
       <section style={{ maxWidth: '1260px', margin: '0 auto', padding: '64px clamp(16px, 4vw, 40px) 80px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}>
           <div style={{ height: '1px', flex: 1, background: 'var(--border)' }} />
           <span style={{ color: '#c8a84b', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-            الرموز اليمنية ({loading ? '…' : icons.length})
+            {pagesText.icons.listTitle[lang]} ({loading ? '…' : icons.length})
           </span>
           <div style={{ height: '1px', flex: 1, background: 'var(--border)' }} />
         </div>
@@ -83,20 +95,20 @@ export default function Icons() {
               <InfoCard
                 key={ic.id}
                 id={ic.id!}
-                name={ic.name}
-                bio={ic.bio}
+                name={getField(ic, 'name', lang)}
+                bio={getField(ic, 'bio', lang)}
                 image_url={ic.image_url}
                 badge={ic.field}
                 badgeColor="#92400e"
                 detailPath={`/icons/${ic.id}`}
-                extraInfo={ic.birth_year ? `مواليد ${ic.birth_year}` : undefined}
+                extraInfo={ic.birth_year ? `${commonText.bornIn[lang]} ${ic.birth_year}` : undefined}
               />
             ))}
           </div>
         ) : (
           <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--text-3)' }}>
             <div style={{ fontSize: '4rem', marginBottom: '16px' }}>🏅</div>
-            <p style={{ fontSize: '0.95rem' }}>سيتم إضافة الرموز قريباً</p>
+            <p style={{ fontSize: '0.95rem' }}>{commonText.noIcons[lang]}</p>
           </div>
         )}
       </section>

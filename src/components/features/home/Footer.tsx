@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import logo from '@/assets/logo.png';
 import { Facebook, Instagram, Twitter, Send, Phone, Youtube } from 'lucide-react';
+import { navbarText } from '@/i18n/pages';
 import { fetchFooter, type HomepageFooter } from '@/service/homepageCMS';
+import { useLanguage } from '@/context/LanguageContext';
+import { footerText, getField } from '@/i18n/pages';
 
 // Social link wrapper — renders as <a> if URL is set, else plain div
 function SocialBtn({ href, title, children }: { href?: string; title: string; children: React.ReactNode }) {
@@ -16,6 +19,7 @@ function SocialBtn({ href, title, children }: { href?: string; title: string; ch
 }
 
 export const Footer = () => {
+    const { language: lang } = useLanguage();
     const [footerData, setFooterData] = useState<HomepageFooter | null>(null);
 
     useEffect(() => {
@@ -31,16 +35,6 @@ export const Footer = () => {
     return (
         <>
             <style>{`
-                /* ==========================================================================
-                   إعدادات دعم اللغات المتعددة (Dynamic Text)
-                   ========================================================================== */
-                .tr-only, .en-only { display: none; }
-
-                [lang="tr"] .tr-only { display: block; }
-                [lang="tr"] .ar-only, [lang="tr"] .en-only { display: none; }
-
-                [lang="en"] .en-only { display: block; }
-                [lang="en"] .ar-only, [lang="en"] .tr-only { display: none; }
 
                 /* ==========================================================================
                    Footer Hero Branding (Gucci Style) - with Dark Red & Black Colors
@@ -176,18 +170,12 @@ export const Footer = () => {
                                 <img src={logo} alt="الاتحاد" className="w-full h-full object-contain" />
                             </div>
                             <div className="logo-text">
-                                <span className="logo-text-main ar-only">اتحاد الطلاب اليمنيين</span>
-                                <span className="logo-text-main en-only">Yemeni Students Union</span>
-                                <span className="logo-text-main tr-only">Yemenli Öğrenciler Birliği</span>
-                                <span className="logo-text-sub ar-only">فرع إسطنبول · تركيا</span>
-                                <span className="logo-text-sub en-only">Istanbul Branch · Turkey</span>
-                                <span className="logo-text-sub tr-only">İstanbul Şubesi · Türkiye</span>
+                                <span className="logo-text-main">{footerText.heroTitle[lang]}</span>
+                                <span className="logo-text-sub">{navbarText.branchName[lang]}</span>
                             </div>
                         </div>
                         <p className="footer-desc">
-                            <span className="ar-only">منظومة دعم شاملة للطلاب اليمنيين في تركيا. نبني مجتمعًا طلابيًا متماسكًا يدعم كل طالب في رحلته الأكاديمية.</span>
-                            <span className="en-only">A comprehensive support system for Yemeni students in Turkey. We build a cohesive student community supporting every student in their academic journey.</span>
-                            <span className="tr-only">Türkiye'deki Yemenli öğrenciler için kapsamlı bir destek sistemi. Her öğrenciyi akademik yolculuğunda destekleyen uyumlu bir öğrenci topluluğu inşa ediyoruz.</span>
+                            {footerText.description[lang]}
                         </p>
                         <div className="footer-socials">
                             <SocialBtn href={footerData?.facebook_url} title="Facebook"><Facebook size={18} /></SocialBtn>
@@ -200,40 +188,32 @@ export const Footer = () => {
                     </div>
 
                     <div className="footer-col">
-                        <div className="footer-col-title ar-only">روابط سريعة</div>
-                        <div className="footer-col-title en-only">Quick Links</div>
-                        <div className="footer-col-title tr-only">Hızlı Bağlantılar</div>
+                        <div className="footer-col-title">{footerText.sections.quickLinks[lang]}</div>
                         <div className="footer-links">
-                            <a href="#about"><span className="ar-only">من نحن</span><span className="en-only">About Us</span><span className="tr-only">Hakkımızda</span></a>
-                            <a href="#guide"><span className="ar-only">الدليل الطلابي</span><span className="en-only">Student Guide</span><span className="tr-only">Öğrenci Rehberi</span></a>
-                            <a href="#activities"><span className="ar-only">الأنشطة والفعاليات</span><span className="en-only">Activities & Events</span><span className="tr-only">Etkinlikler</span></a>
-                            <a href="#discounts"><span className="ar-only">التخفيضات الحصرية</span><span className="en-only">Exclusive Discounts</span><span className="tr-only">Özel İndirimler</span></a>
-                            <a href="#partners"><span className="ar-only">شركاؤنا</span><span className="en-only">Our Partners</span><span className="tr-only">Ortaklarımız</span></a>
+                            <a href="#about">{footerText.links.aboutUs[lang]}</a>
+                            <a href="#guide">{footerText.links.studentGuide[lang]}</a>
+                            <a href="#activities">{footerText.links.activitiesEvents[lang]}</a>
+                            <a href="#discounts">{footerText.links.exclusiveDiscounts[lang]}</a>
+                            <a href="#partners">{footerText.links.ourPartners[lang]}</a>
                         </div>
                     </div>
 
                     <div className="footer-col">
-                        <div className="footer-col-title ar-only">الدليل الطلابي</div>
-                        <div className="footer-col-title en-only">Student Guide</div>
-                        <div className="footer-col-title tr-only">Öğrenci Rehberi</div>
+                        <div className="footer-col-title">{footerText.sections.studentGuide[lang]}</div>
                         <div className="footer-links">
-                            <a href="#guide"><span className="ar-only">أسئلة وأجوبة</span><span className="en-only">Q&A</span><span className="tr-only">S&S</span></a>
-                            <a href="#guide"><span className="ar-only">دليل الجامعات</span><span className="en-only">Universities Guide</span><span className="tr-only">Üniversiteler Rehberi</span></a>
-                            <a href="#guide"><span className="ar-only">إجراءات الإقامة</span><span className="en-only">Residence Procedures</span><span className="tr-only">İkamet Prosedürleri</span></a>
-                            <a href="#guide"><span className="ar-only">نصائح الحياة اليومية</span><span className="en-only">Daily Life Tips</span><span className="tr-only">Günlük Yaşam İpuçları</span></a>
+                            <a href="#guide">{footerText.links.qna[lang]}</a>
+                            <a href="#guide">{footerText.links.universitiesGuide[lang]}</a>
+                            <a href="#guide">{footerText.links.residenceProcedures[lang]}</a>
+                            <a href="#guide">{footerText.links.dailyLifeTips[lang]}</a>
                         </div>
                     </div>
 
                     <div className="footer-col">
-                        <div className="footer-col-title ar-only">تواصل معنا</div>
-                        <div className="footer-col-title en-only">Contact Us</div>
-                        <div className="footer-col-title tr-only">Bize Ulaşın</div>
+                        <div className="footer-col-title">{footerText.sections.contactUs[lang]}</div>
                         <div className="footer-contact-item">
                             <span className="contact-icon">📍</span>
                             <span>
-                                <span className="ar-only">{footerData?.address_ar ?? 'إسطنبول، تركيا'}</span>
-                                <span className="en-only">{footerData?.address_en ?? 'Istanbul, Turkey'}</span>
-                                <span className="tr-only">{footerData?.address_tr ?? 'İstanbul, Türkiye'}</span>
+                                {footerData ? getField(footerData, 'address', lang) : footerText.city[lang]}
                             </span>
                         </div>
                         <div className="footer-contact-item">
@@ -256,27 +236,19 @@ export const Footer = () => {
                 {/* ===== Copyright (above the hero title) ===== */}
                 <div className="footer-bottom-bar">
                     <div className="footer-copy">
-                        <span className="ar-only">© 2026 اتحاد الطلاب اليمنيين في تركيا – فرع إسطنبول. جميع الحقوق محفوظة.</span>
-                        <span className="en-only">© 2026 Yemeni Students Union in Turkey – Istanbul Branch. All rights reserved.</span>
-                        <span className="tr-only">© 2026 Türkiye'deki Yemenli Öğrenciler Birliği – İstanbul Şubesi. Tüm hakları saklıdır.</span>
+                        {footerText.copyright[lang]}
                     </div>
                     <div className="footer-bottom-links">
-                        <a href="#"><span className="ar-only">سياسة الخصوصية</span><span className="en-only">Privacy Policy</span><span className="tr-only">Gizlilik Politikası</span></a>
-                        <a href="#"><span className="ar-only">شروط الاستخدام</span><span className="en-only">Terms of Use</span><span className="tr-only">Kullanım Koşulları</span></a>
+                        <a href="#">{footerText.links.privacyPolicy[lang]}</a>
+                        <a href="#">{footerText.links.termsOfUse[lang]}</a>
                     </div>
                 </div>
 
                 {/* Gucci-Style Hero Text (appears below copyright) */}
                 <div className="footer-hero-container">
                     <div className="footer-hero-inner">
-                        <h2 className="footer-hero-text ar-only">
-                            اتحاد الطلاب اليمنيين <span className="city-text">إسطنبول</span>
-                        </h2>
-                        <h2 className="footer-hero-text tr-only">
-                            Yemenli Öğrenciler Birliği <span className="city-text">İstanbul</span>
-                        </h2>
-                        <h2 className="footer-hero-text en-only">
-                            Yemeni Students Union <span className="city-text">Istanbul</span>
+                        <h2 className="footer-hero-text">
+                            {footerText.heroTitle[lang]} <span className="city-text">{footerText.city[lang]}</span>
                         </h2>
                     </div>
                 </div>

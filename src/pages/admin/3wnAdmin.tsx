@@ -47,6 +47,196 @@ function StatusBadge({ status }: { status: string }) {
     );
 }
 
+// ─── Service Requests Modal (for a specific service) ─────────────────────────
+function ServiceRequestsModal({ service, onClose, onUpdate }: { service: Service; onClose: () => void; onUpdate: () => void }) {
+    const [requests, setRequests] = useState<ServiceRequest[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [filter, setFilter] = useState("all");
+    const [exporting, setExporting] = useState(false);
+
+    useEffect(() => {
+        loadRequests();
+    }, [service.id]);
+
+    const loadRequests = async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from("service_requests")
+                .select("*")
+                .eq("service_id", service.id)
+                .order("created_at", { ascending: false });
+
+            if (error) throw error;
+            setRequests(data || []);
+        } catch (err: any) {
+            toast.error(err.message || "فشل تحميل الطلبات");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // CSV Export function - NO external library needed, NO 31 char limit
+    const exportToCSV = () => {
+        setExporting(true);
+        try {
+            const filteredReqs = filter === "all" ? requests : requests.filter(r => r.status === filter);
+
+            const headers = [
+                "اسم الطالب", "رقم الطالب", "الجوال", "البريد الإلكتروني",
+                "الجامعة", "السنة الدراسية", "ملاحظات الطالب", "الحالة",
+                "ملاحظات الإدارة", "تاريخ الطلب"
+            ];
+
+            const rows = filteredReqs.map(req => [
+                req.student_name || "—",
+                req.student_id_number || "—",
+                req.phone || "—",
+                req.email || "—",
+                req.university || "—",
+                req.academic_year || "—",
+                req.notes || "—",
+                STATUS_CONFIG[req.status]?.label || req.status,
+                req.admin_notes || "—",
+                new Date(req.created_at).toLocaleDateString('ar-SA')
+            ]);
+
+            const csvContent = [
+                headers.join(","),
+                ...rows.map(row => row.map(cell => `"${cell?.toString().replace(/"/g, '""')}"`).join(","))
+            ].join("\n");
+
+            const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", `${service.title}_الطلبات_${new Date().toLocaleDateString('ar-SA')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            toast.success(`تم تصدير ${filteredReqs.length} طلب بنجاح`);
+        } catch (err: any) {
+            toast.error("فشل تصدير الملف: " + err.message);
+        } finally {
+            setExporting(false);
+        }
+    };
+
+    const stats = {
+        all: requests.length,
+        pending: requests.filter(r => r.status === "pending").length,
+        approved: requests.filter(r => r.status === "approved").length,
+        rejected: requests.filter(r => r.status === "rejected").length,
+        completed: requests.filter(r => r.status === "completed").length,
+    };
+
+    const filteredReqs = filter === "all" ? requests : requests.filter(r => r.status === filter);
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
+            onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-6xl overflow-hidden" style={{ maxHeight: "90vh", display: "flex", flexDirection: "column" }}>
+                {/* Header */}
+                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white"
+                    style={{ background: `${service.color}10` }}>
+                    <div className="flex items-center gap-3">
+                        <span className="text-3xl">{service.icon}</span>
+                        <div>
+                            <h3 className="font-extrabold text-gray-900 m-0 text-xl">طلبات خدمة: {service.title}</h3>
+                            <p className="text-xs text-gray-500 m-0 mt-0.5">{stats.all} طلب إجمالي</p>
+                        </div>
+                    </div>
+                    <div className="flex gap-2">
+                        <button onClick={exportToCSV} disabled={exporting || filteredReqs.length === 0}
+                            className="px-4 py-2 rounded-xl border-none cursor-pointer text-sm font-bold transition-colors flex items-center gap-2"
+                            style={{ background: "#10b981", color: "white" }}>
+                            {exporting ? "⏳ جاري التصدير..." : "📊 تصدير Excel"}
+                        </button>
+                        <button onClick={onClose}
+                            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 border-none cursor-pointer flex items-center justify-center text-gray-500 transition-colors">
+                            ✕
+                        </button>
+                    </div>
+                </div>
+
+                {/* Stats Row */}
+                <div className="px-6 pt-4 pb-2">
+                    <div className="grid grid-cols-5 gap-3">
+                        {(["all", "pending", "approved", "rejected", "completed"] as const).map(k => {
+                            const cfg = k === "all" ? { label: "الكل", bg: "#f3f4f6", color: "#374151", icon: "📋" } : STATUS_CONFIG[k];
+                            return (
+                                <button key={k} onClick={() => setFilter(k)}
+                                    className="py-2 px-2 rounded-xl border-none cursor-pointer text-center transition-all"
+                                    style={{ background: filter === k ? cfg.bg : "#fff", border: `2px solid ${filter === k ? cfg.color + "50" : "#f0f0f0"}` }}>
+                                    <div className="text-lg mb-0.5">{cfg.icon}</div>
+                                    <div className="text-xl font-extrabold" style={{ color: cfg.color }}>{stats[k]}</div>
+                                    <div className="text-[10px] text-gray-400 font-bold">{cfg.label}</div>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Requests Table */}
+                <div className="flex-1 overflow-auto px-6 pb-6">
+                    {loading ? (
+                        <div className="flex justify-center py-12"><Spinner /></div>
+                    ) : filteredReqs.length === 0 ? (
+                        <div className="text-center py-12">
+                            <div className="text-5xl mb-3">📭</div>
+                            <p className="text-gray-400 font-bold">لا توجد طلبات لهذه الخدمة</p>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full border-collapse text-[13px] text-right">
+                                <thead>
+                                    <tr className="border-b border-gray-100 bg-gray-50 sticky top-0">
+                                        <th className="px-4 py-3 font-bold text-[#6b7280] text-right whitespace-nowrap">الطالب</th>
+                                        <th className="px-4 py-3 font-bold text-[#6b7280] text-right whitespace-nowrap">رقم الطالب</th>
+                                        <th className="px-4 py-3 font-bold text-[#6b7280] text-right whitespace-nowrap">الجامعة</th>
+                                        <th className="px-4 py-3 font-bold text-[#6b7280] text-right whitespace-nowrap">الجوال</th>
+                                        <th className="px-4 py-3 font-bold text-[#6b7280] text-right whitespace-nowrap">البريد</th>
+                                        <th className="px-4 py-3 font-bold text-[#6b7280] text-right whitespace-nowrap">التاريخ</th>
+                                        <th className="px-4 py-3 font-bold text-[#6b7280] text-right whitespace-nowrap">الحالة</th>
+                                        <th className="px-4 py-3 font-bold text-[#6b7280] text-right whitespace-nowrap">إجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredReqs.map(req => (
+                                        <tr key={req.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                                            <td className="px-4 py-3">
+                                                <p className="font-bold text-gray-900 m-0">{req.student_name}</p>
+                                            </td>
+                                            <td className="px-4 py-3 text-gray-500">{req.student_id_number}</td>
+                                            <td className="px-4 py-3 text-gray-500">{req.university || "—"}</td>
+                                            <td className="px-4 py-3 text-gray-500" dir="ltr">{req.phone}</td>
+                                            <td className="px-4 py-3 text-gray-500">{req.email || "—"}</td>
+                                            <td className="px-4 py-3 text-gray-400 text-[12px] whitespace-nowrap">{fmtDate(req.created_at)}</td>
+                                            <td className="px-4 py-3 whitespace-nowrap"><StatusBadge status={req.status} /></td>
+                                            <td className="px-4 py-3">
+                                                <button onClick={() => {
+                                                    // You can open a detail modal here if needed
+                                                    toast.info(`عرض تفاصيل طلب ${req.student_name}`);
+                                                }}
+                                                    className="px-3 py-1.5 rounded-xl border-none text-xs font-bold cursor-pointer hover:opacity-80 transition-opacity text-white"
+                                                    style={{ background: ACCENT }}>
+                                                    عرض 🔍
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 // ─── Request Detail Modal ─────────────────────────────────────────────────────
 function RequestDetailModal({ req, onClose, onUpdate }: { req: ServiceRequest; onClose: () => void; onUpdate: () => void }) {
     const [status, setStatus] = useState(req.status);
@@ -87,7 +277,7 @@ function RequestDetailModal({ req, onClose, onUpdate }: { req: ServiceRequest; o
                     {/* Student Info Grid */}
                     <div className="grid grid-cols-2 gap-3">
                         {[
-                            // { label: "رقم الطالب", value: req.student_id_number, icon: "🎓" },
+                            { label: "رقم الطالب", value: req.student_id_number, icon: "🎓" },
                             { label: "الجوال", value: req.phone, icon: "📱" },
                             { label: "البريد", value: req.email || "—", icon: "📧" },
                             { label: "الجامعة", value: req.university, icon: "🏛️" },
@@ -161,6 +351,7 @@ export default function AwnAdmin() {
     const [saving, setSaving] = useState(false);
     const [editing, setEditing] = useState<Service | null>(null);
     const [selectedReq, setSelectedReq] = useState<ServiceRequest | null>(null);
+    const [selectedServiceForRequests, setSelectedServiceForRequests] = useState<Service | null>(null);
     const [reqFilter, setReqFilter] = useState("all");
 
     const [form, setForm] = useState({
@@ -251,7 +442,7 @@ export default function AwnAdmin() {
             {/* ── Page Header ── */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div>
-                    <h2 className="m-0 text-xl font-extrabold text-[#111]">إدارة برنامج عون </h2>
+                    <h2 className="m-0 text-xl font-extrabold text-[#111]">إدارة برنامج عون</h2>
                     <p className="m-0 mt-0.5 text-[#9ca3af] text-[13px]">{services.length} خدمة · {requests.length} طلب</p>
                 </div>
                 {tab === "services" && (
@@ -268,7 +459,7 @@ export default function AwnAdmin() {
                         className="px-5 py-2 rounded-lg border-none text-sm font-bold cursor-pointer transition-all"
                         style={{ background: tab === key ? "#fff" : "transparent", color: tab === key ? "#111" : "#6b7280", boxShadow: tab === key ? "0 1px 4px rgba(0,0,0,.1)" : "none" }}>
                         {label}
-                        <span className="ml-2 text-[11px] px-1.5 py-0.5 rounded-full font-extrabold"
+                        <span className="mr-2 text-[11px] px-1.5 py-0.5 rounded-full font-extrabold"
                             style={{ background: tab === key ? ACCENT + "15" : "#e5e7eb", color: tab === key ? ACCENT : "#6b7280" }}>{count}</span>
                     </button>
                 ))}
@@ -313,6 +504,12 @@ export default function AwnAdmin() {
                                                     <button onClick={() => toggle(s)} className="flex-1 py-2 rounded-xl text-xs font-bold border-none cursor-pointer transition-colors"
                                                         style={{ background: s.is_available ? "#fef3c7" : "#d1fae5", color: s.is_available ? "#d97706" : "#059669" }}>
                                                         {s.is_available ? "⏸ تعطيل" : "▶ تفعيل"}
+                                                    </button>
+                                                    {/* NEW BUTTON: View Requests for this service */}
+                                                    <button onClick={() => setSelectedServiceForRequests(s)}
+                                                        className="flex-1 py-2 rounded-xl text-xs font-bold border-none cursor-pointer transition-colors"
+                                                        style={{ background: "#e0e7ff", color: "#4f46e5" }}>
+                                                        📋 الطلبات
                                                     </button>
                                                     <button onClick={() => deleteService(s)} className="w-9 h-9 rounded-xl border-none bg-red-50 hover:bg-red-100 text-red-500 cursor-pointer text-base flex items-center justify-center transition-colors">🗑</button>
                                                 </div>
@@ -452,6 +649,15 @@ export default function AwnAdmin() {
                     {saving ? "جاري الحفظ..." : editing ? "حفظ التعديلات" : "إضافة الخدمة"}
                 </button>
             </Modal>
+
+            {/* ── Service Requests Modal ── */}
+            {selectedServiceForRequests && (
+                <ServiceRequestsModal
+                    service={selectedServiceForRequests}
+                    onClose={() => setSelectedServiceForRequests(null)}
+                    onUpdate={() => load(false)}
+                />
+            )}
 
             {/* ── Request Detail Modal ── */}
             {selectedReq && (

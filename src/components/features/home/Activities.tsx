@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { fetchActivitiesWithItems, type HomepageActivity, type HomepageActivityItem } from '@/service/homepageCMS';
+import { useLanguage } from '@/context/LanguageContext';
+import { getField } from '@/i18n/pages';
 
 /* ─── Yemeni palette (red · gold · charcoal · cream) ─── */
 const Y = {
@@ -42,7 +44,19 @@ function SkeletonActivities() {
     );
 }
 
+const activitiesText = {
+    eyebrow: { ar: 'الأنشطة والفعاليات', en: 'Activities & Events', tr: 'Etkinlikler & Faaliyetler' },
+    title: { ar: 'برامجنا ومبادراتنا', en: 'Our Programs & Initiatives', tr: 'Programlarımız & Girişimlerimiz' },
+    desc: {
+        ar: 'تُمثّل هذه البرامج نبض اتحادنا وروح مجتمعنا اليمني في إسطنبول',
+        en: 'These programs represent the pulse of our union and the spirit of our Yemeni community in Istanbul.',
+        tr: "Bu programlar, birliğimizin nabzını ve İstanbul'daki Yemenli topluluğumuzun ruhunu temsil etmektedir.",
+    },
+    empty: { ar: 'لا توجد أنشطة حالياً', en: 'No activities at the moment', tr: 'Şu an etkinlik bulunmuyor' },
+} as const;
+
 export const Activities = () => {
+    const { language: lang } = useLanguage();
     const [programs, setPrograms] = useState<HomepageActivity[]>([]);
     const [loading, setLoading] = useState(true);
     const [current, setCurrent] = useState(0);
@@ -53,9 +67,6 @@ export const Activities = () => {
     const rafRef = useRef<number | null>(null);
     const startRef = useRef<number | null>(null);
     const lockedRef = useRef(false);
-
-    // Detect current language from <html lang="...">
-    const lang = document.documentElement.getAttribute('lang') ?? 'ar';
 
     useEffect(() => {
         fetchActivitiesWithItems()
@@ -113,7 +124,7 @@ export const Activities = () => {
         return (
             <section id="activities" style={{ background: Y.charcoal, padding: '72px 0 88px' }}>
                 <div className="container" style={{ textAlign: 'center' }}>
-                    <p style={{ color: Y.gold, fontSize: '1rem' }}>لا توجد أنشطة حالياً</p>
+                    <p style={{ color: Y.gold, fontSize: '1rem' }}>{activitiesText.empty[lang]}</p>
                 </div>
             </section>
         );
@@ -122,16 +133,10 @@ export const Activities = () => {
     const prog = programs[current];
     const items: HomepageActivityItem[] = prog.items ?? [];
 
-    // Pick the right language fields
-    const progName = lang === 'en' ? (prog.name_en || prog.name_ar)
-        : lang === 'tr' ? (prog.name_tr || prog.name_ar)
-        : prog.name_ar;
-    const progTag = lang === 'en' ? (prog.tag_en || prog.tag_ar)
-        : lang === 'tr' ? (prog.tag_tr || prog.tag_ar)
-        : prog.tag_ar;
-    const progDesc = lang === 'en' ? (prog.desc_en || prog.desc_ar)
-        : lang === 'tr' ? (prog.desc_tr || prog.desc_ar)
-        : prog.desc_ar;
+    // Resolve fields via getField
+    const progName = getField(prog, 'name', lang);
+    const progTag = getField(prog, 'tag', lang);
+    const progDesc = getField(prog, 'desc', lang);
 
     return (
         <>
@@ -150,21 +155,15 @@ export const Activities = () => {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '14px', marginBottom: '16px' }}>
                             <div style={{ height: '1px', width: '40px', background: `linear-gradient(to right, transparent, ${Y.gold})` }} />
                             <span style={{ color: Y.gold, fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.18em' }}>
-                                <span className="ar-only">الأنشطة والفعاليات</span>
-                                <span className="en-only">Activities & Events</span>
-                                <span className="tr-only">Etkinlikler & Faaliyetler</span>
+                                {activitiesText.eyebrow[lang]}
                             </span>
                             <div style={{ height: '1px', width: '40px', background: `linear-gradient(to left, transparent, ${Y.gold})` }} />
                         </div>
                         <h2 style={{ fontSize: 'clamp(1.5rem,3.5vw,2.1rem)', fontWeight: 800, color: Y.cream, letterSpacing: '-0.02em', marginBottom: '10px' }}>
-                            <span className="ar-only">برامجنا ومبادراتنا</span>
-                            <span className="en-only">Our Programs & Initiatives</span>
-                            <span className="tr-only">Programlarımız & Girişimlerimiz</span>
+                            {activitiesText.title[lang]}
                         </h2>
                         <p style={{ color: '#7a7262', fontSize: '0.9rem', lineHeight: 1.7 }}>
-                            <span className="ar-only">تُمثّل هذه البرامج نبض اتحادنا وروح مجتمعنا اليمني في إسطنبول</span>
-                            <span className="en-only">These programs represent the pulse of our union and the spirit of our Yemeni community in Istanbul.</span>
-                            <span className="tr-only">Bu programlar, birliğimizin nabzını ve İstanbul'daki Yemenli topluluğumuzun ruhunu temsil etmektedir.</span>
+                            {activitiesText.desc[lang]}
                         </p>
                     </div>
 
@@ -172,7 +171,7 @@ export const Activities = () => {
                     <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '20px', marginBottom: '36px' }}>
                         {programs.map((p, i) => {
                             const isActive = i === current;
-                            const pName = lang === 'en' ? (p.name_en || p.name_ar) : lang === 'tr' ? (p.name_tr || p.name_ar) : p.name_ar;
+                            const pName = getField(p, 'name', lang);
                             return (
                                 <div key={p.id} onClick={() => goTo(i)}
                                     style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
@@ -251,9 +250,9 @@ export const Activities = () => {
                         transition: 'opacity 0.28s ease, transform 0.28s ease',
                     }}>
                         {items.map((act, i) => {
-                            const actTitle = lang === 'en' ? (act.title_en || act.title_ar) : lang === 'tr' ? (act.title_tr || act.title_ar) : act.title_ar;
-                            const actDesc = lang === 'en' ? (act.desc_en || act.desc_ar) : lang === 'tr' ? (act.desc_tr || act.desc_ar) : act.desc_ar;
-                            const actFreq = lang === 'en' ? (act.freq_en || act.freq_ar) : lang === 'tr' ? (act.freq_tr || act.freq_ar) : act.freq_ar;
+                            const actTitle = getField(act, 'title', lang);
+                            const actDesc = getField(act, 'desc', lang);
+                            const actFreq = getField(act, 'freq', lang);
                             return (
                                 <div key={act.id ?? i}
                                     style={{

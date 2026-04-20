@@ -4,6 +4,7 @@ import { fetchStudentById, upsertStudent, type InfoStudent } from '@/service/inf
 import { toast } from 'sonner';
 import { Users, ChevronRight } from 'lucide-react';
 import { Spinner, Field, ActionBar, AdminPageHeader, inputStyle, textareaStyle } from './CMSShared';
+import { ImageUploader } from '@/components/admin/ImageUploader';
 
 export default function StudentFormAdmin() {
   const { id } = useParams<{ id: string }>();
@@ -75,7 +76,12 @@ export default function StudentFormAdmin() {
 
         <Field label="نبذة عن الطالب"><textarea style={textareaStyle} value={form.bio} onChange={e => handleField('bio', e.target.value)} /></Field>
         <Field label="أبرز الإنجازات والجوائز"><textarea style={textareaStyle} value={form.achievement} onChange={e => handleField('achievement', e.target.value)} /></Field>
-        <Field label="رابط الصورة الشخصية (URL)"><input style={inputStyle} value={form.image_url ?? ''} onChange={e => handleField('image_url', e.target.value)} placeholder="https://..." /></Field>
+        <ImageUploader
+          value={form.image_url ?? ''}
+          onChange={url => handleField('image_url', url)}
+          folder="students"
+          label="الصورة الشخصية"
+        />
         
         <div style={{ display: 'flex', gap: 24, alignItems: 'center', background: '#f9fafb', padding: '16px 20px', borderRadius: 12 }}>
           <div style={{ flex: 1 }}>
