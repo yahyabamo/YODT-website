@@ -10,7 +10,7 @@ const TABS = [
   { id: 'discounts', label: 'الخصومات', icon: '🏷️' },
   { id: 'activities', label: 'الأنشطة', icon: '🎯' },
   { id: 'partners', label: 'الشركاء', icon: '🤝' },
-  { id: 'footer', label: 'التذييل', icon: '📋' },
+  { id: 'footer', label: 'الجزء السفلي', icon: '📋' },
 ] as const;
 
 type TabId = typeof TABS[number]['id'];
