@@ -74,19 +74,7 @@ export interface HomepageActivityItem {
   updated_at?: string;
 }
 
-export interface HomepagePartner {
-  id?: string;
-  abbr: string;
-  name_ar: string;
-  name_en: string;
-  name_tr: string;
-  logo_url?: string;
-  link?: string;
-  is_published: boolean;
-  order_index: number;
-  created_at?: string;
-  updated_at?: string;
-}
+// HomepagePartner removed — use HomepagePartnerDisplay from the partners table instead
 
 export interface HomepageFooter {
   id?: string;
@@ -249,45 +237,83 @@ export async function deleteActivityItem(id: string): Promise<void> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PARTNERS
+// PARTNERS & OFFERS  (homepage display — reads from unified tables)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Public: fetch published partners ordered by order_index */
-export async function fetchPartners(): Promise<HomepagePartner[]> {
-  const { data, error } = await supabase
-    .from('homepage_partners')
+export interface HomepagePartnerDisplay {
+  id: string;
+  name: string;
+  name_ar?: string | null;
+  name_en?: string | null;
+  name_tr?: string | null;
+  logo_url?: string | null;
+  website?: string | null;
+  category?: string | null;
+  city?: string | null;
+  show_on_homepage: boolean;
+  order_index: number;
+  status: string;
+  description_ar?: string | null;
+  description_en?: string | null;
+  description_tr?: string | null;
+}
+
+export interface HomepageOfferDisplay {
+  id: string;
+  title: string;
+  title_ar?: string | null;
+  title_en?: string | null;
+  title_tr?: string | null;
+  description?: string | null;
+  description_ar?: string | null;
+  description_en?: string | null;
+  description_tr?: string | null;
+  target_audience_ar?: string | null;
+  target_audience_en?: string | null;
+  target_audience_tr?: string | null;
+  contact_method_ar?: string | null;
+  contact_method_en?: string | null;
+  contact_method_tr?: string | null;
+  contact_link?: string | null;
+  image_url?: string | null;
+  image_urls?: string[] | null;
+  show_on_homepage: boolean;
+  order_index: number;
+  status: string;
+  partners: {
+    id: string;
+    name: string;
+    name_ar?: string | null;
+    name_en?: string | null;
+    name_tr?: string | null;
+    logo_url?: string | null;
+    category?: string | null;
+    city?: string | null;
+  };
+}
+
+/** Public: fetch active partners marked show_on_homepage, ordered by order_index */
+export async function fetchHomepagePartners(): Promise<HomepagePartnerDisplay[]> {
+  const { data, error } = await (supabase as any)
+    .from('partners')
     .select('*')
-    .eq('is_published', true)
+    .eq('show_on_homepage', true)
+    .eq('status', 'active')
     .order('order_index', { ascending: true });
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []) as HomepagePartnerDisplay[];
 }
 
-/** Admin: fetch ALL partners */
-export async function fetchAllPartners(): Promise<HomepagePartner[]> {
-  const { data, error } = await supabase
-    .from('homepage_partners')
-    .select('*')
+/** Public: fetch active offers marked show_on_homepage, ordered by order_index, with partner info */
+export async function fetchHomepageOffers(): Promise<HomepageOfferDisplay[]> {
+  const { data, error } = await (supabase as any)
+    .from('offers')
+    .select('*, partners!inner(id, name, name_ar, name_en, name_tr, logo_url, category, city)')
+    .eq('show_on_homepage', true)
+    .eq('status', 'active')
     .order('order_index', { ascending: true });
   if (error) throw error;
-  return data ?? [];
-}
-
-/** Admin: create or update a partner */
-export async function upsertPartner(row: HomepagePartner): Promise<HomepagePartner> {
-  const { data, error } = await supabase
-    .from('homepage_partners')
-    .upsert({ ...row, updated_at: new Date().toISOString() })
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-/** Admin: delete a partner */
-export async function deletePartner(id: string): Promise<void> {
-  const { error } = await supabase.from('homepage_partners').delete().eq('id', id);
-  if (error) throw error;
+  return (data ?? []) as HomepageOfferDisplay[];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

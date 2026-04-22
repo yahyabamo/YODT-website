@@ -233,9 +233,9 @@ export async function deletePartner(id: string) {
 // ── Offers ────────────────────────────────────────────────────
 
 export async function fetchOffers() {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
         .from('offers')
-        .select('*, partners(name, logo_url)')
+        .select('*, partners(id, name, name_ar, logo_url, website, category, city)')
         .order('status', { ascending: true })
         .order('created_at', { ascending: false })
     if (error) throw error

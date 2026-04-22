@@ -46,10 +46,6 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [showSearch, setShowSearch] = useState(false);
   const [editForm, setEditForm] = useState({
-    full_name: '',
-    phone: '',
-    university: '',
-    faculty: '',
     avatar_url: '',
   });
   const [avatarUploading, setAvatarUploading] = useState(false);
@@ -85,10 +81,6 @@ const Profile = () => {
       if (profileData) {
         setProfile(profileData as any);
         setEditForm({
-          full_name: profileData.full_name || '',
-          phone: profileData.phone || '',
-          university: profileData.university || '',
-          faculty: profileData.faculty || '',
           avatar_url: profileData.avatar_url || '',
         });
       }
@@ -136,10 +128,6 @@ const Profile = () => {
       const { error } = await supabase
         .from('profiles')
         .update({
-          full_name: editForm.full_name,
-          phone: editForm.phone,
-          university: editForm.university,
-          faculty: editForm.faculty,
           avatar_url: editForm.avatar_url,
           updated_at: new Date().toISOString()
         })
@@ -149,10 +137,6 @@ const Profile = () => {
 
       setProfile(prev => prev ? {
         ...prev,
-        full_name: editForm.full_name,
-        phone: editForm.phone,
-        university: editForm.university,
-        faculty: editForm.faculty,
         avatar_url: editForm.avatar_url,
       } as any : null);
 
@@ -216,13 +200,14 @@ const Profile = () => {
               <div className="relative w-24 h-24">
                 <div className="w-24 h-24 rounded-full bg-card border-4 border-card shadow-card flex items-center justify-center overflow-hidden">
                   {isEditing && editForm.avatar_url ? (
-                    <img src={editForm.avatar_url} alt={editForm.full_name} className="w-full h-full object-cover" />
+                    <img src={editForm.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
                   ) : !isEditing && profile.avatar_url ? (
                     <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-4xl">{isStudent ? '👨‍🎓' : '👩‍🎓'}</span>
                   )}
                 </div>
+
                 {isEditing && (
                   <label className="absolute bottom-0 right-0 bg-primary text-primary-foreground p-2 rounded-full cursor-pointer shadow-lg hover:bg-primary/90 transition-colors">
                     {avatarUploading ? (
@@ -235,34 +220,7 @@ const Profile = () => {
                 )}
               </div>
 
-              {isEditing ? (
-                <div className="w-full mt-4 space-y-3">
-                  <div>
-                    <label className="text-xs text-muted-foreground whitespace-nowrap block mb-1">الاسم المعروض</label>
-                    <Input
-                      value={editForm.full_name}
-                      onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
-                      className="h-10 text-center font-bold"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground whitespace-nowrap block mb-1">الجامعة</label>
-                    <Input
-                      value={editForm.university}
-                      onChange={(e) => setEditForm({ ...editForm, university: e.target.value })}
-                      className="h-10 text-center"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground whitespace-nowrap block mb-1">التخصص</label>
-                    <Input
-                      value={editForm.faculty}
-                      onChange={(e) => setEditForm({ ...editForm, faculty: e.target.value })}
-                      className="h-10 text-center"
-                    />
-                  </div>
-                </div>
-              ) : (
+              {isEditing && (
                 <>
                   <h2 className="text-xl font-bold mt-4">{profile.full_name}</h2>
                   <p className="text-sm text-muted-foreground">
@@ -362,17 +320,7 @@ const Profile = () => {
               </div>
               <div className="flex-1">
                 <p className="text-xs text-muted-foreground">رقم الهاتف</p>
-                {isEditing ? (
-                  <Input
-                    value={editForm.phone}
-                    onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                    placeholder="أضف رقم هاتفك"
-                    className="h-10"
-                    dir="ltr"
-                  />
-                ) : (
-                  <p className="font-medium" dir="ltr">{profile.phone || 'غير محدد'}</p>
-                )}
+                <p className="font-medium" dir="ltr">{profile.phone || 'غير محدد'}</p>
               </div>
             </div>
           </CardContent>
