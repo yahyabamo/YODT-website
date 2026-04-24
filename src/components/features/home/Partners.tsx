@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { getField } from '@/i18n/pages';
 import {
@@ -7,32 +7,6 @@ import {
     type HomepagePartnerDisplay,
     type HomepageOfferDisplay,
 } from '@/service/homepageCMS';
-
-// ─── Design Tokens ────────────────────────────────────────────
-const T = {
-    red: '#CE1126',
-    redDeep: '#A50E1F',
-    black: '#0A0A0A',
-    ink: '#1C1C1C',
-    charcoal: '#2E2E2E',
-    mist: '#F5F5F3',
-    smoke: '#EDECE9',
-    silver: '#D8D6D0',
-    ash: '#9A9690',
-    white: '#FFFFFF',
-    gold: '#C9A84C',
-
-    r: { xs: 4, sm: 8, md: 14, lg: 20, xl: 32, pill: 9999 },
-
-    sh: {
-        card: '0 2px 8px rgba(0,0,0,0.06), 0 8px 32px rgba(0,0,0,0.04)',
-        hover: '0 8px 24px rgba(0,0,0,0.10), 0 24px 64px rgba(0,0,0,0.08)',
-        modal: '0 32px 80px rgba(0,0,0,0.22), 0 8px 24px rgba(0,0,0,0.12)',
-        logo: '0 2px 12px rgba(0,0,0,0.08)',
-    },
-
-    ease: 'cubic-bezier(0.22, 1, 0.36, 1)',
-};
 
 // ─── i18n ─────────────────────────────────────────────────────
 const txt = {
@@ -57,32 +31,11 @@ type Lang = 'ar' | 'en' | 'tr';
 const t = (key: keyof typeof txt, lang: string): string =>
     txt[key]?.[lang as Lang] ?? txt[key]?.ar ?? '';
 
-// ─── Utilities ────────────────────────────────────────────────
 const isRTL = (lang: string) => lang === 'ar';
 
 // ─── Shimmer Skeleton ─────────────────────────────────────────
-function Shimmer({ style }: { style?: React.CSSProperties }) {
-    return (
-        <div style={{
-            background: 'linear-gradient(90deg, #EBEBEB 25%, #F5F5F5 50%, #EBEBEB 75%)',
-            backgroundSize: '400% 100%',
-            animation: 'shimmerSlide 1.8s ease-in-out infinite',
-            borderRadius: T.r.md,
-            ...style,
-        }} />
-    );
-}
-
-// ─── Section Label ────────────────────────────────────────────
-function SectionLabel({ children, color = T.red }: { children: React.ReactNode; color?: string }) {
-    return (
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-            <span style={{ display: 'block', width: 28, height: 2, background: color, borderRadius: 2 }} />
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: color }}>
-                {children}
-            </span>
-        </div>
-    );
+function Shimmer({ className = '', height = '150px' }: { className?: string; height?: string | number }) {
+    return <div className={`bg-secondary animate-pulse rounded-2xl ${className}`} style={{ height }} />;
 }
 
 // ─── Image Gallery ────────────────────────────────────────────
@@ -92,38 +45,15 @@ function ImageGallery({ images, alt }: { images: string[]; alt: string }) {
 
     return (
         <div>
-            {/* Main image: contain so nothing gets cropped */}
-            <div style={{
-                borderRadius: T.r.md,
-                overflow: 'hidden',
-                background: T.mist,
-                border: `1px solid ${T.silver}`,
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: 280,
-            }}>
+            {/* Main image */}
+            <div className="relative h-[280px] rounded-2xl overflow-hidden bg-background border border-border flex items-center justify-center p-2">
                 <img
                     src={images[active]}
                     alt={alt}
-                    style={{
-                        maxWidth: '100%',
-                        maxHeight: '100%',
-                        width: 'auto',
-                        height: 'auto',
-                        objectFit: 'contain',
-                        display: 'block',
-                        transition: `opacity 0.3s ${T.ease}`,
-                    }}
+                    className="max-w-full max-h-full object-contain block transition-opacity duration-300 ease-out"
                 />
                 {images.length > 1 && (
-                    <div style={{
-                        position: 'absolute', bottom: 12, right: 12,
-                        background: 'rgba(10,10,10,0.65)', color: T.white,
-                        borderRadius: T.r.pill, padding: '3px 12px',
-                        fontSize: 11, fontWeight: 600, backdropFilter: 'blur(4px)',
-                    }}>
+                    <div className="absolute bottom-3 inset-inline-end-3 bg-black/65 text-white rounded-full px-3 py-1 text-[11px] font-bold backdrop-blur-md">
                         {active + 1} / {images.length}
                     </div>
                 )}
@@ -131,30 +61,17 @@ function ImageGallery({ images, alt }: { images: string[]; alt: string }) {
 
             {/* Thumbnails */}
             {images.length > 1 && (
-                <div style={{ display: 'flex', gap: 8, marginTop: 10, overflowX: 'auto', paddingBottom: 4 }}>
+                <div className="flex gap-2 mt-3 overflow-x-auto pb-2 scrollbar-hide">
                     {images.map((img, i) => (
                         <button
                             key={i}
                             onClick={() => setActive(i)}
-                            style={{
-                                border: `2px solid ${i === active ? T.red : 'transparent'}`,
-                                borderRadius: T.r.sm,
-                                background: T.mist,
-                                padding: 3,
-                                cursor: 'pointer',
-                                flexShrink: 0,
-                                transition: `border-color 0.2s ease`,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                width: 60,
-                                height: 60,
-                            }}
+                            className={`shrink-0 w-16 h-16 rounded-xl flex items-center justify-center p-1 cursor-pointer transition-all duration-200 border-2 ${i === active ? 'border-primary bg-primary/5' : 'border-transparent bg-secondary hover:border-primary/40'}`}
                         >
                             <img
                                 src={img}
                                 alt={`${alt} ${i + 1}`}
-                                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: T.r.xs, display: 'block' }}
+                                className="max-w-full max-h-full object-contain rounded-md"
                             />
                         </button>
                     ))}
@@ -169,102 +86,36 @@ function PartnerLogo({ partner, lang }: { partner: HomepagePartnerDisplay; lang:
     const name = getField(partner, 'name', lang) || partner.name;
     const abbr = (partner.name_ar || partner.name || '?')
         .split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase();
-    const [hovered, setHovered] = useState(false);
 
     return (
         <a
             href={partner.website || undefined}
             target={partner.website ? '_blank' : undefined}
             rel={partner.website ? 'noopener noreferrer' : undefined}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            style={{
-                textDecoration: 'none',
-                color: 'inherit',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 16,
-                padding: '28px 16px 20px',
-                borderRadius: T.r.lg,
-                background: T.white,
-                border: `1.5px solid ${hovered ? T.red : T.silver}`,
-                boxShadow: hovered ? T.sh.hover : T.sh.card,
-                transition: `all 0.3s ${T.ease}`,
-                transform: hovered ? 'translateY(-6px)' : 'translateY(0)',
-                position: 'relative',
-                overflow: 'hidden',
-                cursor: partner.website ? 'pointer' : 'default',
-            }}
+            className="group flex flex-col items-center gap-4 px-4 py-6 rounded-2xl bg-card border border-border transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl hover:border-primary/40 relative overflow-hidden"
+            style={{ cursor: partner.website ? 'pointer' : 'default' }}
         >
             {/* Top accent bar */}
-            <div style={{
-                position: 'absolute', top: 0, left: 0, right: 0, height: 3,
-                background: T.red,
-                transform: hovered ? 'scaleX(1)' : 'scaleX(0)',
-                transformOrigin: 'left center',
-                transition: `transform 0.35s ${T.ease}`,
-                borderRadius: '0 0 2px 2px',
-            }} />
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-accent scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out origin-left" />
 
-            {/* Logo container — proper sizing, no crop */}
-            <div style={{
-                width: 96,
-                height: 96,
-                borderRadius: T.r.md,
-                background: T.mist,
-                border: `1px solid ${T.smoke}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden',
-                boxShadow: hovered ? T.sh.logo : 'none',
-                transition: `box-shadow 0.3s ease`,
-                padding: 12,
-            }}>
+            {/* Logo container */}
+            <div className="w-24 h-24 rounded-2xl bg-secondary border border-border/50 flex items-center justify-center overflow-hidden p-3 transition-all duration-300 group-hover:bg-background group-hover:shadow-md">
                 {partner.logo_url ? (
                     <img
                         src={partner.logo_url}
                         alt={name}
                         loading="lazy"
-                        style={{
-                            maxWidth: '100%',
-                            maxHeight: '100%',
-                            width: 'auto',
-                            height: 'auto',
-                            objectFit: 'contain',
-                            display: 'block',
-                            filter: hovered ? 'grayscale(0) opacity(1)' : 'grayscale(0.4) opacity(0.75)',
-                            transition: `filter 0.35s ease`,
-                        }}
+                        className="max-w-full max-h-full object-contain filter grayscale opacity-75 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300 ease-out"
                     />
                 ) : (
-                    <span style={{
-                        fontWeight: 900,
-                        fontSize: 22,
-                        color: hovered ? T.red : T.charcoal,
-                        letterSpacing: '0.02em',
-                        transition: `color 0.3s ease`,
-                    }}>
+                    <span className="font-sans font-black text-2xl text-muted-foreground group-hover:text-primary transition-colors duration-300">
                         {abbr}
                     </span>
                 )}
             </div>
 
             {/* Name */}
-            <span style={{
-                fontSize: 12,
-                fontWeight: 700,
-                color: hovered ? T.red : T.charcoal,
-                textAlign: 'center',
-                lineHeight: 1.4,
-                transition: `color 0.3s ease`,
-                maxWidth: '100%',
-                overflow: 'hidden',
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-            }}>
+            <span className="font-sans text-xs font-bold text-foreground text-center line-clamp-2 leading-relaxed group-hover:text-primary transition-colors duration-300">
                 {name}
             </span>
         </a>
@@ -279,7 +130,6 @@ function OfferCard({
     const desc = getField(offer, 'description', lang);
     const target = getField(offer, 'target_audience', lang);
     const partnerName = getField(offer.partners, 'name', lang) || offer.partners?.name;
-    const [hovered, setHovered] = useState(false);
     const rtl = isRTL(lang);
 
     const allImages = offer.image_urls?.filter(Boolean) ?? (offer.image_url ? [offer.image_url] : []);
@@ -287,77 +137,30 @@ function OfferCard({
 
     return (
         <article
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
+            className="group flex flex-col bg-card border border-border rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ease-out hover:-translate-y-1.5 hover:shadow-xl hover:border-primary/40 animate-in slide-in-from-bottom-8 fade-in"
             onClick={() => onOpen(offer)}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => e.key === 'Enter' && onOpen(offer)}
-            style={{
-                borderRadius: T.r.lg,
-                background: T.white,
-                boxShadow: hovered ? T.sh.hover : T.sh.card,
-                display: 'flex',
-                flexDirection: 'column',
-                cursor: 'pointer',
-                transition: `all 0.35s ${T.ease}`,
-                transform: hovered ? 'translateY(-8px)' : 'translateY(0)',
-                border: `1.5px solid ${hovered ? T.red : T.silver}`,
-                overflow: 'hidden',
-                animationDelay: `${index * 80}ms`,
-                animation: 'fadeUp 0.5s ease forwards',
-                opacity: 0,
-                direction: rtl ? 'rtl' : 'ltr',
-            }}
+            style={{ animationDelay: `${index * 80}ms` }}
         >
-            {/* Image area — proper contain with padding so images aren't cropped */}
-            <div style={{
-                height: 200,
-                background: T.mist,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden',
-                padding: thumb ? 0 : 24,
-                position: 'relative',
-                borderBottom: `1px solid ${T.smoke}`,
-            }}>
+            {/* Image area */}
+            <div className="h-[200px] bg-secondary flex items-center justify-center overflow-hidden relative border-b border-border/50">
                 {thumb ? (
                     <>
                         <img
                             src={thumb}
                             alt={title}
-                            style={{
-                                /* Contain prevents zooming/cropping regardless of aspect ratio */
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'contain',
-                                padding: '12px',
-                                display: 'block',
-                                transition: `transform 0.5s ${T.ease}`,
-                                transform: hovered ? 'scale(1.04)' : 'scale(1)',
-                            }}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                         />
                         {allImages.length > 1 && (
-                            <div style={{
-                                position: 'absolute', bottom: 10,
-                                [rtl ? 'left' : 'right']: 10,
-                                background: 'rgba(10,10,10,0.65)',
-                                color: T.white,
-                                borderRadius: T.r.pill,
-                                padding: '3px 10px',
-                                fontSize: 10,
-                                fontWeight: 700,
-                                backdropFilter: 'blur(4px)',
-                                letterSpacing: '0.04em',
-                            }}>
+                            <div className="absolute bottom-2.5 inset-inline-end-2.5 bg-black/65 text-white rounded-full px-2.5 py-1 text-[10px] font-sans font-bold backdrop-blur-md">
                                 +{allImages.length - 1} {t('more', lang)}
                             </div>
                         )}
                     </>
                 ) : (
-                    /* No image placeholder */
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, color: T.silver }}>
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground opacity-60 group-hover:scale-110 transition-transform duration-500">
                         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                             <rect x="3" y="3" width="18" height="18" rx="2" />
                             <circle cx="8.5" cy="8.5" r="1.5" />
@@ -367,112 +170,67 @@ function OfferCard({
                 )}
 
                 {/* Offer badge */}
-                <div style={{
-                    position: 'absolute', top: 12,
-                    [rtl ? 'right' : 'left']: 12,
-                    background: T.red,
-                    color: T.white,
-                    fontSize: 9,
-                    fontWeight: 800,
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
-                    padding: '4px 10px',
-                    borderRadius: T.r.pill,
-                }}>
+                <div className="absolute top-3 inset-inline-start-3 bg-primary text-primary-foreground font-sans text-[9px] font-black tracking-widest uppercase px-3 py-1 rounded-full shadow-lg shadow-primary/20">
                     {t('offer', lang)}
                 </div>
             </div>
 
             {/* Card body */}
-            <div style={{ padding: '24px 24px 20px', display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
-
+            <div className="p-6 flex flex-col gap-4 flex-1">
                 {/* Partner row */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={{
-                        width: 44, height: 44,
-                        borderRadius: T.r.sm,
-                        background: T.mist,
-                        border: `1px solid ${T.smoke}`,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        overflow: 'hidden', flexShrink: 0, padding: 6,
-                    }}>
+                <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-lg bg-background border border-border flex items-center justify-center overflow-hidden shrink-0 p-1.5 shadow-sm">
                         {offer.partners?.logo_url ? (
                             <img
                                 src={offer.partners.logo_url}
                                 alt={partnerName}
                                 loading="lazy"
-                                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', display: 'block' }}
+                                className="max-w-full max-h-full object-contain"
                             />
                         ) : (
-                            <span style={{ fontSize: 14, fontWeight: 800, color: T.charcoal }}>
+                            <span className="font-sans font-black text-sm text-muted-foreground">
                                 {(partnerName || '?')[0]}
                             </span>
                         )}
                     </div>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: T.ash, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                    <span className="font-sans text-[11px] font-bold text-muted-foreground tracking-wider uppercase">
                         {partnerName}
                     </span>
                 </div>
 
                 {/* Title */}
-                <h3 style={{ margin: 0, fontSize: 17, lineHeight: 1.4, color: T.ink, fontWeight: 800, letterSpacing: '-0.01em' }}>
+                <h3 className="font-sans font-bold text-base text-foreground group-hover:text-primary transition-colors">
                     {title}
                 </h3>
 
                 {/* Description */}
                 {desc && (
-                    <p style={{
-                        margin: 0, fontSize: 13, lineHeight: 1.75, color: T.ash, flex: 1,
-                        display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden',
-                    }}>
+                    <p className="font-sans text-[13px] text-muted-foreground leading-relaxed flex-1 line-clamp-3">
                         {desc}
                     </p>
                 )}
 
                 {/* Tags */}
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                <div className="flex flex-wrap gap-2 pt-1">
                     {target && (
-                        <span style={{
-                            fontSize: 10, padding: '5px 12px', borderRadius: T.r.pill,
-                            background: '#FFF7E6', color: '#A0722A',
-                            fontWeight: 700, letterSpacing: '0.04em',
-                            border: '1px solid #F0D99A',
-                        }}>
+                        <span className="inline-block px-2.5 py-1 bg-accent/10 text-accent border border-accent/20 rounded-md font-sans text-[10px] font-bold">
                             {target}
                         </span>
                     )}
                     {offer.partners?.city && (
-                        <span style={{
-                            fontSize: 10, padding: '5px 12px', borderRadius: T.r.pill,
-                            background: T.mist, color: T.ash, fontWeight: 600,
-                            border: `1px solid ${T.smoke}`,
-                        }}>
+                        <span className="inline-block px-2.5 py-1 bg-secondary text-muted-foreground border border-border rounded-md font-sans text-[10px] font-bold">
                             {offer.partners.city}
                         </span>
                     )}
                 </div>
 
                 {/* CTA */}
-                <button
-                    onClick={(e) => { e.stopPropagation(); onOpen(offer); }}
-                    style={{
-                        border: 'none', borderRadius: T.r.sm,
-                        padding: '13px 20px',
-                        background: hovered ? T.red : T.ink,
-                        color: T.white,
-                        fontSize: 12, fontWeight: 700,
-                        cursor: 'pointer',
-                        transition: `background 0.3s ease`,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                        letterSpacing: '0.04em',
-                        marginTop: 4,
-                    }}
-                >
+                <div className="mt-2 w-full py-2.5 rounded-xl border border-border bg-transparent text-foreground font-sans text-xs font-bold flex items-center justify-center gap-2 group-hover:bg-primary group-hover:border-primary group-hover:text-primary-foreground transition-all duration-300">
                     {t('details', lang)}
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform">
                         <path d={rtl ? 'M19 12H5M12 19l-7-7 7-7' : 'M5 12h14M12 5l7 7-7 7'} />
                     </svg>
-                </button>
+                </div>
             </div>
         </article>
     );
@@ -506,59 +264,21 @@ function OfferModal({ offer, lang, onClose }: { offer: HomepageOfferDisplay; lan
             onClick={onClose}
             role="dialog"
             aria-modal="true"
-            style={{
-                position: 'fixed', inset: 0,
-                background: 'rgba(5,5,5,0.75)',
-                backdropFilter: 'blur(10px)',
-                zIndex: 200,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                padding: '24px 16px',
-                animation: 'fadeIn 0.25s ease',
-                direction: rtl ? 'rtl' : 'ltr',
-            }}
+            className="fixed inset-0 z-[200] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
+            style={{ direction: rtl ? 'rtl' : 'ltr' }}
         >
             <div
                 onClick={(e) => e.stopPropagation()}
-                style={{
-                    width: 'min(660px, 100%)',
-                    background: T.white,
-                    borderRadius: T.r.xl,
-                    boxShadow: T.sh.modal,
-                    maxHeight: '90vh',
-                    overflow: 'auto',
-                    position: 'relative',
-                    animation: 'slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
-                }}
+                className="w-full max-w-[660px] max-h-[90vh] bg-card border border-border rounded-3xl overflow-hidden shadow-2xl flex flex-col relative animate-in zoom-in-95 duration-300"
             >
                 {/* Header strip */}
-                <div style={{
-                    height: 8,
-                    background: `linear-gradient(90deg, ${T.black} 0%, ${T.red} 60%, ${T.black} 100%)`,
-                }} />
+                <div className="h-2 w-full bg-gradient-to-r from-background via-primary to-background" />
 
                 {/* Close button */}
                 <button
                     onClick={onClose}
                     aria-label={t('close', lang)}
-                    style={{
-                        position: 'sticky',
-                        top: 16,
-                        [rtl ? 'left' : 'right']: 0,
-                        float: rtl ? 'left' : 'right',
-                        margin: rtl ? '16px 0 -48px 16px' : '16px 16px -48px 0',
-                        border: 'none',
-                        background: T.mist,
-                        color: T.charcoal,
-                        borderRadius: '50%',
-                        width: 36, height: 36,
-                        cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        zIndex: 10,
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                        transition: 'background 0.2s ease',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = T.smoke)}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = T.mist)}
+                    className="absolute top-6 inset-inline-end-6 w-9 h-9 rounded-full bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-background hover:scale-110 transition-all z-10"
                 >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <line x1="18" y1="6" x2="6" y2="18" />
@@ -566,34 +286,27 @@ function OfferModal({ offer, lang, onClose }: { offer: HomepageOfferDisplay; lan
                     </svg>
                 </button>
 
-                {/* Content */}
-                <div style={{ padding: '32px 36px 36px' }}>
+                {/* Scrollable Content */}
+                <div className="overflow-y-auto p-6 sm:p-10">
 
                     {/* Partner identity */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 28 }}>
-                        <div style={{
-                            width: 64, height: 64,
-                            borderRadius: T.r.md,
-                            background: T.mist,
-                            border: `1.5px solid ${T.silver}`,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            overflow: 'hidden', flexShrink: 0, padding: 8,
-                        }}>
+                    <div className="flex items-center gap-4 mb-8 pr-10">
+                        <div className="w-16 h-16 rounded-2xl bg-secondary border border-border/60 flex items-center justify-center shrink-0 p-2">
                             {offer.partners?.logo_url ? (
                                 <img
                                     src={offer.partners.logo_url}
                                     alt={partnerName}
-                                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', display: 'block' }}
+                                    className="max-w-full max-h-full object-contain"
                                 />
                             ) : (
-                                <span style={{ fontWeight: 900, fontSize: 20, color: T.charcoal }}>{(partnerName || '?')[0]}</span>
+                                <span className="font-sans font-black text-2xl text-muted-foreground">{(partnerName || '?')[0]}</span>
                             )}
                         </div>
                         <div>
-                            <span style={{ display: 'block', fontSize: 11, color: T.ash, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>
+                            <span className="font-sans text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-1">
                                 {partnerName}
                             </span>
-                            <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900, color: T.ink, lineHeight: 1.3, letterSpacing: '-0.01em' }}>
+                            <h2 className="font-display text-2xl font-bold text-foreground leading-tight">
                                 {title}
                             </h2>
                         </div>
@@ -601,22 +314,15 @@ function OfferModal({ offer, lang, onClose }: { offer: HomepageOfferDisplay; lan
 
                     {/* Gallery */}
                     {allImages.length > 0 && (
-                        <div style={{ marginBottom: 28 }}>
+                        <div className="mb-8">
                             <ImageGallery images={allImages} alt={title} />
                         </div>
                     )}
 
                     {/* Description */}
                     {desc && (
-                        <div style={{
-                            padding: '20px 24px',
-                            borderRadius: T.r.md,
-                            background: T.mist,
-                            border: `1px solid ${T.smoke}`,
-                            marginBottom: 28,
-                            borderLeft: `3px solid ${T.red}`,
-                        }}>
-                            <p style={{ margin: 0, fontSize: 14, lineHeight: 1.8, color: T.charcoal }}>
+                        <div className="p-5 sm:p-6 rounded-2xl bg-secondary/50 border border-border/50 border-inline-start-[3px] border-inline-start-primary mb-8">
+                            <p className="font-sans text-sm sm:text-base text-muted-foreground leading-relaxed">
                                 {desc}
                             </p>
                         </div>
@@ -624,23 +330,13 @@ function OfferModal({ offer, lang, onClose }: { offer: HomepageOfferDisplay; lan
 
                     {/* Meta */}
                     {metaItems.length > 0 && (
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: `repeat(${Math.min(metaItems.length, 3)}, 1fr)`,
-                            gap: 12,
-                            marginBottom: 28,
-                        }}>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
                             {metaItems.map(({ label, value }) => (
-                                <div key={label} style={{
-                                    padding: '16px 18px',
-                                    borderRadius: T.r.md,
-                                    border: `1px solid ${T.smoke}`,
-                                    background: T.white,
-                                }}>
-                                    <div style={{ fontSize: 10, color: T.ash, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
+                                <div key={label} className="p-4 rounded-xl border border-border bg-background">
+                                    <div className="font-sans text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
                                         {label}
                                     </div>
-                                    <div style={{ fontSize: 14, fontWeight: 800, color: T.ink }}>
+                                    <div className="font-sans text-sm font-bold text-foreground">
                                         {value}
                                     </div>
                                 </div>
@@ -654,21 +350,9 @@ function OfferModal({ offer, lang, onClose }: { offer: HomepageOfferDisplay; lan
                             href={offer.contact_link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={{
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                                padding: '16px 24px',
-                                borderRadius: T.r.md,
-                                background: T.red,
-                                color: T.white,
-                                textDecoration: 'none',
-                                fontSize: 13, fontWeight: 700,
-                                letterSpacing: '0.04em',
-                                transition: `background 0.25s ease`,
-                            }}
-                            onMouseEnter={(e) => (e.currentTarget.style.background = T.redDeep)}
-                            onMouseLeave={(e) => (e.currentTarget.style.background = T.red)}
+                            className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-sans text-sm font-bold flex items-center justify-center gap-2 hover:bg-primary/90 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                         >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.11 11.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.22 0h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 7.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
                             </svg>
                             {t('contactNow', lang)}
@@ -687,7 +371,6 @@ export const Partners = () => {
     const [offers, setOffers] = useState<HomepageOfferDisplay[]>([]);
     const [loading, setLoading] = useState(true);
     const [selected, setSelected] = useState<HomepageOfferDisplay | null>(null);
-    const rtl = isRTL(lang);
 
     useEffect(() => {
         Promise.all([fetchHomepagePartners(), fetchHomepageOffers()])
@@ -699,163 +382,94 @@ export const Partners = () => {
     const handleClose = useCallback(() => setSelected(null), []);
 
     return (
-        <section
-            id="partners"
-            dir={rtl ? 'rtl' : 'ltr'}
-            style={{
-                padding: '96px 0 80px',
-                background: T.white,
-                position: 'relative',
-                overflow: 'hidden',
-                fontFamily: rtl
-                    ? '"Noto Kufi Arabic", "Cairo", "Tajawal", sans-serif'
-                    : '"DM Sans", "Plus Jakarta Sans", system-ui, sans-serif',
-            }}
-        >
-            <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Cairo:wght@400;600;700;800;900&display=swap');
+        <section id="partners" className="relative py-24 bg-secondary/30 overflow-hidden">
+            
+            {/* Soft Yemen Pattern Overlay */}
+            <div 
+                className="absolute inset-0 opacity-[0.02] dark:opacity-[0.04] pointer-events-none mix-blend-overlay"
+                style={{
+                    backgroundImage: 'url(/assets/yemen-pattern.jpg)',
+                    backgroundSize: '180px 180px',
+                }}
+            />
 
-                @keyframes shimmerSlide {
-                    0%   { background-position: 200% 0 }
-                    100% { background-position: -200% 0 }
-                }
-                @keyframes fadeIn {
-                    from { opacity: 0 }
-                    to   { opacity: 1 }
-                }
-                @keyframes slideUp {
-                    from { opacity: 0; transform: translateY(32px) scale(0.97) }
-                    to   { opacity: 1; transform: translateY(0)    scale(1)    }
-                }
-                @keyframes fadeUp {
-                    from { opacity: 0; transform: translateY(20px) }
-                    to   { opacity: 1; transform: translateY(0) }
-                }
-                @keyframes drawLine {
-                    from { transform: scaleX(0) }
-                    to   { transform: scaleX(1) }
-                }
-
-                #partners *:focus-visible {
-                    outline: 2px solid ${T.red};
-                    outline-offset: 3px;
-                    border-radius: 4px;
-                }
-            `}</style>
-
-            {/* ── Subtle background texture ── */}
-            {/* ── Pattern background (from v1) ── */}
-            <div style={{
-                position: 'absolute',
-                inset: 0,
-                opacity: 0.03,
-                pointerEvents: 'none',
-                zIndex: 0,
-                backgroundImage: `
-        linear-gradient(30deg, #000 12%, transparent 12.5%, transparent 87%, #000 87.5%, #000),
-        linear-gradient(150deg, #000 12%, transparent 12.5%, transparent 87%, #000 87.5%, #000)
-    `,
-                backgroundSize: '80px 140px',
-            }} />
-
-            <div style={{ position: 'relative', zIndex: 1, maxWidth: 1240, margin: '0 auto' }}>
+            <div className="container relative z-10 mx-auto px-6 lg:px-12">
 
                 {/* ═══ SECTION HEADER ═══ */}
-                <div style={{ textAlign: 'center', marginBottom: 72, padding: '0 24px' }}>
-                    {/* Yemen flag micro-bar */}
-                    <div style={{
-                        display: 'inline-flex',
-                        height: 4, width: 54,
-                        borderRadius: 2, overflow: 'hidden', marginBottom: 28, gap: 1,
-                    }}>
-                        <div style={{ flex: 1, background: T.red }} />
-                        <div style={{ flex: 1, background: T.white, border: `1px solid ${T.silver}` }} />
-                        <div style={{ flex: 1, background: T.black }} />
+                <div className="flex flex-col items-center text-center mb-16 animate-in slide-in-from-bottom-8 fade-in">
+                    <div className="flex items-center gap-3 mb-4">
+                        <span className="w-8 h-px bg-gradient-to-r from-primary to-transparent"></span>
+                        <span className="text-sm font-bold tracking-wider uppercase text-primary font-sans">
+                            {t('title', lang)}
+                        </span>
+                        <span className="w-8 h-px bg-gradient-to-l from-primary to-transparent"></span>
                     </div>
-
-                    <h2 style={{
-                        margin: '0 0 18px',
-                        fontSize: 'clamp(2rem, 4.5vw, 3.2rem)',
-                        lineHeight: 1.15,
-                        color: T.ink,
-                        fontWeight: 900,
-                        letterSpacing: '-0.025em',
-                    }}>
+                    <h2 className="text-4xl lg:text-5xl font-display font-black text-foreground mb-4">
                         {t('title', lang)}
                     </h2>
-                    <p style={{
-                        color: T.ash,
-                        fontSize: 'clamp(0.95rem, 1.8vw, 1.1rem)',
-                        maxWidth: 540,
-                        margin: '0 auto',
-                        lineHeight: 1.8,
-                        fontWeight: 400,
-                    }}>
+                    <p className="text-muted-foreground font-sans text-base max-w-xl mx-auto">
                         {t('subtitle', lang)}
                     </p>
                 </div>
 
                 {/* ═══ OFFERS ═══ */}
-                <div style={{ padding: '0 24px', marginBottom: 72 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 36, gap: 16 }}>
-                        <SectionLabel color={T.red}>{t('eyebrow', lang)}</SectionLabel>
-                        <div style={{ flex: 1, height: 1, background: T.smoke }} />
+                <div className="mb-20">
+                    <div className="flex items-center justify-between mb-8 gap-4">
+                        <div className="flex items-center gap-3">
+                            <span className="w-6 h-1 bg-primary rounded-full"></span>
+                            <span className="font-sans text-sm font-bold uppercase text-primary tracking-wider">
+                                {t('eyebrow', lang)}
+                            </span>
+                        </div>
+                        <div className="flex-1 h-px bg-border"></div>
                     </div>
 
                     {loading ? (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 24 }}>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {Array.from({ length: 3 }).map((_, i) => (
-                                <Shimmer key={i} style={{ height: 400, borderRadius: T.r.lg }} />
+                                <Shimmer key={i} height="400px" />
                             ))}
                         </div>
                     ) : offers.length > 0 ? (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 24 }}>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {offers.map((offer, i) => (
                                 <OfferCard key={offer.id} offer={offer} lang={lang} onOpen={setSelected} index={i} />
                             ))}
                         </div>
                     ) : (
-                        <div style={{
-                            border: `2px dashed ${T.silver}`,
-                            borderRadius: T.r.lg,
-                            padding: '56px 24px',
-                            textAlign: 'center',
-                            color: T.ash,
-                            background: T.mist,
-                            fontSize: 14,
-                        }}>
+                        <div className="border-2 border-dashed border-border rounded-2xl p-14 text-center text-muted-foreground font-sans text-sm bg-background">
                             {t('noOffers', lang)}
                         </div>
                     )}
                 </div>
 
                 {/* ═══ PARTNERS GRID ═══ */}
-                <div style={{ padding: '0 24px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 36, gap: 16 }}>
-                        <SectionLabel color={T.gold}>{t('partnersTitle', lang)}</SectionLabel>
-                        <div style={{ flex: 1, height: 1, background: T.smoke }} />
+                <div>
+                    <div className="flex items-center justify-between mb-8 gap-4">
+                        <div className="flex items-center gap-3">
+                            <span className="w-6 h-1 bg-accent rounded-full"></span>
+                            <span className="font-sans text-sm font-bold uppercase text-accent tracking-wider">
+                                {t('partnersTitle', lang)}
+                            </span>
+                        </div>
+                        <div className="flex-1 h-px bg-border"></div>
                     </div>
 
-                    <div style={{
-                        background: T.mist,
-                        border: `1px solid ${T.smoke}`,
-                        borderRadius: T.r.xl,
-                        padding: '32px 28px',
-                    }}>
+                    <div className="bg-background border border-border rounded-[24px] p-8 sm:p-10 shadow-sm">
                         {loading ? (
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 16 }}>
-                                {Array.from({ length: 10 }).map((_, i) => (
-                                    <Shimmer key={i} style={{ height: 150, borderRadius: T.r.lg }} />
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                                {Array.from({ length: 12 }).map((_, i) => (
+                                    <Shimmer key={i} height="120px" className="rounded-2xl" />
                                 ))}
                             </div>
                         ) : partners.length > 0 ? (
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 16 }}>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6">
                                 {partners.map((p) => (
                                     <PartnerLogo key={p.id} partner={p} lang={lang} />
                                 ))}
                             </div>
                         ) : (
-                            <div style={{ textAlign: 'center', padding: '40px 24px', color: T.ash, fontSize: 14 }}>
+                            <div className="text-center p-12 text-muted-foreground text-sm font-sans">
                                 {t('noPartners', lang)}
                             </div>
                         )}

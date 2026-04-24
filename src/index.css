@@ -1,5 +1,82 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap');
+/* ═══════════════════════════════════════════════════
+   THMANYAH BRAND FONTS — Self-hosted, zero-latency
+   SerifDisplay → premium display / hero headlines
+   Sans          → UI, body, cards, buttons, labels
+═══════════════════════════════════════════════════ */
+
+/* ThmanyahSerifDisplay */
+@font-face {
+  font-family: 'ThmanyahSerifDisplay';
+  src: url('/src/assets/font/thmanyahserifdisplay/thmanyahserifdisplay-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'ThmanyahSerifDisplay';
+  src: url('/src/assets/font/thmanyahserifdisplay/thmanyahserifdisplay-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'ThmanyahSerifDisplay';
+  src: url('/src/assets/font/thmanyahserifdisplay/thmanyahserifdisplay-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'ThmanyahSerifDisplay';
+  src: url('/src/assets/font/thmanyahserifdisplay/thmanyahserifdisplay-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'ThmanyahSerifDisplay';
+  src: url('/src/assets/font/thmanyahserifdisplay/thmanyahserifdisplay-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ThmanyahSans */
+@font-face {
+  font-family: 'ThmanyahSans';
+  src: url('/src/assets/font/thmanyahsans/thmanyahsans-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'ThmanyahSans';
+  src: url('/src/assets/font/thmanyahsans/thmanyahsans-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'ThmanyahSans';
+  src: url('/src/assets/font/thmanyahsans/thmanyahsans-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'ThmanyahSans';
+  src: url('/src/assets/font/thmanyahsans/thmanyahsans-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'ThmanyahSans';
+  src: url('/src/assets/font/thmanyahsans/thmanyahsans-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 @tailwind base;
 @tailwind components;
@@ -736,10 +813,13 @@
     --text-3: #706c66;
     --text-inv: #0d0f14;
 
-    /* Fonts */
-    --f-ar: 'Noto Serif Arabic', serif;
-    --f-en: 'Cormorant Garamond', serif;
-    --f-ui: 'Outfit', sans-serif;
+    /* ── Brand Fonts ── */
+    --f-display: 'ThmanyahSerifDisplay', 'Noto Serif Arabic', serif; /* Hero H1 only */
+    --f-sans:    'ThmanyahSans', 'IBM Plex Sans Arabic', system-ui, sans-serif; /* Everything else */
+    /* Backwards-compat aliases used in old CSS */
+    --f-ar: var(--f-display);
+    --f-en: var(--f-display);
+    --f-ui: var(--f-sans);
 
     /* Layout */
     --nav: 72px;
@@ -747,7 +827,43 @@
     --r-lg: 22px;
     --r-xl: 32px;
     --max: 1260px;
-    --section-y: 110px;
+    --section-y: clamp(72px, 9vw, 120px);
+
+    /* ── Design System v2 Tokens ── */
+
+    /* Brand colors — single source of truth */
+    --ds-red:          #B3001F;
+    --ds-red-deep:     #800016;
+    --ds-red-glow:     rgba(179, 0, 31, 0.22);
+    --ds-red-faint:    rgba(179, 0, 31, 0.07);
+    --ds-gold:         #C8A84B;
+    --ds-gold-faint:   rgba(200, 168, 75, 0.12);
+
+    /* Dark page backgrounds */
+    --ds-bg:           #070809;
+    --ds-bg-1:         #0E1015;
+    --ds-bg-2:         #141720;
+    --ds-bg-3:         #1B2030;
+    --ds-surface:      rgba(255, 255, 255, 0.034);
+    --ds-surface-hov:  rgba(255, 255, 255, 0.065);
+
+    /* Text hierarchy */
+    --ds-text:         #F0EDE8;
+    --ds-text-2:       #AEA9A2;
+    --ds-text-3:       #6E6A64;
+
+    /* Borders */
+    --ds-border:       rgba(255, 255, 255, 0.07);
+    --ds-border-str:   rgba(255, 255, 255, 0.12);
+    --ds-border-red:   rgba(179, 0, 31, 0.22);
+    --ds-border-gold:  rgba(200, 168, 75, 0.18);
+
+    /* Card */
+    --ds-card-bg:      #141720;
+    --ds-card-shadow:  0 2px 12px rgba(0,0,0,0.22), 0 8px 32px rgba(0,0,0,0.14);
+    --ds-card-shadow-hov: 0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(179,0,31,0.12);
+    --ds-card-radius:  16px;
+    --ds-card-ease:    cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   [data-theme="light"] {
@@ -765,6 +881,300 @@
     --text-2: #4a4640;
     --text-3: #8a8680;
     --text-inv: #f0ece4;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+   DESIGN SYSTEM v2 — Unified homepage component styles
+   All homepage sections use these classes as the single source.
+   Zero inline styles. Consistent rhythm. Theme-aware.
+═══════════════════════════════════════════════════════════ */
+
+  /* ── Section shell ── */
+  .ds-section {
+    position: relative;
+    overflow: hidden;
+    padding: var(--section-y) 0;
+    font-family: var(--f-sans);
+  }
+
+  .ds-section-dark {
+    background: var(--ds-bg-1);
+    color: var(--ds-text);
+  }
+
+  .ds-section-darker {
+    background: var(--ds-bg);
+    color: var(--ds-text);
+  }
+
+  .ds-section-card {
+    background: var(--ds-bg-2);
+    color: var(--ds-text);
+  }
+
+  /* ── Container ── */
+  .ds-container {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 0 clamp(1.25rem, 5vw, 5rem);
+  }
+
+  /* ── Pattern overlay helper (applied as :before on parent) ── */
+  .ds-pattern-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('/assets/assets/yemen-pattern.svg');
+    background-repeat: repeat;
+    background-size: 140px 140px;
+    opacity: 0.028;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Section eyebrow ── */
+  .ds-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .ds-eyebrow-line {
+    display: block;
+    width: 28px;
+    height: 1px;
+    background: var(--ds-gold);
+    flex-shrink: 0;
+  }
+
+  .ds-eyebrow-text {
+    font-family: var(--f-sans);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ds-gold);
+  }
+
+  /* ── Typography scale v2 ── */
+  .ds-display {
+    font-family: var(--f-display);
+    font-size: clamp(2.6rem, 5.5vw, 4.8rem);
+    font-weight: 900;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    color: var(--ds-text);
+  }
+
+  .ds-h1 {
+    font-family: var(--f-display);
+    font-size: clamp(1.9rem, 3.8vw, 3.2rem);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--ds-text);
+  }
+
+  .ds-h2 {
+    font-family: var(--f-sans);
+    font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--ds-text);
+  }
+
+  .ds-h3 {
+    font-family: var(--f-sans);
+    font-size: clamp(1rem, 1.4vw, 1.15rem);
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--ds-text);
+  }
+
+  .ds-body {
+    font-family: var(--f-sans);
+    font-size: clamp(0.9rem, 1.3vw, 1rem);
+    font-weight: 400;
+    line-height: 1.8;
+    color: var(--ds-text-2);
+  }
+
+  .ds-small {
+    font-family: var(--f-sans);
+    font-size: 0.82rem;
+    font-weight: 400;
+    line-height: 1.65;
+    color: var(--ds-text-3);
+  }
+
+  .ds-label {
+    font-family: var(--f-sans);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ds-text-3);
+  }
+
+  /* Gradient text highlight */
+  .ds-text-gradient {
+    background: linear-gradient(135deg, var(--ds-red) 0%, #e0354a 50%, var(--ds-gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Card ── */
+  .ds-card {
+    background: var(--ds-card-bg);
+    border: 1px solid var(--ds-border);
+    border-radius: var(--ds-card-radius);
+    transition: transform 0.32s var(--ds-card-ease),
+                box-shadow 0.32s var(--ds-card-ease),
+                border-color 0.32s var(--ds-card-ease);
+    box-shadow: var(--ds-card-shadow);
+    overflow: hidden;
+  }
+
+  .ds-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--ds-card-shadow-hov);
+    border-color: var(--ds-border-red);
+  }
+
+  /* Elevated card (Featured) */
+  .ds-card-featured {
+    background: linear-gradient(135deg, rgba(179,0,31,0.12) 0%, rgba(128,0,22,0.06) 100%);
+    border: 1px solid var(--ds-border-red);
+    border-radius: var(--ds-card-radius);
+  }
+
+  /* ── Section header centered ── */
+  .ds-section-header {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto clamp(40px, 6vw, 72px);
+  }
+
+  .ds-section-header .ds-eyebrow {
+    justify-content: center;
+  }
+
+  /* ── Buttons ── */
+  .ds-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 14px 32px;
+    border-radius: 10px;
+    font-family: var(--f-sans);
+    font-weight: 700;
+    font-size: 0.88rem;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    border: none;
+    transition: all 0.28s var(--ds-card-ease);
+    text-decoration: none;
+  }
+
+  .ds-btn-primary {
+    background: linear-gradient(135deg, var(--ds-red-deep) 0%, var(--ds-red) 100%);
+    color: #fff;
+    box-shadow: 0 4px 20px var(--ds-red-glow);
+  }
+
+  .ds-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(179, 0, 31, 0.42);
+  }
+
+  .ds-btn-primary:active {
+    transform: translateY(0);
+  }
+
+  .ds-btn-outline {
+    background: transparent;
+    border: 1px solid var(--ds-border-red);
+    color: var(--ds-red);
+  }
+
+  .ds-btn-outline:hover {
+    background: var(--ds-red-faint);
+    transform: translateY(-2px);
+  }
+
+  .ds-btn-ghost {
+    background: var(--ds-surface);
+    border: 1px solid var(--ds-border);
+    color: var(--ds-text-2);
+    padding: 9px 18px;
+    font-size: 0.8rem;
+    border-radius: 8px;
+  }
+
+  .ds-btn-ghost:hover {
+    background: var(--ds-surface-hov);
+    color: var(--ds-text);
+  }
+
+  /* ── Pill badge ── */
+  .ds-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-family: var(--f-sans);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .ds-pill-gold {
+    background: var(--ds-gold-faint);
+    color: var(--ds-gold);
+    border: 1px solid rgba(200, 168, 75, 0.25);
+  }
+
+  .ds-pill-red {
+    background: var(--ds-red-faint);
+    color: var(--ds-red);
+    border: 1px solid var(--ds-border-red);
+  }
+
+  /* ── Reveal animation ── */
+  .ds-reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s var(--ds-card-ease);
+  }
+
+  .ds-reveal.ds-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── Pattern band divider ── */
+  .ds-pattern-band {
+    width: 100%;
+    height: 40px;
+    background-image: url('/assets/assets/yemen-pattern.svg');
+    background-repeat: repeat-x;
+    background-size: auto 40px;
+    opacity: 0.06;
+    flex-shrink: 0;
+  }
+
+  /* ── Responsive helpers ── */
+  @media (max-width: 767px) {
+    .ds-grid-2 {
+      grid-template-columns: 1fr !important;
+    }
+    .ds-hide-mobile {
+      display: none !important;
+    }
   }
 
   /* ═══════════════════════════════════════════════
@@ -786,7 +1196,7 @@
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: var(--f-ui);
+    font-family: var(--f-sans);
     overflow-x: hidden;
     line-height: 1.7;
     transition: background 0.5s ease, color 0.5s ease;
@@ -1477,24 +1887,24 @@
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--red-400);
-    font-family: var(--f-ui);
+    font-family: var(--f-sans);
   }
 
   .hero-title {
-    font-size: clamp(2.1rem, 4.8vw, 3.8rem);
-    font-family: var(--f-ar);
+    font-size: clamp(2.4rem, 5.2vw, 4.4rem);
+    font-family: var(--f-display);
     font-weight: 900;
-    line-height: 1.18;
+    line-height: 1.14;
     margin-bottom: 10px;
     color: var(--text);
     opacity: 0;
     animation: revealUp 0.9s 0.25s ease forwards;
+    letter-spacing: -0.02em;
   }
 
   [data-lang="en"] .hero-title {
-    font-family: var(--f-en);
-    font-style: italic;
-    font-size: clamp(2.2rem, 4.8vw, 4rem);
+    font-family: var(--f-display);
+    font-size: clamp(2.6rem, 5.2vw, 4.6rem);
     line-height: 1.1;
   }
 
@@ -1555,7 +1965,7 @@
   .hero-stat-item {}
 
   .hero-stat-num {
-    font-family: var(--f-en);
+    font-family: var(--f-display);
     font-size: 1.9rem;
     font-weight: 700;
     color: var(--red-400);
@@ -1574,7 +1984,20 @@
     font-family: var(--f-ui);
   }
 
-  /* Hero right: visual card */
+  /* Hero right: iPhone mockup column */
+  .hero-mockup-col {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    animation: revealScale 1s 0.4s ease forwards;
+  }
+
+  /* In RTL (Arabic), the text is on the right — so visually flip columns */
+  [data-lang="ar"] .hero-mockup-col {
+    order: -1;
+  }
+
   .hero-visual {
     position: relative;
     opacity: 0;
@@ -3493,6 +3916,12 @@
     }
 
     [data-lang="en"] .hero-visual {
+      order: 0;
+    }
+
+    .hero-mockup-col {
+      max-width: 240px;
+      margin: 0 auto;
       order: 0;
     }
 

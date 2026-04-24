@@ -8,9 +8,9 @@ interface FinalCTAProps {
 
 const ctaStats = [
     { num: '+100', ar: 'عضو نشط', en: 'Active Members', tr: 'Aktif Üye' },
-    { num: '+10', ar: 'شريك استراتيجي', en: 'Strategic Partners', tr: 'Stratejik Ortak' },
-    { num: '+20', ar: 'فعالية سنوياً', en: 'Events Per Year', tr: 'Yıllık Etkinlik' },
-];
+    { num: '+10',  ar: 'شريك استراتيجي', en: 'Strategic Partners', tr: 'Stratejik Ortak' },
+    { num: '+20',  ar: 'فعالية سنوياً', en: 'Events Per Year', tr: 'Yıllık Etkinlik' },
+] as const;
 
 const ctaText = {
     title: {
@@ -40,105 +40,69 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ onOpenModal }) => {
     const { language: lang } = useLanguage();
 
     return (
-        <section
-            id="cta-final"
-            style={{
-                position: 'relative',
-                overflow: 'hidden',
-                background: 'linear-gradient(135deg, var(--bg) 0%, var(--bg-1) 50%, var(--bg-2) 100%)',
-            }}
-        >
-            {/* Radial red glow */}
-            <div
-                style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(122,28,28,0.18) 0%, transparent 70%)',
-                    pointerEvents: 'none',
-                }}
-            />
+        <section id="cta-final" className="relative py-28 overflow-hidden bg-background">
+            
+            {/* Decorative radial glow */}
+            <div className="absolute inset-0 z-0 pointer-events-none">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 dark:bg-primary/10 blur-[120px] rounded-full" />
+            </div>
 
-            {/* Yemen pattern overlay */}
-            <div
+            {/* Subtle Yemen pattern */}
+            <div 
+                className="absolute inset-0 z-0 opacity-[0.02] dark:opacity-[0.03] pointer-events-none mix-blend-overlay"
                 style={{
-                    position: 'absolute',
-                    inset: 0,
-                    backgroundImage: 'url(/assets/yemen-pattern.svg)',
-                    backgroundRepeat: 'repeat',
-                    backgroundSize: '100px 100px',
-                    opacity: 0.04,
-                    pointerEvents: 'none',
+                    backgroundImage: 'url(/assets/yemen-pattern.jpg)',
+                    backgroundSize: '140px 140px',
+                    backgroundRepeat: 'repeat'
                 }}
             />
 
             {/* Content */}
-            <div
-                className="reveal"
-                style={{
-                    position: 'relative',
-                    zIndex: 1,
-                    padding: 'var(--section-y) 5vw',
-                    textAlign: 'center',
-                    maxWidth: '680px',
-                    margin: '0 auto',
-                }}
-            >
-                {/* Icon */}
-                <div style={{ fontSize: '2.5rem', marginBottom: '20px' }}>🎓</div>
+            <div className="container relative z-10 mx-auto px-6 text-center max-w-3xl animate-in slide-in-from-bottom-8 fade-in duration-1000">
+                
+                {/* Graduation icon */}
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border border-primary/20 text-4xl mb-8 shadow-[0_0_30px_rgba(var(--primary),0.15)]">
+                    🎓
+                </div>
 
                 {/* Title */}
-                <h2
-                    style={{
-                        color: 'var(--text)',
-                        fontWeight: 800,
-                        fontSize: 'clamp(1.5rem, 4vw, 2.2rem)',
-                        lineHeight: 1.35,
-                        marginBottom: '16px',
-                    }}
-                >
-                    {ctaText.title[lang]}<br />
-                    <span style={{ color: 'var(--gold)' }}>{ctaText.titleHighlight[lang]}</span>
+                <h2 className="text-4xl sm:text-5xl lg:text-6xl font-display font-black text-foreground leading-[1.2] tracking-tight mb-6">
+                    {ctaText.title[lang]}
+                    <br />
+                    <span className="bg-gradient-to-br from-primary via-primary/90 to-accent bg-clip-text text-transparent">
+                        {ctaText.titleHighlight[lang]}
+                    </span>
                 </h2>
 
                 {/* Subtitle */}
-                <p style={{ color: 'var(--text-2)', fontSize: '0.97rem', lineHeight: 1.8, marginBottom: '36px' }}>
+                <p className="text-muted-foreground font-sans text-base sm:text-lg leading-relaxed max-w-xl mx-auto mb-12">
                     {ctaText.subtitle[lang]}
                 </p>
 
-                {/* CTA Button with pulse glow */}
-                <button
-                    onClick={() => navigate('/login')}
-                    className="btn btn-primary cta-pulse"
-                    style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        marginBottom: '20px',
-                    }}
-                >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                        <circle cx="9" cy="7" r="4" />
-                        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                    </svg>
-                    <span>{ctaText.registerBtn[lang]}</span>
-                </button>
-
-                {/* Free note */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', color: 'var(--text-3)', fontSize: '0.8rem', marginBottom: '36px' }}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                        <polyline points="22 4 12 14.01 9 11.01" />
-                    </svg>
+                {/* CTA Button */}
+                <div className="mb-16">
+                    <button
+                        onClick={() => navigate('/login')}
+                        className="inline-flex items-center justify-center gap-2 px-10 py-5 bg-primary text-primary-foreground font-sans font-bold text-sm sm:text-base rounded-2xl shadow-xl shadow-primary/25 hover:shadow-2xl hover:shadow-primary/30 hover:-translate-y-1.5 transition-all duration-300 ease-out group"
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform duration-300">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                        </svg>
+                        <span>{ctaText.registerBtn[lang]}</span>
+                    </button>
                 </div>
 
-                {/* Social proof stats */}
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', flexWrap: 'wrap', paddingTop: '24px', borderTop: '1px solid var(--border)' }}>
+                {/* Stats row */}
+                <div className="flex flex-wrap justify-center gap-10 sm:gap-16 pt-10 border-t border-border/50">
                     {ctaStats.map((s) => (
-                        <div key={s.ar} style={{ textAlign: 'center' }}>
-                            <div style={{ fontFamily: 'var(--f-en)', fontSize: '1.5rem', fontWeight: 700, color: 'var(--red-400)', lineHeight: 1 }}>{s.num}</div>
-                            <div style={{ fontSize: '0.78rem', color: 'var(--text-3)', marginTop: '4px' }}>
+                        <div key={s.ar} className="text-center group">
+                            <div className="font-display font-bold text-3xl sm:text-4xl text-primary mb-2 group-hover:scale-110 transition-transform duration-300">
+                                {s.num}
+                            </div>
+                            <div className="font-sans text-xs sm:text-sm font-semibold text-muted-foreground tracking-wide uppercase">
                                 {s[lang]}
                             </div>
                         </div>
