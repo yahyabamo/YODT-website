@@ -3,38 +3,24 @@ import { fetchActivitiesWithItems, type HomepageActivity, type HomepageActivityI
 import { useLanguage } from '@/context/LanguageContext';
 import { getField } from '@/i18n/pages';
 
-/* ─── Yemeni palette (red · gold · charcoal · cream) ─── */
-const Y = {
-    red: '#8B1A1A',
-    gold: '#C9974A',
-    goldLight: '#E8B86D',
-    cream: '#F5F0E8',
-    charcoal: '#1A1714',
-    charcoal2: '#252119',
-    charcoal3: '#2E2922',
-    border: 'rgba(201,151,74,0.18)',
-    borderHov: 'rgba(201,151,74,0.45)',
-};
-
 const SLIDE_DURATION = 7000;
 
-// ── Skeleton shimmer ─────────────────────────────────────────────────────────
 function SkeletonActivities() {
     return (
-        <section id="activities" style={{ background: Y.charcoal, padding: '72px 0 88px' }}>
-            <div className="container">
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginBottom: 36 }}>
+        <section className="py-24 bg-background">
+            <div className="container mx-auto px-6 lg:px-12">
+                <div className="flex justify-center gap-5 mb-10">
                     {[0, 1, 2, 3, 4].map(i => (
-                        <div key={i} style={{ width: 74, height: 74, borderRadius: '50%', background: Y.charcoal3, opacity: 0.5, animation: 'skeletonPulse 1.4s ease-in-out infinite' }} />
+                        <div key={i} className="w-[74px] h-[74px] rounded-full bg-secondary animate-pulse" />
                     ))}
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(210px,1fr))', gap: 14 }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[0, 1, 2, 3].map(i => (
-                        <div key={i} style={{ background: Y.charcoal2, border: `1px solid ${Y.border}`, borderRadius: 16, overflow: 'hidden', animation: 'skeletonPulse 1.4s ease-in-out infinite' }}>
-                            <div style={{ height: 130, background: Y.charcoal3 }} />
-                            <div style={{ padding: '16px 18px' }}>
-                                <div style={{ height: 13, width: '60%', background: Y.charcoal3, borderRadius: 6, marginBottom: 8 }} />
-                                <div style={{ height: 11, width: '80%', background: Y.charcoal3, borderRadius: 6 }} />
+                        <div key={i} className="rounded-2xl border border-border bg-card animate-pulse">
+                            <div className="h-[130px] bg-secondary w-full" />
+                            <div className="p-5">
+                                <div className="h-3 w-[60%] bg-border rounded-md mb-3" />
+                                <div className="h-2.5 w-[80%] bg-border rounded-md" />
                             </div>
                         </div>
                     ))}
@@ -97,7 +83,7 @@ export const Activities = () => {
             };
             rafRef.current = requestAnimationFrame(tick);
             timerRef.current = setTimeout(() => goTo((idx + 1) % programs.length), SLIDE_DURATION);
-        }, 280);
+        }, 300); // Wait for fade out
     }, [programs.length]);
 
     useEffect(() => {
@@ -119,12 +105,11 @@ export const Activities = () => {
 
     if (loading) return <SkeletonActivities />;
 
-    // Graceful empty state
     if (programs.length === 0) {
         return (
-            <section id="activities" style={{ background: Y.charcoal, padding: '72px 0 88px' }}>
-                <div className="container" style={{ textAlign: 'center' }}>
-                    <p style={{ color: Y.gold, fontSize: '1rem' }}>{activitiesText.empty[lang]}</p>
+            <section className="py-24 bg-background">
+                <div className="container mx-auto px-6 text-center">
+                    <p className="text-muted-foreground font-sans">{activitiesText.empty[lang]}</p>
                 </div>
             </section>
         );
@@ -132,200 +117,154 @@ export const Activities = () => {
 
     const prog = programs[current];
     const items: HomepageActivityItem[] = prog.items ?? [];
-
-    // Resolve fields via getField
     const progName = getField(prog, 'name', lang);
-    const progTag = getField(prog, 'tag', lang);
+    const progTag  = getField(prog, 'tag', lang);
     const progDesc = getField(prog, 'desc', lang);
 
     return (
-        <>
-            <style>{`@keyframes skeletonPulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
-            <section id="activities" style={{ background: Y.charcoal, padding: '72px 0 88px', position: 'relative', overflow: 'hidden' }}>
-                <div style={{
-                    position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0.03,
-                    backgroundImage: 'repeating-linear-gradient(45deg,#C9974A 0,#C9974A 1px,transparent 0,transparent 50%)',
-                    backgroundSize: '28px 28px',
-                }} />
+        <section id="activities" className="relative py-24 bg-background overflow-hidden">
+            
+            {/* Subtle background pattern (optional) */}
+            <div 
+                className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03] pointer-events-none mix-blend-overlay"
+                style={{
+                    backgroundImage: 'url(/assets/yemen-pattern.jpg)',
+                    backgroundSize: '160px 160px',
+                }}
+            />
 
-                <div className="container" style={{ position: 'relative', zIndex: 1 }}>
+            <div className="container relative z-10 mx-auto px-6 lg:px-12">
 
-                    {/* Header */}
-                    <div style={{ textAlign: 'center', marginBottom: '50px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '14px', marginBottom: '16px' }}>
-                            <div style={{ height: '1px', width: '40px', background: `linear-gradient(to right, transparent, ${Y.gold})` }} />
-                            <span style={{ color: Y.gold, fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.18em' }}>
-                                {activitiesText.eyebrow[lang]}
-                            </span>
-                            <div style={{ height: '1px', width: '40px', background: `linear-gradient(to left, transparent, ${Y.gold})` }} />
-                        </div>
-                        <h2 style={{ fontSize: 'clamp(1.5rem,3.5vw,2.1rem)', fontWeight: 800, color: Y.cream, letterSpacing: '-0.02em', marginBottom: '10px' }}>
-                            {activitiesText.title[lang]}
-                        </h2>
-                        <p style={{ color: '#7a7262', fontSize: '0.9rem', lineHeight: 1.7 }}>
-                            {activitiesText.desc[lang]}
+                {/* ── Section Header ── */}
+                <div className="flex flex-col items-center text-center mb-14">
+                    <div className="flex items-center gap-3 mb-4">
+                        <span className="w-8 h-px bg-gradient-to-r from-primary to-transparent"></span>
+                        <span className="text-sm font-bold tracking-wider uppercase text-primary font-sans">
+                            {activitiesText.eyebrow[lang]}
+                        </span>
+                        <span className="w-8 h-px bg-gradient-to-l from-primary to-transparent"></span>
+                    </div>
+                    <h2 className="text-4xl lg:text-5xl font-display font-black text-foreground mb-4">
+                        {activitiesText.title[lang]}
+                    </h2>
+                    <p className="text-muted-foreground font-sans max-w-2xl mx-auto">
+                        {activitiesText.desc[lang]}
+                    </p>
+                </div>
+
+                {/* ── Program Selector Circles ── */}
+                <div className="flex justify-center flex-wrap gap-5 mb-8">
+                    {programs.map((p, i) => {
+                        const isActive = i === current;
+                        const pName = getField(p, 'name', lang);
+                        return (
+                            <button
+                                key={p.id}
+                                className="flex flex-col items-center gap-3 group"
+                                onClick={() => goTo(i)}
+                                aria-pressed={isActive}
+                                aria-label={pName}
+                            >
+                                <div className={`w-[72px] h-[72px] rounded-full flex items-center justify-center text-3xl transition-all duration-300 ease-out border-2 ${isActive ? 'bg-primary/10 border-primary shadow-[0_0_0_4px_rgba(var(--primary),0.1)] scale-110' : 'bg-card border-border group-hover:border-primary/50 group-hover:-translate-y-1'}`}>
+                                    {p.icon}
+                                </div>
+                                <span className={`font-sans text-[11px] font-bold tracking-wide transition-colors duration-300 ${isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`}>
+                                    {pName}
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* ── Progress Bar ── */}
+                <div className="h-1 bg-secondary rounded-full mb-10 overflow-hidden max-w-4xl mx-auto">
+                    <div 
+                        className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all ease-linear"
+                        style={{ width: `${progress}%`, transitionDuration: '100ms' }}
+                    />
+                </div>
+
+                {/* ── Selected Program Hero Card ── */}
+                <div 
+                    className={`rounded-[24px] p-6 lg:p-10 mb-8 flex flex-col sm:flex-row items-center gap-8 border border-primary/20 bg-primary/5 dark:bg-primary/10 shadow-lg shadow-primary/5 transition-all duration-300 ease-out ${animating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'}`}
+                >
+                    <div className="w-24 h-24 rounded-full shrink-0 flex items-center justify-center text-4xl bg-gradient-to-br from-primary/80 to-primary text-white shadow-xl shadow-primary/20">
+                        {prog.icon}
+                    </div>
+                    <div className="text-center sm:text-start flex-1">
+                        <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 font-sans text-xs font-bold uppercase tracking-wider mb-3">
+                            {progTag}
+                        </span>
+                        <h3 className="text-2xl lg:text-3xl font-display font-bold text-foreground mb-2">
+                            {progName}
+                        </h3>
+                        <p className="text-muted-foreground font-sans text-sm leading-relaxed max-w-3xl">
+                            {progDesc}
                         </p>
                     </div>
-
-                    {/* Circles */}
-                    <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '20px', marginBottom: '36px' }}>
-                        {programs.map((p, i) => {
-                            const isActive = i === current;
-                            const pName = getField(p, 'name', lang);
-                            return (
-                                <div key={p.id} onClick={() => goTo(i)}
-                                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
-                                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'}
-                                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'}
-                                >
-                                    <div style={{
-                                        width: '74px', height: '74px', borderRadius: '50%',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '26px',
-                                        background: isActive ? 'rgba(139,26,26,0.18)' : Y.charcoal3,
-                                        border: `2px solid ${isActive ? Y.gold : 'rgba(255,255,255,0.07)'}`,
-                                        boxShadow: isActive ? `0 0 0 4px rgba(201,151,74,0.12), 0 8px 28px rgba(139,26,26,0.3)` : 'none',
-                                        transition: 'all 0.4s cubic-bezier(0.34,1.56,0.64,1)',
-                                    }}>
-                                        {p.icon}
-                                    </div>
-                                    <span style={{
-                                        fontSize: '11px', fontWeight: isActive ? 700 : 600, textAlign: 'center',
-                                        color: isActive ? Y.gold : 'rgba(255,255,255,0.3)', whiteSpace: 'nowrap',
-                                        transition: 'color 0.35s',
-                                    }}>
-                                        {pName}
-                                    </span>
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    {/* Progress bar */}
-                    <div style={{ height: '2px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', marginBottom: '32px', overflow: 'hidden' }}>
-                        <div style={{
-                            height: '100%', borderRadius: '2px',
-                            background: `linear-gradient(to right, ${Y.red}, ${Y.gold})`,
-                            width: `${progress}%`, transition: 'width 0.1s linear',
-                        }} />
-                    </div>
-
-                    {/* Hero */}
-                    <div style={{
-                        borderRadius: '20px', padding: 'clamp(24px,4vw,40px)',
-                        display: 'flex', alignItems: 'center', gap: '28px', marginBottom: '22px',
-                        background: 'linear-gradient(135deg, rgba(139,26,26,0.12), rgba(201,151,74,0.05))',
-                        border: `1px solid ${Y.border}`,
-                        opacity: animating ? 0 : 1, transform: animating ? 'translateY(10px)' : 'translateY(0)',
-                        transition: 'opacity 0.28s ease, transform 0.28s ease',
-                    }}>
-                        <div style={{
-                            width: '84px', height: '84px', borderRadius: '50%', flexShrink: 0,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.2rem',
-                            background: 'radial-gradient(circle at 35% 35%, rgba(139,26,26,0.5), rgba(201,151,74,0.15))',
-                            border: '2px solid rgba(201,151,74,0.4)',
-                            boxShadow: '0 8px 32px rgba(139,26,26,0.3)',
-                        }}>
-                            {prog.icon}
-                        </div>
-                        <div>
-                            <span style={{
-                                display: 'inline-block', padding: '3px 12px', borderRadius: '999px', marginBottom: '12px',
-                                background: 'rgba(201,151,74,0.15)', color: Y.goldLight,
-                                border: '1px solid rgba(201,151,74,0.3)',
-                                fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-                            }}>
-                                {progTag}
-                            </span>
-                            <h3 style={{ fontSize: 'clamp(1.2rem,2.5vw,1.7rem)', fontWeight: 800, color: Y.cream, letterSpacing: '-0.02em', marginBottom: '8px' }}>
-                                {progName}
-                            </h3>
-                            <p style={{ color: '#7a7262', fontSize: '0.88rem', lineHeight: 1.8 }}>{progDesc}</p>
-                        </div>
-                    </div>
-
-                    {/* Activity cards */}
-                    <div style={{
-                        display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px,1fr))', gap: '14px',
-                        opacity: animating ? 0 : 1, transform: animating ? 'translateY(14px)' : 'translateY(0)',
-                        transition: 'opacity 0.28s ease, transform 0.28s ease',
-                    }}>
-                        {items.map((act, i) => {
-                            const actTitle = getField(act, 'title', lang);
-                            const actDesc = getField(act, 'desc', lang);
-                            const actFreq = getField(act, 'freq', lang);
-                            return (
-                                <div key={act.id ?? i}
-                                    style={{
-                                        background: Y.charcoal2, border: `1px solid ${Y.border}`, borderRadius: '16px', overflow: 'hidden',
-                                        transition: 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.35s, border-color 0.35s'
-                                    }}
-                                    onMouseEnter={e => {
-                                        const el = e.currentTarget as HTMLElement;
-                                        el.style.transform = 'translateY(-5px)';
-                                        el.style.boxShadow = '0 16px 40px rgba(139,26,26,0.2)';
-                                        el.style.borderColor = Y.borderHov;
-                                    }}
-                                    onMouseLeave={e => {
-                                        const el = e.currentTarget as HTMLElement;
-                                        el.style.transform = 'translateY(0)';
-                                        el.style.boxShadow = 'none';
-                                        el.style.borderColor = Y.border;
-                                    }}
-                                >
-                                    {/* Image slot */}
-                                    <div style={{
-                                        width: '100%', height: '130px', position: 'relative', overflow: 'hidden',
-                                        background: 'linear-gradient(135deg, rgba(139,26,26,0.15), rgba(201,151,74,0.07))',
-                                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                                    }}>
-                                        {act.image_url
-                                            ? <img src={act.image_url} alt={actTitle}
-                                                style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
-                                            : <>
-                                                <span style={{ fontSize: '32px', opacity: 0.65 }}>{act.icon}</span>
-                                            </>
-                                        }
-                                        <div style={{
-                                            position: 'absolute', top: '10px', right: '10px',
-                                            background: 'rgba(0,0,0,0.55)', borderRadius: '6px', padding: '3px 8px',
-                                            fontSize: '10px', color: Y.goldLight, fontWeight: 600,
-                                            border: '1px solid rgba(201,151,74,0.25)',
-                                        }}>
-                                            {actFreq}
-                                        </div>
-                                    </div>
-
-                                    <div style={{ padding: '16px 18px' }}>
-                                        <h4 style={{ fontWeight: 700, fontSize: '13px', color: Y.cream, lineHeight: 1.4, marginBottom: '7px' }}>
-                                            {actTitle}
-                                        </h4>
-                                        <p style={{ fontSize: '12px', color: '#6a6258', lineHeight: 1.7, marginBottom: '12px' }}>
-                                            {actDesc}
-                                        </p>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: Y.gold, boxShadow: '0 0 6px rgba(201,151,74,0.6)', flexShrink: 0 }} />
-                                            <span style={{ fontSize: '11px', fontWeight: 600, color: Y.gold, letterSpacing: '0.04em' }}>{actFreq}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    {/* Dot nav */}
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '7px', marginTop: '36px' }}>
-                        {programs.map((_, i) => (
-                            <button key={i} onClick={() => goTo(i)} style={{
-                                height: '7px', width: i === current ? '22px' : '7px', borderRadius: '4px', border: 'none',
-                                cursor: 'pointer', padding: 0,
-                                background: i === current ? Y.gold : 'rgba(255,255,255,0.12)',
-                                transition: 'all 0.4s cubic-bezier(0.34,1.56,0.64,1)',
-                            }} />
-                        ))}
-                    </div>
-
                 </div>
-            </section>
-        </>
+
+                {/* ── Activity Item Cards ── */}
+                <div 
+                    className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 transition-all duration-300 delay-100 ease-out ${animating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'}`}
+                >
+                    {items.map((act, i) => {
+                        const actTitle = getField(act, 'title', lang);
+                        const actDesc  = getField(act, 'desc', lang);
+                        const actFreq  = getField(act, 'freq', lang);
+                        return (
+                            <div 
+                                key={act.id ?? i} 
+                                className="group flex flex-col bg-card border border-border rounded-2xl overflow-hidden hover:-translate-y-1.5 hover:shadow-xl hover:border-primary/30 transition-all duration-300 ease-out"
+                            >
+                                <div className="w-full h-[140px] relative bg-secondary/50 flex items-center justify-center overflow-hidden">
+                                    {act.image_url ? (
+                                        <img 
+                                            src={act.image_url} 
+                                            alt={actTitle} 
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                                        />
+                                    ) : (
+                                        <span className="text-5xl opacity-40 group-hover:scale-110 group-hover:opacity-60 transition-all duration-500 ease-out">
+                                            {act.icon}
+                                        </span>
+                                    )}
+                                    <div className="absolute top-3 inset-inline-end-3 bg-background/80 backdrop-blur-md border border-border px-2 py-1 rounded-md font-sans text-[10px] font-bold text-primary shadow-sm">
+                                        {actFreq}
+                                    </div>
+                                </div>
+                                <div className="p-5 flex flex-col flex-1">
+                                    <h4 className="font-sans font-bold text-foreground text-sm mb-2 group-hover:text-primary transition-colors">
+                                        {actTitle}
+                                    </h4>
+                                    <p className="font-sans text-xs text-muted-foreground leading-relaxed flex-1 mb-4">
+                                        {actDesc}
+                                    </p>
+                                    <div className="flex items-center gap-2 pt-3 border-t border-border/50">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_6px_rgba(var(--primary),0.6)]" />
+                                        <span className="font-sans text-[11px] font-bold text-primary tracking-wide">
+                                            {actFreq}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* ── Dot Navigation ── */}
+                <div className="flex justify-center gap-2 mt-12">
+                    {programs.map((_, i) => (
+                        <button
+                            key={i}
+                            onClick={() => goTo(i)}
+                            className={`h-2 rounded-full transition-all duration-300 ease-out ${i === current ? 'w-6 bg-primary' : 'w-2 bg-border hover:bg-primary/50'}`}
+                            aria-label={`Go to program ${i + 1}`}
+                        />
+                    ))}
+                </div>
+
+            </div>
+        </section>
     );
 };

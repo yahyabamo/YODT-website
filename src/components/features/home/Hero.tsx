@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '@/assets/logo.png';
 import { useLanguage } from '@/context/LanguageContext';
+import { IPhoneMockup } from '@/components/hero/IPhoneMockup';
 
 interface HeroProps {
     onOpenModal: () => void;
@@ -49,65 +49,99 @@ export const Hero: React.FC<HeroProps> = ({ onOpenModal }) => {
     const { language: lang } = useLanguage();
 
     const t = heroContent;
+    const isRtl = lang === 'ar';
 
     return (
-        <>
-            <section id="hero">
-                <div className="hero-bg">
-                    <div className="hero-grid"></div>
-                    <div className="hero-orb orb-1"></div>
-                    <div className="hero-orb orb-2"></div>
-                    <div className="hero-orb orb-3"></div>
-                </div>
+        <section id="hero" className="relative min-h-[95vh] flex items-center overflow-hidden bg-background pt-24 pb-16">
 
-                <div className="hero-content">
-                    <div className="hero-left">
-                        <div className="hero-eyebrow">
-                            <div className="eyebrow-line"></div>
-                            <span className="eyebrow-text">{t.eyebrow[lang]}</span>
-                        </div>
+            {/* Soft Yemen Pattern Overlay */}
+            <div
+                className="absolute inset-0 z-0 opacity-[0.03] dark:opacity-[0.05] mix-blend-luminosity blur-[1px] pointer-events-none"
+                style={{
+                    backgroundImage: 'url(/assets/yemen-pattern.jpg)',
+                    backgroundSize: '120px 120px',
+                    backgroundRepeat: 'repeat'
+                }}
+            />
 
-                        <h1 className="hero-title">
-                            {t.titleLine1[lang]}<br />
-                            <span className="hero-title-highlight">{t.titleHighlight[lang]}</span>
-                            {t.titleLine3[lang] && <><br />{t.titleLine3[lang]}</>}
-                        </h1>
+            {/* Glowing Orbs for Premium Feel */}
+            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                <div className="absolute -top-[20%] -right-[10%] w-[600px] h-[600px] rounded-full bg-primary/10 dark:bg-primary/20 blur-[100px] animate-pulse duration-1000" />
+                <div className="absolute top-[60%] -left-[5%] w-[400px] h-[400px] rounded-full bg-accent/10 dark:bg-accent/20 blur-[80px]" />
+            </div>
 
-                        <p className="hero-desc">{t.desc[lang]}</p>
+            <div className="container relative z-10 mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
-                        <div className="hero-actions">
-                            <button className="btn btn-primary" onClick={() => navigate('/login')}>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                                    <circle cx="9" cy="7" r="4" />
-                                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                                </svg>
-                                <span>{t.registerBtn[lang]}</span>
-                            </button>
-                        </div>
+                {/* ── Text Content ── */}
+                <div className={`flex flex-col ${isRtl ? 'lg:order-2 text-start' : 'lg:order-1 text-start'}`}>
 
-                        <div className="hero-stats">
-                            {t.stats.map(s => (
-                                <div key={s.num} className="hero-stat-item">
-                                    <div className="hero-stat-num">{s.num}</div>
-                                    <div className="hero-stat-label">{s[lang]}</div>
-                                </div>
-                            ))}
-                        </div>
-                        <div
-                            style={{
-                                position: 'absolute',
-                                inset: 0,
-                                backgroundImage: 'url(/assets/yemen-pattern.svg)',
-                                backgroundSize: '80px 80px',
-                                opacity: 0.05,
-                                pointerEvents: 'none',
-                            }}
-                        />
+                    {/* Eyebrow */}
+                    <div className="flex items-center gap-3 mb-6 animate-in slide-in-from-bottom-4 duration-700 fade-in">
+                        <span className="w-8 h-px bg-gradient-to-r from-primary to-transparent"></span>
+                        <span className="text-sm font-semibold tracking-wider uppercase text-primary font-sans">
+                            {t.eyebrow[lang]}
+                        </span>
+                        <span className="w-8 h-px bg-gradient-to-l from-primary to-transparent"></span>
                     </div>
+
+                    {/* Headline */}
+                    <h1 className="text-5xl lg:text-7xl font-display font-black text-foreground leading-[1.1] tracking-tight mb-6 animate-in slide-in-from-bottom-6 duration-700 delay-150 fade-in">
+                        {t.titleLine1[lang]}
+                        <br />
+                        <span className="bg-gradient-to-br from-primary via-primary/90 to-accent bg-clip-text text-transparent">
+                            {t.titleHighlight[lang]}
+                        </span>
+                        {t.titleLine3[lang] && (
+                            <>
+                                <br />
+                                {t.titleLine3[lang]}
+                            </>
+                        )}
+                    </h1>
+
+                    {/* Description */}
+                    <p className="text-lg text-muted-foreground leading-relaxed max-w-lg mb-10 font-sans animate-in slide-in-from-bottom-6 duration-700 delay-300 fade-in">
+                        {t.desc[lang]}
+                    </p>
+
+                    {/* CTA Actions */}
+                    <div className="flex flex-wrap items-center gap-4 animate-in slide-in-from-bottom-6 duration-700 delay-500 fade-in">
+                        <button
+                            onClick={() => navigate('/login')}
+                            className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-sans font-bold text-sm rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-1 transition-all duration-300 ease-out"
+                        >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                            </svg>
+                            {t.registerBtn[lang]}
+                        </button>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="flex gap-10 mt-14 pt-8 border-t border-border/50 animate-in slide-in-from-bottom-6 duration-700 delay-700 fade-in">
+                        {t.stats.map(s => (
+                            <div key={s.num} className="flex flex-col">
+                                <span className="font-display font-bold text-3xl text-foreground mb-1">
+                                    {s.num}
+                                </span>
+                                <span className="font-sans text-sm text-muted-foreground font-medium">
+                                    {s[lang]}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+
                 </div>
-            </section>
-        </>
+
+                {/* ── iPhone Mockup ── */}
+                <div className={`flex justify-center items-center relative animate-in zoom-in-95 duration-1000 delay-500 fade-in ${isRtl ? 'lg:order-1' : 'lg:order-2'}`}>
+                    <IPhoneMockup />
+                </div>
+
+            </div>
+        </section>
     );
 };
