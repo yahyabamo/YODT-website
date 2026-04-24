@@ -12,6 +12,7 @@
   font-style: normal;
   font-display: swap;
 }
+
 @font-face {
   font-family: 'ThmanyahSerifDisplay';
   src: url('/src/assets/font/thmanyahserifdisplay/thmanyahserifdisplay-Medium.woff2') format('woff2');
@@ -19,6 +20,7 @@
   font-style: normal;
   font-display: swap;
 }
+
 @font-face {
   font-family: 'ThmanyahSerifDisplay';
   src: url('/src/assets/font/thmanyahserifdisplay/thmanyahserifdisplay-Bold.woff2') format('woff2');
@@ -26,6 +28,7 @@
   font-style: normal;
   font-display: swap;
 }
+
 @font-face {
   font-family: 'ThmanyahSerifDisplay';
   src: url('/src/assets/font/thmanyahserifdisplay/thmanyahserifdisplay-Black.woff2') format('woff2');
@@ -33,6 +36,7 @@
   font-style: normal;
   font-display: swap;
 }
+
 @font-face {
   font-family: 'ThmanyahSerifDisplay';
   src: url('/src/assets/font/thmanyahserifdisplay/thmanyahserifdisplay-Light.woff2') format('woff2');
@@ -49,6 +53,7 @@
   font-style: normal;
   font-display: swap;
 }
+
 @font-face {
   font-family: 'ThmanyahSans';
   src: url('/src/assets/font/thmanyahsans/thmanyahsans-Regular.woff2') format('woff2');
@@ -56,6 +61,7 @@
   font-style: normal;
   font-display: swap;
 }
+
 @font-face {
   font-family: 'ThmanyahSans';
   src: url('/src/assets/font/thmanyahsans/thmanyahsans-Medium.woff2') format('woff2');
@@ -63,6 +69,7 @@
   font-style: normal;
   font-display: swap;
 }
+
 @font-face {
   font-family: 'ThmanyahSans';
   src: url('/src/assets/font/thmanyahsans/thmanyahsans-Bold.woff2') format('woff2');
@@ -70,6 +77,7 @@
   font-style: normal;
   font-display: swap;
 }
+
 @font-face {
   font-family: 'ThmanyahSans';
   src: url('/src/assets/font/thmanyahsans/thmanyahsans-Black.woff2') format('woff2');
@@ -238,9 +246,9 @@
 
 /* ═══ BASE STYLES ═══ */
 @layer base {
-  * {
+  /* * {
     @apply border-border;
-  }
+  } */
 
   html {
     direction: rtl;
@@ -478,18 +486,22 @@
 /* ── Jambiya Divider — mobile responsive ── */
 /* On mobile, hide outer icons (keep center 7: indices 2–8) */
 @media (max-width: 600px) {
+
   .jambiya-icon-row img[data-icon-index="0"],
   .jambiya-icon-row img[data-icon-index="1"],
   .jambiya-icon-row img[data-icon-index="9"],
   .jambiya-icon-row img[data-icon-index="10"] {
     display: none;
   }
+
   .jambiya-icon-row img {
     height: 18px !important;
   }
+
   .jambiya-icon-row img[data-icon-index="5"] {
     height: 26px !important;
   }
+
   .jambiya-divider-wrapper {
     opacity: 0.10 !important;
   }
@@ -501,6 +513,7 @@
     grid-template-columns: 1fr 1fr !important;
   }
 }
+
 @media (max-width: 560px) {
   .footer-grid-responsive {
     grid-template-columns: 1fr !important;
@@ -814,8 +827,10 @@
     --text-inv: #0d0f14;
 
     /* ── Brand Fonts ── */
-    --f-display: 'ThmanyahSerifDisplay', 'Noto Serif Arabic', serif; /* Hero H1 only */
-    --f-sans:    'ThmanyahSans', 'IBM Plex Sans Arabic', system-ui, sans-serif; /* Everything else */
+    --f-display: 'ThmanyahSerifDisplay', 'Noto Serif Arabic', serif;
+    /* Hero H1 only */
+    --f-sans: 'ThmanyahSans', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+    /* Everything else */
     /* Backwards-compat aliases used in old CSS */
     --f-ar: var(--f-display);
     --f-en: var(--f-display);
@@ -832,38 +847,38 @@
     /* ── Design System v2 Tokens ── */
 
     /* Brand colors — single source of truth */
-    --ds-red:          #B3001F;
-    --ds-red-deep:     #800016;
-    --ds-red-glow:     rgba(179, 0, 31, 0.22);
-    --ds-red-faint:    rgba(179, 0, 31, 0.07);
-    --ds-gold:         #C8A84B;
-    --ds-gold-faint:   rgba(200, 168, 75, 0.12);
+    --ds-red: #B3001F;
+    --ds-red-deep: #800016;
+    --ds-red-glow: rgba(179, 0, 31, 0.22);
+    --ds-red-faint: rgba(179, 0, 31, 0.07);
+    --ds-gold: #C8A84B;
+    --ds-gold-faint: rgba(200, 168, 75, 0.12);
 
     /* Dark page backgrounds */
-    --ds-bg:           #070809;
-    --ds-bg-1:         #0E1015;
-    --ds-bg-2:         #141720;
-    --ds-bg-3:         #1B2030;
-    --ds-surface:      rgba(255, 255, 255, 0.034);
-    --ds-surface-hov:  rgba(255, 255, 255, 0.065);
+    --ds-bg: #070809;
+    --ds-bg-1: #0E1015;
+    --ds-bg-2: #141720;
+    --ds-bg-3: #1B2030;
+    --ds-surface: rgba(255, 255, 255, 0.034);
+    --ds-surface-hov: rgba(255, 255, 255, 0.065);
 
     /* Text hierarchy */
-    --ds-text:         #F0EDE8;
-    --ds-text-2:       #AEA9A2;
-    --ds-text-3:       #6E6A64;
+    --ds-text: #F0EDE8;
+    --ds-text-2: #AEA9A2;
+    --ds-text-3: #6E6A64;
 
     /* Borders */
-    --ds-border:       rgba(255, 255, 255, 0.07);
-    --ds-border-str:   rgba(255, 255, 255, 0.12);
-    --ds-border-red:   rgba(179, 0, 31, 0.22);
-    --ds-border-gold:  rgba(200, 168, 75, 0.18);
+    --ds-border: rgba(255, 255, 255, 0.07);
+    --ds-border-str: rgba(255, 255, 255, 0.12);
+    --ds-border-red: rgba(179, 0, 31, 0.22);
+    --ds-border-gold: rgba(200, 168, 75, 0.18);
 
     /* Card */
-    --ds-card-bg:      #141720;
-    --ds-card-shadow:  0 2px 12px rgba(0,0,0,0.22), 0 8px 32px rgba(0,0,0,0.14);
-    --ds-card-shadow-hov: 0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(179,0,31,0.12);
-    --ds-card-radius:  16px;
-    --ds-card-ease:    cubic-bezier(0.22, 1, 0.36, 1);
+    --ds-card-bg: #141720;
+    --ds-card-shadow: 0 2px 12px rgba(0, 0, 0, 0.22), 0 8px 32px rgba(0, 0, 0, 0.14);
+    --ds-card-shadow-hov: 0 8px 32px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(179, 0, 31, 0.12);
+    --ds-card-radius: 16px;
+    --ds-card-ease: cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   [data-theme="light"] {
@@ -1031,8 +1046,8 @@
     border: 1px solid var(--ds-border);
     border-radius: var(--ds-card-radius);
     transition: transform 0.32s var(--ds-card-ease),
-                box-shadow 0.32s var(--ds-card-ease),
-                border-color 0.32s var(--ds-card-ease);
+      box-shadow 0.32s var(--ds-card-ease),
+      border-color 0.32s var(--ds-card-ease);
     box-shadow: var(--ds-card-shadow);
     overflow: hidden;
   }
@@ -1045,7 +1060,7 @@
 
   /* Elevated card (Featured) */
   .ds-card-featured {
-    background: linear-gradient(135deg, rgba(179,0,31,0.12) 0%, rgba(128,0,22,0.06) 100%);
+    background: linear-gradient(135deg, rgba(179, 0, 31, 0.12) 0%, rgba(128, 0, 22, 0.06) 100%);
     border: 1px solid var(--ds-border-red);
     border-radius: var(--ds-card-radius);
   }
@@ -1172,6 +1187,7 @@
     .ds-grid-2 {
       grid-template-columns: 1fr !important;
     }
+
     .ds-hide-mobile {
       display: none !important;
     }
@@ -4070,16 +4086,28 @@
    GRADIENT DRIFT — Hero animated background
 ═══════════════════════════════════════════════ */
   @keyframes gradientDrift {
-    0%, 100% { background-position: 0% 50%; }
-    50%       { background-position: 100% 50%; }
+
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
   }
 
   /* ═══════════════════════════════════════════════
    INFINITE MARQUEE — Partners
 ═══════════════════════════════════════════════ */
   @keyframes infiniteMarquee {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
+    from {
+      transform: translateX(0);
+    }
+
+    to {
+      transform: translateX(-50%);
+    }
   }
 
   .marquee-viewport {
@@ -4104,8 +4132,15 @@
    CTA PULSE GLOW
 ═══════════════════════════════════════════════ */
   @keyframes ctaPulse {
-    0%, 100% { box-shadow: 0 4px 24px rgba(122, 28, 28, 0.45); }
-    50%      { box-shadow: 0 4px 40px rgba(122, 28, 28, 0.75), 0 0 60px rgba(200, 148, 58, 0.2); }
+
+    0%,
+    100% {
+      box-shadow: 0 4px 24px rgba(122, 28, 28, 0.45);
+    }
+
+    50% {
+      box-shadow: 0 4px 40px rgba(122, 28, 28, 0.75), 0 0 60px rgba(200, 148, 58, 0.2);
+    }
   }
 
   .cta-pulse {
@@ -4116,9 +4151,15 @@
    SECTION RHYTHM — Alternating backgrounds
 ═══════════════════════════════════════════════ */
   /* bg-rhythm-1: base (Hero level) */
-  .section-bg-base   { background: var(--bg); }
+  .section-bg-base {
+    background: var(--bg);
+  }
+
   /* bg-rhythm-2: slightly lighter */
-  .section-bg-raised { background: var(--bg-1); }
+  .section-bg-raised {
+    background: var(--bg-1);
+  }
+
   /* bg-rhythm-3: accent gradient */
   .section-bg-accent {
     background:
@@ -4128,8 +4169,13 @@
 
   /* Gold shimmer bar at top of footer */
   @keyframes goldShimmer {
-    0%   { background-position: -200% center; }
-    100% { background-position: 200% center; }
+    0% {
+      background-position: -200% center;
+    }
+
+    100% {
+      background-position: 200% center;
+    }
   }
 
   .gold-shimmer-bar {
