@@ -246,9 +246,9 @@
 
 /* ═══ BASE STYLES ═══ */
 @layer base {
-  /* * {
+  * {
     @apply border-border;
-  } */
+  }
 
   html {
     direction: rtl;
