@@ -388,7 +388,7 @@ export const Partners = () => {
             <div 
                 className="absolute inset-0 opacity-[0.02] dark:opacity-[0.04] pointer-events-none mix-blend-overlay"
                 style={{
-                    backgroundImage: 'url(/assets/yemen-pattern.jpg)',
+                    backgroundImage: 'url(/assets/yemen-pattern.svg)',
                     backgroundSize: '180px 180px',
                 }}
             />

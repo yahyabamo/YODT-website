@@ -120,13 +120,13 @@ export const InfoCard: React.FC<InfoCardProps> = ({
           marginTop: 'auto', paddingTop: '12px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
-          <span style={{
+          {/* <span style={{
             color: '#c8a84b', fontSize: '0.8rem', fontWeight: 600,
             display: 'flex', alignItems: 'center', gap: '4px',
           }}>
             عرض التفاصيل
             <span style={{ fontSize: '1rem' }}>←</span>
-          </span>
+          </span> */}
         </div>
       </div>
     </div>

@@ -204,8 +204,7 @@ const App = () => (
                 <Route path="/engagement/weekly-question" element={<WeeklyQuestion />} />
                 <Route path="/engagement/chat" element={<Chat />} />
                 <Route path="/engagement/points" element={<EngagementPoints />} />
-                <Route path="/verify/:id" element={<Verify />} />
-
+                <Route path="/verify-member/:id" element={<Verify />} />
                 {/* 2. PROTECTED ADMIN PAGES (NO Navbar / Footer, AdminGuard wraps them) */}
                 <Route
                   path="/admin"

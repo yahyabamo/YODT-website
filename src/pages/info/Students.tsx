@@ -19,19 +19,36 @@ function Skeleton() {
   );
 }
 
-export default function Students() {
+export default function Team() {
   const { language: lang } = useLanguage();
   const navigate = useNavigate();
-  const [students, setStudents] = useState<InfoStudent[]>([]);
+  const [members, setMembers] = useState<InfoStudent[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // States for year filtering
+  const [selectedYear, setSelectedYear] = useState<string>('');
+  const [availableYears, setAvailableYears] = useState<string[]>([]);
 
   useEffect(() => {
     fetchStudents()
-      .then(setStudents)
+      .then((data) => {
+        const publishedMembers = data.filter(m => m.is_published).sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+        setMembers(publishedMembers);
+
+        const years = Array.from(new Set(publishedMembers.map(m => m.academic_year).filter(Boolean))) as string[];
+        const sortedYears = years.sort((a, b) => b.localeCompare(a));
+
+        setAvailableYears(sortedYears);
+        if (sortedYears.length > 0) {
+          setSelectedYear(sortedYears[0]);
+        }
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
     window.scrollTo(0, 0);
   }, []);
+
+  const filteredMembers = members.filter(m => m.academic_year === selectedYear);
 
   return (
     <div style={{ background: 'var(--bg, #07080b)', minHeight: '100vh', paddingTop: '72px' }}>
@@ -60,6 +77,7 @@ export default function Students() {
         </button>
       </div>
 
+      {/* Restored dictionary usage for i18n */}
       <InfoHero
         eyebrow={pagesText.students.heroEyebrow[lang]}
         title={pagesText.students.heroTitle[lang]}
@@ -67,11 +85,37 @@ export default function Students() {
         gradient="linear-gradient(135deg, #07080b 0%, #1a0f00 40%, #07080b 100%)"
       />
 
-      <section style={{ maxWidth: '1260px', margin: '0 auto', padding: '64px clamp(16px, 4vw, 40px) 80px' }}>
+      <section style={{ maxWidth: '1260px', margin: '0 auto', padding: '40px clamp(16px, 4vw, 40px) 80px' }}>
+
+        {/* Year Selector Tabs */}
+        {!loading && availableYears.length > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '48px', flexWrap: 'wrap' }}>
+            {availableYears.map(year => (
+              <button
+                key={year}
+                onClick={() => setSelectedYear(year)}
+                style={{
+                  padding: '8px 24px',
+                  borderRadius: '30px',
+                  border: `1px solid ${selectedYear === year ? '#c8a84b' : 'var(--border)'}`,
+                  background: selectedYear === year ? '#c8a84b15' : 'transparent',
+                  color: selectedYear === year ? '#c8a84b' : 'var(--text-2)',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {year}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}>
           <div style={{ height: '1px', flex: 1, background: 'var(--border)' }} />
           <span style={{ color: '#c8a84b', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-            {pagesText.students.listTitle[lang]} ({loading ? '…' : students.length})
+            {pagesText.students.listTitle[lang]} ({loading ? '…' : filteredMembers.length})
           </span>
           <div style={{ height: '1px', flex: 1, background: 'var(--border)' }} />
         </div>
@@ -80,25 +124,26 @@ export default function Students() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }}>
             {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} />)}
           </div>
-        ) : students.length > 0 ? (
+        ) : filteredMembers.length > 0 ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }}>
-            {students.map(s => (
+            {filteredMembers.map(m => (
               <InfoCard
-                key={s.id}
-                id={s.id!}
-                name={getField(s, 'name', lang)}
-                bio={getField(s, 'bio', lang)}
-                image_url={s.image_url}
-                badge={s.major}
+                key={m.id}
+                id={m.id!}
+                name={getField(m, 'name', lang)}
+                bio={" "}
+                image_url={m.image_url}
+                badge={m.academic_year}
                 badgeColor="#7a1c1c"
-                detailPath={`/students/${s.id}`}
-                extraInfo={`${s.university} · ${s.academic_year}`}
+                detailPath={undefined}
+                extraInfo={getField(m, 'major', lang)}
               />
             ))}
           </div>
         ) : (
           <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--text-3)' }}>
-            <div style={{ fontSize: '4rem', marginBottom: '16px' }}>⭐</div>
+            <div style={{ fontSize: '4rem', marginBottom: '16px' }}>👥</div>
+            {/* Restored dictionary usage for empty state */}
             <p style={{ fontSize: '0.95rem' }}>{commonText.noStudents[lang]}</p>
           </div>
         )}

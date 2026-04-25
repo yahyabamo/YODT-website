@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Upload, X, Loader2, ImageIcon } from 'lucide-react';
 import { uploadToCloudinary } from '@/utils/uploadToCloudinary';
+import imageCompression from 'browser-image-compression';
 
 interface ImageUploaderProps {
   value: string;              // current image URL
@@ -10,6 +11,28 @@ interface ImageUploaderProps {
   placeholder?: string;
 }
 
+
+
+// 1. Create this utility function
+const compressImageForHero = async (file: File): Promise<File> => {
+  const options = {
+    maxSizeMB: 0.5,             // Target max size of 500KB (perfect for heroes)
+    maxWidthOrHeight: 1920,     // Max HD width
+    useWebWorker: true,
+    fileType: 'image/webp',     // Force modern, highly compressed format
+    initialQuality: 0.8         // 80% quality retains visuals but drops size
+  };
+
+  try {
+    const compressedFile = await imageCompression(file, options);
+    return compressedFile;
+  } catch (error) {
+    console.error("Compression error:", error);
+    return file; // Fallback to original if compression fails
+  }
+};
+
+// Removed unused snippet
 export function ImageUploader({
   value,
   onChange,
@@ -30,7 +53,8 @@ export function ImageUploader({
     setError(null);
     setUploading(true);
     try {
-      const url = await uploadToCloudinary(file, folder);
+      const optimizedFile = await compressImageForHero(file);
+      const url = await uploadToCloudinary(optimizedFile, folder);
       onChange(url);
     } catch (e: any) {
       setError(e?.message ?? 'فشل رفع الصورة');

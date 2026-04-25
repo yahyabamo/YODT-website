@@ -13,6 +13,8 @@
   font-display: swap;
 }
 
+
+
 @font-face {
   font-family: 'ThmanyahSerifDisplay';
   src: url('/src/assets/font/thmanyahserifdisplay/thmanyahserifdisplay-Medium.woff2') format('woff2');
@@ -764,6 +766,19 @@
   /* Divider with text */
   .divider-text {
     @apply flex items-center gap-3 text-xs text-muted-foreground my-4;
+  }
+
+  .brand-divider {
+    height: 6px;
+    width: 100%;
+
+    background-image: url('/assets/yemen-pattern.svg');
+    background-repeat: repeat-x;
+    background-size: auto 100%;
+    background-position: left center;
+    opacity: 0.5;
+
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
   }
 
   .divider-text::before,
