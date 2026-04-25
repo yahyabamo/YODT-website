@@ -6,7 +6,7 @@ import { fetchAllStudents, deleteStudent, upsertStudent, type InfoStudent } from
 import { Spinner, Badge, RowActions, AdminPageHeader, B } from './CMSShared';
 import { ChevronRight } from 'lucide-react';
 
-export default function StudentsAdmin() {
+export default function TeamAdmin() {
   const [rows, setRows] = useState<InfoStudent[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -15,14 +15,15 @@ export default function StudentsAdmin() {
     setLoading(true);
     try {
       const data = await fetchAllStudents();
-      setRows(data);
+      // Sort to show highest index first or group by year naturally
+      setRows(data.sort((a, b) => (b.academic_year?.localeCompare(a.academic_year || '') || 0)));
     } catch { toast.error('خطأ في التحميل'); } finally { setLoading(false); }
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm('حذف هذا الطالب؟')) return;
+    if (!confirm('حذف هذا العضو؟')) return;
     try {
       await deleteStudent(id);
       toast.success('تم الحذف');
@@ -48,8 +49,8 @@ export default function StudentsAdmin() {
         <ChevronRight size={16} /> العودة للقائمة
       </button>
       <AdminPageHeader
-        title="إدارة الطلاب المتميزين"
-        description="تسليط الضوء على إنجازات الطلاب اليمنيين في تركيا"
+        title="إدارة فريق الاتحاد"
+        description="إدارة أعضاء الهيئة الإدارية للاتحاد عبر السنوات"
         icon={Users}
       />
 
@@ -63,7 +64,7 @@ export default function StudentsAdmin() {
             fontWeight: 700, cursor: 'pointer'
           }}
         >
-          <Plus size={16} /> إضافة طالب متميز
+          <Plus size={16} /> إضافة عضو للفريق
         </button>
       </div>
 
@@ -73,8 +74,8 @@ export default function StudentsAdmin() {
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 800, fontSize: 15, color: '#111' }}>{r.name}</div>
-                <div style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>{r.major} · {r.university}</div>
-                <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{r.academic_year} {r.gpa && `· GPA: ${r.gpa}`}</div>
+                <div style={{ fontSize: 13, color: '#6b7280', marginTop: 4 }}>المنصب: {r.major}</div>
+                <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>السنة: {r.academic_year}</div>
                 <div style={{ marginTop: 10 }}><Badge published={r.is_published} /></div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>

@@ -209,6 +209,8 @@ export const Navbar: React.FC = () => {
                         </button>
                     </div>
                 </div>
+                {/* Signature Brand Divider */}
+
             </nav>
 
             {/* ── Mobile: backdrop ── */}

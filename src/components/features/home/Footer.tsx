@@ -52,7 +52,6 @@ export const Footer = () => {
                 }
 
                 .footer-hero-text {
-                    font-family: var(--font-heading, inherit);
                     font-size: clamp(2.5rem, 7vw, 8rem);
                     font-weight: 900;
                     line-height: 1.1;
@@ -162,6 +161,25 @@ export const Footer = () => {
                 }
             `}</style>
             <footer className="site-footer">
+                {/* Signature Brand Divider */}
+
+                {/* <div style={{
+                    height: '50px',
+                    width: '100%',
+                    marginBottom: '60px',
+                    backgroundColor: '#f4ece1',
+                    // Indigo and Silver pattern
+                    backgroundImage: `
+        linear-gradient(45deg, #4d0e0eff 25%, transparent 25%), 
+        linear-gradient(-45deg, #4d0e0eff 25%, transparent 25%), 
+        linear-gradient(45deg, transparent 75%, #610c0cff 75%), 
+        linear-gradient(-45deg, transparent 75%, #630e0eff 75%)
+    `,
+                    backgroundSize: '20px 20px', // Smaller, finer weave
+                    backgroundPosition: '0 0, 10px 0, 10px 0, 0 0',
+                    borderBottom: '3px solid #832020ff',
+                    opacity: 0.9
+                }} /> */}
                 {/* الجزء الأول: القوائم والمعلومات التقليدية */}
                 <div className="footer-grid">
                     <div className="footer-brand">
@@ -247,7 +265,7 @@ export const Footer = () => {
                 {/* Gucci-Style Hero Text (appears below copyright) */}
                 <div className="footer-hero-container">
                     <div className="footer-hero-inner">
-                        <h2 className="footer-hero-text">
+                        <h2 className="footer-hero-text font-display">
                             {footerText.heroTitle[lang]} <span className="city-text">{footerText.city[lang]}</span>
                         </h2>
                     </div>

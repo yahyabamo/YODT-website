@@ -60,7 +60,7 @@ const MembershipCard = () => {
     setState((prev) => ({ ...prev, ...updates }));
   }, []);
 
-  const verifyUrl = `${window.location.origin}/verify/${qrToken}`;
+  const verifyUrl = `${window.location.origin}/verify-member/${qrToken}`;
 
   useEffect(() => {
     if (authLoading) return;

@@ -8,8 +8,8 @@ interface FinalCTAProps {
 
 const ctaStats = [
     { num: '+100', ar: 'عضو نشط', en: 'Active Members', tr: 'Aktif Üye' },
-    { num: '+10',  ar: 'شريك استراتيجي', en: 'Strategic Partners', tr: 'Stratejik Ortak' },
-    { num: '+20',  ar: 'فعالية سنوياً', en: 'Events Per Year', tr: 'Yıllık Etkinlik' },
+    { num: '+10', ar: 'شريك استراتيجي', en: 'Strategic Partners', tr: 'Stratejik Ortak' },
+    { num: '+20', ar: 'فعالية سنوياً', en: 'Events Per Year', tr: 'Yıllık Etkinlik' },
 ] as const;
 
 const ctaText = {
@@ -41,17 +41,17 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ onOpenModal }) => {
 
     return (
         <section id="cta-final" className="relative py-28 overflow-hidden bg-background">
-            
+
             {/* Decorative radial glow */}
             <div className="absolute inset-0 z-0 pointer-events-none">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 dark:bg-primary/10 blur-[120px] rounded-full" />
             </div>
 
             {/* Subtle Yemen pattern */}
-            <div 
+            <div
                 className="absolute inset-0 z-0 opacity-[0.02] dark:opacity-[0.03] pointer-events-none mix-blend-overlay"
                 style={{
-                    backgroundImage: 'url(/assets/yemen-pattern.jpg)',
+                    backgroundImage: 'url(/assets/yemen-pattern.svg)',
                     backgroundSize: '140px 140px',
                     backgroundRepeat: 'repeat'
                 }}
@@ -59,7 +59,7 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ onOpenModal }) => {
 
             {/* Content */}
             <div className="container relative z-10 mx-auto px-6 text-center max-w-3xl animate-in slide-in-from-bottom-8 fade-in duration-1000">
-                
+
                 {/* Graduation icon */}
                 <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border border-primary/20 text-4xl mb-8 shadow-[0_0_30px_rgba(var(--primary),0.15)]">
                     🎓

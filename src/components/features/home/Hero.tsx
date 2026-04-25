@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/context/LanguageContext';
 import { IPhoneMockup } from '@/components/hero/IPhoneMockup';
 
+
 interface HeroProps {
     onOpenModal: () => void;
 }
@@ -58,7 +59,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenModal }) => {
             <div
                 className="absolute inset-0 z-0 opacity-[0.03] dark:opacity-[0.05] mix-blend-luminosity blur-[1px] pointer-events-none"
                 style={{
-                    backgroundImage: 'url(/assets/yemen-pattern.jpg)',
+                    backgroundImage: 'url(/assets/yemen-pattern.svg)',
                     backgroundSize: '120px 120px',
                     backgroundRepeat: 'repeat'
                 }}

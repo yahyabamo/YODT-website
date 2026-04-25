@@ -1,337 +1,364 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const KEYFRAMES = `
-  @keyframes heroZoomIn {
-    from { transform: scale(1.07); }
-    to   { transform: scale(1.0); }
-  }
-`;
-
 interface InfoHeroProps {
-  eyebrow?: string;
-  title: string;
-  description?: string;
-  backgroundImage?: string;
-  backgroundImages?: string[];
-  ctaLabel?: string;
-  ctaPath?: string;
-  gradient?: string;
+    eyebrow?: string;
+    title: string;
+    description?: string;
+    backgroundImage?: string;
+    backgroundImages?: string[];
+    ctaLabel?: string;
+    ctaPath?: string;
+    gradient?: string;
 }
 
 export const InfoHero: React.FC<InfoHeroProps> = ({
-  eyebrow,
-  title,
-  description,
-  backgroundImage,
-  backgroundImages,
-  ctaLabel,
-  ctaPath,
-  gradient = 'linear-gradient(135deg, #1a0a0a 0%, #3b0007 50%, #1a0a0a 100%)',
+    eyebrow,
+    title,
+    description,
+    backgroundImage,
+    backgroundImages,
+    ctaLabel,
+    ctaPath,
+    gradient = 'linear-gradient(135deg, #1a0a0a 0%, #3b0007 50%, #1a0a0a 100%)',
 }) => {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
-  const images: string[] =
-    backgroundImages && backgroundImages.length > 0
-      ? backgroundImages
-      : backgroundImage
-      ? [backgroundImage]
-      : [];
+    // Normalize images array
+    const images: string[] =
+        backgroundImages && backgroundImages.length > 0
+            ? backgroundImages
+            : backgroundImage
+                ? [backgroundImage]
+                : [];
 
-  const hasImages = images.length > 0;
+    const hasImages = images.length > 0;
 
-  const [activeIdx, setActiveIdx] = useState(0);
-  const [fading, setFading] = useState(false);
-  const [zoomKey, setZoomKey] = useState(0); // incremented to restart zoom animation
-  const [mounted, setMounted] = useState(false);
+    // Carousel State
+    const [activeIdx, setActiveIdx] = useState(0);
+    const [loadedImages, setLoadedImages] = useState<Record<number, boolean>>({});
 
-  useEffect(() => {
-    // Delay so animation plays after first paint
-    const t = requestAnimationFrame(() => setMounted(true));
-    return () => cancelAnimationFrame(t);
-  }, []);
+    // Touch / Swipe State
+    const [touchStart, setTouchStart] = useState<number | null>(null);
+    const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (images.length <= 1) return;
-    const interval = setInterval(() => {
-      setFading(true);
-      setTimeout(() => {
-        setActiveIdx(prev => (prev + 1) % images.length);
-        setZoomKey(k => k + 1);
-        setFading(false);
-      }, 750);
-    }, 6500);
-    return () => clearInterval(interval);
-  }, [images.length]);
+    // Minimum swipe distance (in px)
+    const minSwipeDistance = 50;
 
-  const goTo = (idx: number) => {
-    setFading(false);
-    setActiveIdx(idx);
-    setZoomKey(k => k + 1);
-  };
+    // Auto-play interval
+    useEffect(() => {
+        if (images.length <= 1) return;
+        const interval = setInterval(() => {
+            setActiveIdx((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+        }, 6000);
+        return () => clearInterval(interval);
+    }, [images.length]);
 
-  return (
-    <section
-      style={{
-        position: 'relative',
-        marginTop: '-72px',
-        minHeight: hasImages ? 'clamp(520px, 78vh, 740px)' : 'clamp(320px, 45vh, 420px)',
-        display: 'flex',
-        alignItems: 'center',
-        overflow: 'hidden',
-        // Dark base so there's no flash before images load
-        background: hasImages ? '#070a0e' : gradient,
-        isolation: 'isolate',
-      }}
-    >
-      <style>{KEYFRAMES}</style>
+    // Touch Handlers
+    const onTouchStart = (e: React.TouchEvent) => {
+        setTouchEnd(null); // Reset touch end
+        setTouchStart(e.targetTouches[0].clientX);
+    };
 
-      {/* ──────────────────────────────────────────────────────────────────────
-          1. PHOTO LAYERS
-          Full opacity + CSS filter for brightness/contrast control.
-          This preserves image detail far better than opacity-over-dark-bg.
-      ─────────────────────────────────────────────────────────────────────── */}
-      {images.map((img, idx) => {
-        const isActive = idx === activeIdx;
-        return (
-          <div
-            key={img + idx}
-            aria-hidden="true"
+    const onTouchMove = (e: React.TouchEvent) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const onTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+
+        if (isLeftSwipe) {
+            setActiveIdx((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+        }
+        if (isRightSwipe) {
+            setActiveIdx((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+        }
+    };
+
+    // Image Load Handler
+    const handleImageLoad = (idx: number) => {
+        setLoadedImages((prev) => ({ ...prev, [idx]: true }));
+    };
+
+    const goTo = (idx: number) => setActiveIdx(idx);
+
+    return (
+        <section
             style={{
-              position: 'absolute', inset: 0,
-              overflow: 'hidden',
-              opacity: isActive ? (fading ? 0 : 1) : 0,
-              transition: 'opacity 0.85s ease-in-out',
-              zIndex: 0,
+                position: 'relative',
+                marginTop: '-72px', // Account for navbar
+                minHeight: hasImages ? 'clamp(500px, 85vh, 800px)' : 'clamp(320px, 45vh, 420px)',
+                display: 'flex',
+                alignItems: 'center',
+                overflow: 'hidden',
+                background: hasImages ? '#050505' : gradient,
+                isolation: 'isolate',
             }}
-          >
-            {/* The actual image element — zoom animates independently */}
-            <div
-              // Changing key restarts the CSS animation each slide change
-              key={isActive ? zoomKey : 'idle'}
-              style={{
-                width: '100%', height: '100%',
-                backgroundImage: `url(${img})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                // Brightness controls exposure; contrast + saturate add pop
-                filter: 'brightness(0.80) contrast(1.08) saturate(1.06)',
-                // Gentle Ken-Burns zoom on each slide
-                animation: (isActive && mounted) ? 'heroZoomIn 9s ease forwards' : 'none',
-                transformOrigin: 'center center',
-                // GPU-composited — no layout thrash
-                willChange: 'transform',
-              }}
-            />
-          </div>
-        );
-      })}
-
-      {/* ──────────────────────────────────────────────────────────────────────
-          2. OVERLAY STACK (photo mode)
-          Three purposeful layers — not one big black blanket.
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+        >
+            {/* ──────────────────────────────────────────────────────────────────────
+          1. CAROUSEL TRACK (Hardware Accelerated Sliding)
       ─────────────────────────────────────────────────────────────────────── */}
-      {hasImages && (
-        <>
-          {/* Layer A: Adaptive gradient — lighter in the image zone, darker at edges */}
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute', inset: 0, zIndex: 1,
-              background: `linear-gradient(
-                to bottom,
-                rgba(0,0,0,0.38) 0%,     /* behind navbar */
-                rgba(0,0,0,0.08) 28%,    /* image visibility zone */
-                rgba(0,0,0,0.06) 50%,    /* image visibility zone */
-                rgba(0,0,0,0.42) 80%,    /* transition to text */
-                rgba(0,0,0,0.68) 100%    /* text area */
+            {hasImages && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        inset: 0,
+                        display: 'flex',
+                        transform: `translateX(-${activeIdx * 100}%)`,
+                        transition: 'transform 0.65s cubic-bezier(0.25, 1, 0.5, 1)', // Smooth iOS-like easing
+                        willChange: 'transform',
+                        zIndex: 0,
+                    }}
+                >
+                    {images.map((img, idx) => (
+                        <div
+                            key={idx}
+                            style={{
+                                position: 'relative',
+                                minWidth: '100%',
+                                height: '100%',
+                                overflow: 'hidden',
+                            }}
+                        >
+                            {/* Skeleton Loader */}
+                            {!loadedImages[idx] && (
+                                <div
+                                    style={{
+                                        position: 'absolute',
+                                        inset: 0,
+                                        background: 'linear-gradient(90deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%)',
+                                        backgroundSize: '200% 100%',
+                                        animation: 'pulse 1.5s infinite',
+                                    }}
+                                />
+                            )}
+
+                            {/* Native IMG for better LCP & Performance */}
+                            <img
+                                src={img}
+                                alt={`Hero visual ${idx + 1}`}
+                                loading={idx === 0 ? 'eager' : 'lazy'} // Eager load first image!
+                                onLoad={() => handleImageLoad(idx)}
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    objectPosition: 'center',
+                                    opacity: loadedImages[idx] ? 1 : 0,
+                                    transition: 'opacity 0.4s ease-in',
+                                    transform: activeIdx === idx ? 'scale(1)' : 'scale(1.05)',
+                                    transitionProperty: 'opacity, transform',
+                                    transitionDuration: '0.4s, 6s',
+                                    transitionTimingFunction: 'ease-out',
+                                }}
+                            />
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* ──────────────────────────────────────────────────────────────────────
+          2. PREMIUM OVERLAYS & TEXTURES
+      ─────────────────────────────────────────────────────────────────────── */}
+            {hasImages && (
+                <>
+                    {/* Subtle Pattern Overlay (Requested) */}
+                    <div
+                        aria-hidden="true"
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            zIndex: 1,
+                            backgroundImage: 'url(/yemen-pattern.jpg)', // Make sure this is in your public folder
+                            backgroundSize: '300px',
+                            opacity: 0.04, // Very subtle
+                            mixBlendMode: 'overlay',
+                            pointerEvents: 'none',
+                        }}
+                    />
+
+                    {/* Smart Gradient: Darker at bottom for text, darker at top for navbar */}
+                    <div
+                        aria-hidden="true"
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            zIndex: 2,
+                            background: `linear-gradient(
+                180deg,
+                rgba(0,0,0,0.4) 0%,     
+                rgba(0,0,0,0.1) 20%,    
+                rgba(0,0,0,0.1) 50%,    
+                rgba(0,0,0,0.65) 85%,   
+                rgba(5,5,5,0.95) 100%   
               )`,
-            }}
-          />
+                            pointerEvents: 'none',
+                        }}
+                    />
+                </>
+            )}
 
-          {/* Layer B: Brand colour tint — identity without killing image */}
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute', inset: 0, zIndex: 1,
-              background: 'rgba(122, 28, 28, 0.10)',
-              mixBlendMode: 'multiply',
-            }}
-          />
-
-          {/* Layer C: Bottom edge bleed — melts into page background */}
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 3,
-              height: '96px',
-              background: 'linear-gradient(to bottom, transparent 0%, var(--bg, #07080b) 100%)',
-              pointerEvents: 'none',
-            }}
-          />
-        </>
-      )}
-
-      {/* ──────────────────────────────────────────────────────────────────────
-          3. NO-PHOTO MODE DECORATIONS (unchanged design)
+            {/* ──────────────────────────────────────────────────────────────────────
+          3. NO-PHOTO MODE DECORATIONS
       ─────────────────────────────────────────────────────────────────────── */}
-      {!hasImages && (
-        <>
-          <div aria-hidden="true" style={{
-            position: 'absolute', inset: 0, zIndex: 0,
-            backgroundImage:
-              'linear-gradient(rgba(200,168,75,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(200,168,75,0.04) 1px, transparent 1px)',
-            backgroundSize: '40px 40px',
-          }} />
-          <div aria-hidden="true" style={{
-            position: 'absolute', top: '-60px', right: '10%', zIndex: 0,
-            width: '300px', height: '300px', borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(139,26,42,0.35) 0%, transparent 70%)',
-            filter: 'blur(40px)',
-          }} />
-          <div aria-hidden="true" style={{
-            position: 'absolute', bottom: '-40px', left: '15%', zIndex: 0,
-            width: '200px', height: '200px', borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(200,168,75,0.2) 0%, transparent 70%)',
-            filter: 'blur(30px)',
-          }} />
-        </>
-      )}
+            {!hasImages && (
+                <>
+                    <div aria-hidden="true" style={{
+                        position: 'absolute', inset: 0, zIndex: 0,
+                        backgroundImage: 'linear-gradient(rgba(200,168,75,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(200,168,75,0.04) 1px, transparent 1px)',
+                        backgroundSize: '40px 40px',
+                    }} />
+                    <div aria-hidden="true" style={{
+                        position: 'absolute', top: '-60px', right: '10%', zIndex: 0,
+                        width: '300px', height: '300px', borderRadius: '50%',
+                        background: 'radial-gradient(circle, rgba(139,26,42,0.35) 0%, transparent 70%)',
+                        filter: 'blur(40px)',
+                    }} />
+                </>
+            )}
 
-      {/* ──────────────────────────────────────────────────────────────────────
-          4. CONTENT
+            {/* ──────────────────────────────────────────────────────────────────────
+          4. CONTENT CONTAINER (Mobile Optimized)
       ─────────────────────────────────────────────────────────────────────── */}
-      <div
-        style={{
-          position: 'relative', zIndex: 2,
-          maxWidth: '1260px', margin: '0 auto', width: '100%',
-          padding: 'clamp(116px, 16vw, 156px) clamp(20px, 4vw, 40px) clamp(56px, 7vw, 88px)',
-          textAlign: 'center',
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-        }}
-      >
-        {/* Radial spotlight — softens text area without a hard box */}
-        {hasImages && (
-          <div aria-hidden="true" style={{
-            position: 'absolute',
-            top: '50%', left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '65%', height: '55%', minWidth: 320,
-            background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.28) 0%, transparent 72%)',
-            pointerEvents: 'none',
-            zIndex: 0,
-          }} />
-        )}
-
-        {/* Eyebrow */}
-        {eyebrow && (
-          <div style={{
-            position: 'relative', zIndex: 1,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            gap: 12, marginBottom: 18,
-            animation: mounted ? 'heroCrossfadeIn 0.6s ease' : 'none',
-          }}>
-            <div style={{ height: 1, width: 36, background: '#c8a84b', opacity: 0.85 }} />
-            <span style={{
-              color: '#c8a84b', fontSize: '0.68rem', fontWeight: 700,
-              textTransform: 'uppercase', letterSpacing: '0.2em',
-              fontFamily: 'var(--f-ui, Outfit, sans-serif)',
-              textShadow: hasImages ? '0 1px 6px rgba(0,0,0,0.9)' : 'none',
-            }}>
-              {eyebrow}
-            </span>
-            <div style={{ height: 1, width: 36, background: '#c8a84b', opacity: 0.85 }} />
-          </div>
-        )}
-
-        {/* Title */}
-        <h1 style={{
-          position: 'relative', zIndex: 1,
-          color: '#ffffff',
-          fontSize: 'clamp(1.95rem, 5.5vw, 3.5rem)',
-          fontWeight: 900, lineHeight: 1.18,
-          marginBottom: 22,
-          maxWidth: 700,
-          // Layered shadow: sharp close shadow + wide soft halo
-          textShadow: hasImages
-            ? '0 1px 3px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.55)'
-            : '0 2px 12px rgba(0,0,0,0.4)',
-          letterSpacing: '-0.015em',
-        }}>
-          {title}
-        </h1>
-
-        {/* Description */}
-        {description && (
-          <p style={{
-            position: 'relative', zIndex: 1,
-            color: hasImages ? 'rgba(255,255,255,0.93)' : 'rgba(240,236,228,0.72)',
-            fontSize: 'clamp(0.92rem, 2vw, 1.1rem)',
-            maxWidth: 600, margin: '0 auto 34px',
-            lineHeight: 1.82,
-            textShadow: hasImages ? '0 1px 10px rgba(0,0,0,0.75)' : 'none',
-            fontWeight: 400,
-          }}>
-            {description}
-          </p>
-        )}
-
-        {/* CTA */}
-        {ctaLabel && ctaPath && (
-          <button
-            onClick={() => navigate(ctaPath)}
-            style={{
-              position: 'relative', zIndex: 1,
-              padding: '13px 32px', borderRadius: 14,
-              background: 'rgba(122,28,28,0.88)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              color: '#fff', fontSize: '0.95rem', fontWeight: 700,
-              border: '1px solid rgba(255,255,255,0.18)',
-              cursor: 'pointer',
-              boxShadow: '0 8px 28px rgba(0,0,0,0.35)',
-              transition: 'all 0.25s ease',
-            }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLElement).style.background = 'rgba(143,32,32,1)';
-              (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
-              (e.currentTarget as HTMLElement).style.boxShadow = '0 12px 36px rgba(0,0,0,0.45)';
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLElement).style.background = 'rgba(122,28,28,0.88)';
-              (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
-              (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 28px rgba(0,0,0,0.35)';
-            }}
-          >
-            {ctaLabel}
-          </button>
-        )}
-
-        {/* Slideshow dots */}
-        {images.length > 1 && (
-          <div style={{
-            position: 'relative', zIndex: 1,
-            display: 'flex', justifyContent: 'center', alignItems: 'center',
-            gap: 7, marginTop: 32,
-          }}>
-            {images.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => goTo(idx)}
-                aria-label={`Slide ${idx + 1}`}
+            <div
                 style={{
-                  width: idx === activeIdx ? 28 : 7,
-                  height: 7, borderRadius: 4,
-                  border: 'none', cursor: 'pointer', padding: 0,
-                  background: idx === activeIdx ? '#c8a84b' : 'rgba(255,255,255,0.42)',
-                  boxShadow: '0 1px 6px rgba(0,0,0,0.45)',
-                  transition: 'all 0.35s cubic-bezier(0.4,0,0.2,1)',
+                    position: 'relative',
+                    zIndex: 3,
+                    width: '100%',
+                    maxWidth: '1260px',
+                    margin: '0 auto',
+                    padding: 'clamp(120px, 18vw, 180px) clamp(24px, 5vw, 48px) clamp(60px, 8vw, 90px)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    textAlign: 'center',
+                    pointerEvents: 'none', // Lets swipes pass through to the section
                 }}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    </section>
-  );
+            >
+                {eyebrow && (
+                    <div style={{
+                        display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20,
+                        pointerEvents: 'auto'
+                    }}>
+                        <div style={{ height: 1, width: 40, background: '#c8a84b' }} />
+                        <span style={{
+                            color: '#c8a84b', fontSize: '0.75rem', fontWeight: 700,
+                            textTransform: 'uppercase', letterSpacing: '0.25em',
+                        }}>
+                            {eyebrow}
+                        </span>
+                        <div style={{ height: 1, width: 40, background: '#c8a84b' }} />
+                    </div>
+                )}
+
+                <h1 style={{
+                    color: '#ffffff',
+                    fontSize: 'clamp(2.2rem, 6vw, 4rem)',
+                    fontWeight: 800,
+                    lineHeight: 1.1,
+                    marginBottom: 24,
+                    maxWidth: 800,
+                    textShadow: '0 4px 24px rgba(0,0,0,0.6)',
+                    letterSpacing: '-0.02em',
+                    pointerEvents: 'auto'
+                }}>
+                    {title}
+                </h1>
+
+                {description && (
+                    <p style={{
+                        color: 'rgba(255,255,255,0.85)',
+                        fontSize: 'clamp(1rem, 2vw, 1.15rem)',
+                        maxWidth: 600,
+                        margin: '0 auto 40px',
+                        lineHeight: 1.6,
+                        textShadow: '0 2px 10px rgba(0,0,0,0.5)',
+                        pointerEvents: 'auto'
+                    }}>
+                        {description}
+                    </p>
+                )}
+
+                {ctaLabel && ctaPath && (
+                    <button
+                        onClick={() => navigate(ctaPath)}
+                        style={{
+                            padding: '14px 36px',
+                            borderRadius: '50px', // More modern pill shape
+                            background: '#7a1c1c',
+                            color: '#fff',
+                            fontSize: '1rem',
+                            fontWeight: 600,
+                            border: 'none',
+                            cursor: 'pointer',
+                            boxShadow: '0 8px 24px rgba(122, 28, 28, 0.4)',
+                            transition: 'all 0.3s ease',
+                            pointerEvents: 'auto'
+                        }}
+                        onMouseEnter={e => {
+                            (e.currentTarget as HTMLElement).style.background = '#8f2020';
+                            (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
+                        }}
+                        onMouseLeave={e => {
+                            (e.currentTarget as HTMLElement).style.background = '#7a1c1c';
+                            (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
+                        }}
+                    >
+                        {ctaLabel}
+                    </button>
+                )}
+
+                {/* ──────────────────────────────────────────────────────────────────────
+            5. DESKTOP ARROWS & MOBILE DOTS
+        ─────────────────────────────────────────────────────────────────────── */}
+                {images.length > 1 && (
+                    <div style={{ pointerEvents: 'auto', width: '100%', marginTop: 40, position: 'relative' }}>
+
+                        {/* Desktop Arrows (Hidden on small screens via CSS/media query logic conceptually) */}
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            gap: '12px'
+                        }}>
+                            {images.map((_, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => goTo(idx)}
+                                    aria-label={`Go to slide ${idx + 1}`}
+                                    style={{
+                                        width: idx === activeIdx ? '32px' : '8px',
+                                        height: '8px',
+                                        borderRadius: '4px',
+                                        border: 'none',
+                                        padding: 0,
+                                        cursor: 'pointer',
+                                        background: idx === activeIdx ? '#c8a84b' : 'rgba(255,255,255,0.3)',
+                                        transition: 'all 0.4s cubic-bezier(0.25, 1, 0.5, 1)',
+                                    }}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Injecting minimal keyframes for the skeleton loader */}
+            <style>
+                {`
+          @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+          }
+        `}
+            </style>
+        </section>
+    );
 };

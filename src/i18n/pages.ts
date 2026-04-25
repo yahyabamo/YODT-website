@@ -84,7 +84,7 @@ export const navbarText = {
     aboutIstanbul: { ar: "عن إسطنبول", en: "About Istanbul", tr: "İstanbul Hakkında" },
     aboutYemen: { ar: "عن اليمن", en: "About Yemen", tr: "Yemen Hakkında" },
     universities: { ar: "جامعات إسطنبول", en: "Istanbul Universities", tr: "İstanbul Üniversiteleri" },
-    ourStudents: { ar: "طلابنا المتميزون", en: "Our Outstanding Students", tr: "Başarılı Öğrencilerimiz" },
+    ourStudents: { ar: "كادر الاتحاد", en: "Our Team", tr: "Ekibimiz" },
     ourIcons: { ar: "رموزنا", en: "Our Icons", tr: "İkonlarımız" },
     achievements: { ar: "إنجازات الاتحاد", en: "Union Achievements", tr: "Birlik Başarıları" },
   },
