@@ -580,7 +580,7 @@ const ReelVideo = ({
                 </button>
 
                 {/* Comment */}
-                <button
+                {/* <button
                     className="flex flex-col items-center gap-1.5"
                     onClick={(e) => { e.stopPropagation(); setIsCommentsOpen(true); loadComments(); haptic.light(); }}
                     style={{ touchAction: 'manipulation' }}
@@ -591,7 +591,7 @@ const ReelVideo = ({
                     <span className="text-white text-xs font-bold drop-shadow-lg action-count">
                         {formatCount(stats.comments)}
                     </span>
-                </button>
+                </button> */}
 
                 {/* Save */}
                 {/* <button

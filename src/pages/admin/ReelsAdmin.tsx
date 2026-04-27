@@ -46,6 +46,56 @@ async function uploadImage(file: File): Promise<string> {
     return data.secure_url;
 }
 
+// دالة لاستخراج ID الفيديو من يوتيوب
+const getYouTubeId = (url: string): string => {
+    if (!url) return '';
+    if (url.includes('v=')) return url.split('v=')[1]?.split('&')[0] ?? '';
+    if (url.includes('youtu.be/')) return url.split('youtu.be/')[1]?.split('?')[0] ?? '';
+    if (url.includes('shorts/')) return url.split('shorts/')[1]?.split('?')[0] ?? '';
+    return url.split('/').pop()?.split('?')[0] ?? '';
+};
+
+
+
+
+// دالة لاستخراج صورة من أي رابط فيديو مباشر (MP4) باستخدام Canvas
+const extractFrameFromVideo = async (videoUrl: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const video = document.createElement("video");
+        video.crossOrigin = "anonymous"; // لتجنب مشاكل CORS
+        video.src = videoUrl;
+        video.muted = true;
+
+        video.addEventListener('loadeddata', () => {
+            video.currentTime = 1; // أخذ لقطة عند الثانية رقم 1
+        });
+
+        video.addEventListener('seeked', async () => {
+            try {
+                const canvas = document.createElement("canvas");
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 360;
+                const ctx = canvas.getContext("2d");
+                ctx?.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const dataUrl = canvas.toDataURL("image/jpeg");
+
+                // تحويل الصورة (Base64) إلى ملف لرفعه
+                const res = await fetch(dataUrl);
+                const blob = await res.blob();
+                const file = new File([blob], "auto-thumbnail.jpg", { type: "image/jpeg" });
+
+                // رفع الصورة المولدة عبر Cloudinary باستخدام دالتك الأصلية!
+                const uploadedUrl = await uploadImage(file);
+                resolve(uploadedUrl);
+            } catch (err) {
+                reject(err);
+            }
+        });
+
+        video.onerror = () => reject("فشل تحميل الفيديو لاستخراج الصورة");
+    });
+};
+
 export default function ReelsAdmin() {
     useRoleGuard(['reels']);
     const { setConfirm } = useOutletContext<{ setConfirm: (v: any) => void }>();
@@ -95,24 +145,51 @@ export default function ReelsAdmin() {
         setSaving(true);
         try {
             let finalThumbnailUrl = form.thumbnail_url;
+
+            // الحالة 1: الأدمن قام برفع صورة مصغرة يدوياً
             if (selectedImage) {
                 finalThumbnailUrl = await uploadImage(selectedImage);
             }
+            // الحالة 2: لم يتم رفع صورة، سنقوم بتوليدها تلقائياً
+            else if (!finalThumbnailUrl && form.video_url) {
+                // التحقق مما إذا كان الرابط من يوتيوب
+                if (form.video_url.includes('youtube.com') || form.video_url.includes('youtu.be')) {
+                    const ytId = getYouTubeId(form.video_url);
+                    if (ytId) {
+                        finalThumbnailUrl = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+                    }
+                }
+                // خلاف ذلك، محاولة استخراج اللقطة من رابط الفيديو المباشر (مثل MP4)
+                else {
+                    try {
+                        toast.info("جاري استخراج صورة مصغرة تلقائياً من الفيديو...");
+                        finalThumbnailUrl = await extractFrameFromVideo(form.video_url);
+                    } catch (e) {
+                        console.warn("لم نتمكن من استخراج صورة تلقائية، سيتم الحفظ بدونها.", e);
+                    }
+                }
+            }
+
             const cleanPayload: any = {
                 title: form.title,
                 description: form.description,
                 video_url: form.video_url,
                 status: form.status,
                 allow_comments: form.allow_comments,
-                thumbnail_url: finalThumbnailUrl
+                thumbnail_url: finalThumbnailUrl // سيتم حفظ الصورة التلقائية هنا
             };
             if (editing) cleanPayload.id = editing.id;
             console.log("Saving Reel Payload:", cleanPayload);
+
             await upsertReel(cleanPayload);
             toast.success(editing ? "تم التحديث" : "تم الإضافة");
-            setModal(false); load();
-        } catch (err: any) { toast.error(err.message || err.details || "فشل الحفظ"); }
-        finally { setSaving(false); }
+            setModal(false);
+            load();
+        } catch (err: any) {
+            toast.error(err.message || err.details || "فشل الحفظ");
+        } finally {
+            setSaving(false);
+        }
     };
 
     const del = (e: React.MouseEvent, r: Reel) => {
@@ -144,6 +221,7 @@ export default function ReelsAdmin() {
         try { await upsertReel(cleanPayload); toast.success("تم التحديث"); load(); }
         catch (err: any) { toast.error(err.message || err.details || "فشل التحديث"); }
     };
+
 
     return (
         <div>
@@ -179,16 +257,16 @@ export default function ReelsAdmin() {
                                         <div className="text-[10px] text-[#9ca3af] mb-0.5">❤️ إعجاب</div>
                                         <div className="text-[13px] font-extrabold text-[#111]">{r.reel_likes?.[0]?.count || 0}</div>
                                     </div>
-                                    <div className="text-center">
+                                    {/* <div className="text-center">
                                         <div className="text-[10px] text-[#9ca3af] mb-0.5">💬 تعليق</div>
                                         <div className="text-[13px] font-extrabold text-[#111]">{r.reel_comments?.[0]?.count || 0}</div>
-                                    </div>
+                                    </div> */}
                                 </div>
 
                                 <div className="flex gap-1.5 flex-wrap px-0.5">
                                     <button type="button" onClick={(e) => { e.stopPropagation(); setEditing(r); setForm({ ...r }); setSelectedImage(null); setModal(true) }} className="flex-[1_min-content] py-2 rounded-lg border-none bg-[#f3f4f6] cursor-pointer font-semibold text-[11px] text-[#374151]">🛠 تعديل</button>
-                                    <button type="button" onClick={(e) => { e.stopPropagation(); loadReelComments(r) }} className="flex-[1_min-content] py-2 rounded-lg border-none bg-[#f3f4f6] cursor-pointer font-semibold text-[11px] text-[#374151]">💬 التعليقات</button>
-                                    <button type="button" onClick={(e) => toggleComments(e, r)} className="flex-[1.2_auto] py-2 rounded-lg border-none bg-[#e0f2fe] cursor-pointer font-semibold text-[10px] text-[#0284c7] whitespace-nowrap px-1">{r.allow_comments ? "إغلاق التعليقات" : "فتح التعليقات"}</button>
+                                    {/* <button type="button" onClick={(e) => { e.stopPropagation(); loadReelComments(r) }} className="flex-[1_min-content] py-2 rounded-lg border-none bg-[#f3f4f6] cursor-pointer font-semibold text-[11px] text-[#374151]">💬 التعليقات</button>
+                                    <button type="button" onClick={(e) => toggleComments(e, r)} className="flex-[1.2_auto] py-2 rounded-lg border-none bg-[#e0f2fe] cursor-pointer font-semibold text-[10px] text-[#0284c7] whitespace-nowrap px-1">{r.allow_comments ? "إغلاق التعليقات" : "فتح التعليقات"}</button> */}
                                     <button type="button" onClick={(e) => del(e, r)} className="w-8 h-8 rounded-lg border-none bg-[#fee2e2] text-[#dc2626] cursor-pointer text-[13px] flex items-center justify-center shrink-0">🗑</button>
                                 </div>
                             </div>
@@ -200,19 +278,22 @@ export default function ReelsAdmin() {
 
             {/* Basic Edit Modal */}
             <Modal open={modal} title={editing ? "تعديل الريل" : "ريل جديد"} onClose={() => setModal(false)}>
-                <Inp label="رابط الفيديو *" value={form.video_url} onChange={e => setForm(f => ({ ...f, video_url: e.target.value }))} placeholder="https://youtube.com/..." />
-                <Inp label="العنوان" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="عنوان الريل" />
-                <Tex label="الوصف" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="وصف الفيديو..." />
+                <Inp
+                    label="رابط الفيديو *"
+                    value={form.video_url}
+                    onChange={e => setForm(f => ({ ...f, video_url: e.target.value }))}
+                    placeholder="https://youtube.com/..."
+                />                <Tex label="الوصف" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="وصف الفيديو..." />
                 <div className="mb-4">
                     <label className="block text-[13px] font-semibold text-[#374151] mb-1.5">الصورة المصغرة (اختياري)</label>
                     <input type="file" accept="image/*" onChange={(e) => setSelectedImage(e.target.files?.[0] || null)} className="w-full p-2 border border-[#e5e7eb] rounded-xl text-sm bg-white" />
                     {form.thumbnail_url && !selectedImage && <div className="mt-2 text-xs text-[#6b7280]">يوجد صورة محفوظة حالياً <a href={form.thumbnail_url} target="_blank" rel="noreferrer" style={{ color: B }}>عرض</a></div>}
                 </div>
                 <Sel label="الحالة" value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as any }))}><option value="active">نشط</option><option value="inactive">معطل</option></Sel>
-                <div className="flex items-center gap-2.5 bg-[#f8fafc] rounded-xl px-3.5 py-2.5 mb-4">
+                {/* <div className="flex items-center gap-2.5 bg-[#f8fafc] rounded-xl px-3.5 py-2.5 mb-4">
                     <input type="checkbox" id="cmts" checked={form.allow_comments} onChange={e => setForm(f => ({ ...f, allow_comments: e.target.checked }))} className="w-4 h-4 rounded" />
                     <label htmlFor="cmts" className="text-[13px] font-semibold text-[#374151] cursor-pointer">السماح بالتعليقات</label>
-                </div>
+                </div> */}
                 <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl border-none font-bold cursor-pointer text-sm mt-1 text-white opacity-100 disabled:opacity-70 transition-opacity" style={{ background: B }}>
                     {saving ? "جاري الحفظ..." : editing ? "حفظ" : "إضافة"}
                 </button>
