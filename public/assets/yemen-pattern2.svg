@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+  <defs>
+    <pattern id="yemeni-geo" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
+      <!-- 8-pointed star / Islamic geometric motif — scaled up for visibility -->
+      <polygon points="40,5 47,26 69,18 56,36 74,48 52,48 58,70 40,56 22,70 28,48 6,48 24,36 11,18 33,26" fill="none" stroke="currentColor" stroke-width="1.2" opacity="1"/>
+      <!-- Inner diamond -->
+      <polygon points="40,28 50,40 40,52 30,40" fill="none" stroke="currentColor" stroke-width="0.9" opacity="1"/>
+      <!-- Corner quarter-stars -->
+      <polygon points="0,0 5,10 10,0 5,5 15,5 8,10" fill="none" stroke="currentColor" stroke-width="0.6" opacity="0.8"/>
+      <polygon points="80,0 75,10 70,0 75,5 65,5 72,10" fill="none" stroke="currentColor" stroke-width="0.6" opacity="0.8"/>
+      <polygon points="0,80 5,70 10,80 5,75 15,75 8,70" fill="none" stroke="currentColor" stroke-width="0.6" opacity="0.8"/>
+      <polygon points="80,80 75,70 70,80 75,75 65,75 72,70" fill="none" stroke="currentColor" stroke-width="0.6" opacity="0.8"/>
+      <!-- Connecting diamond midpoints -->
+      <line x1="40" y1="5" x2="0" y2="40" stroke="currentColor" stroke-width="0.3" opacity="0.4"/>
+      <line x1="40" y1="5" x2="80" y2="40" stroke="currentColor" stroke-width="0.3" opacity="0.4"/>
+      <line x1="40" y1="75" x2="0" y2="40" stroke="currentColor" stroke-width="0.3" opacity="0.4"/>
+      <line x1="40" y1="75" x2="80" y2="40" stroke="currentColor" stroke-width="0.3" opacity="0.4"/>
+    </pattern>
+  </defs>
+  <rect width="160" height="160" fill="url(#yemeni-geo)" color="#c8943a"/>
+</svg>
