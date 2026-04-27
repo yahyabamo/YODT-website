@@ -132,6 +132,7 @@ import ActivitiesTabAdmin from "./pages/admin/homepage/ActivitiesTab";
 import PartnersTabAdmin from "./pages/admin/homepage/PartnersTab";
 import FooterTabAdmin from "./pages/admin/homepage/FooterTab";
 // import Homepageshared from "./pages/admin/HomepageManager";
+import Publish from "./pages/admin/publish";
 
 const queryClient = new QueryClient();
 
@@ -267,6 +268,8 @@ const App = () => (
                   <Route path="info/achievements/new" element={<AchievementFormAdmin />} />
                   <Route path="info/achievements/:id" element={<AchievementFormAdmin />} />
                   <Route path="info/hero-images" element={<HeroImagesAdmin />} />
+                  <Route path="publish" element={<Publish />} />
+
 
                   {/* Make sure imports above are un-commented to use these! */}
                   <Route path="info/articles" element={<ArticlesAdmin />} />

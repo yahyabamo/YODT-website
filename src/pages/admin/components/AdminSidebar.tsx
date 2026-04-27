@@ -39,6 +39,7 @@ export const navGroups = [
         items: [
             { id: "homepage", path: "/admin/homepage", label: "مدير الصفحة الرئيسية", icon: Layout, permission: null, adminOnly: true },
             { id: "info-cms", path: "/admin/info-cms", label: "إدارة المحتوى", icon: FileText, permission: null, adminOnly: true },
+            { id: "published", path: "/admin/publish", label: "المنشورات", icon: FileText, permission: null, adminOnly: true },
         ]
     },
     {
