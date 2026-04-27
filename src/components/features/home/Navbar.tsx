@@ -36,7 +36,7 @@ export const Navbar: React.FC = () => {
         { path: '/about-yemen', key: 'aboutYemen' as const },
         { path: '/universities', key: 'universities' as const },
         { path: '/students', key: 'ourStudents' as const },
-        { path: '/icons', key: 'ourIcons' as const },
+        { path: '/store', key: 'store' as const },
         { path: '/achievements', key: 'achievements' as const },
     ];
 
