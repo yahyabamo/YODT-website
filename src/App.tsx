@@ -134,6 +134,16 @@ import FooterTabAdmin from "./pages/admin/homepage/FooterTab";
 // import Homepageshared from "./pages/admin/HomepageManager";
 import Publish from "./pages/admin/publish";
 
+// ─── Store Pages ──────────────────────────────────────────────────────────────
+import StorePage from "./pages/store/StorePage";
+import StoreProductPage from "./pages/store/StoreProductPage";
+import StoreAdminHub from "./pages/admin/store/StoreAdminHub";
+import StoreCategoriesAdmin from "./pages/admin/store/StoreCategoriesAdmin";
+import StoreCategoryForm from "./pages/admin/store/StoreCategoryForm";
+import StoreProductsAdmin from "./pages/admin/store/StoreProductsAdmin";
+import StoreProductForm from "./pages/admin/store/StoreProductForm";
+import StoreOrdersAdmin from "./pages/admin/store/StoreOrdersAdmin";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -206,6 +216,11 @@ const App = () => (
                 <Route path="/engagement/chat" element={<Chat />} />
                 <Route path="/engagement/points" element={<EngagementPoints />} />
                 <Route path="/verify-member/:id" element={<Verify />} />
+                
+                {/* ─── Store Public Routes (Standalone Layout) ───────────── */}
+                <Route path="/store" element={<StorePage />} />
+                <Route path="/store/:productId" element={<StoreProductPage />} />
+
                 {/* 2. PROTECTED ADMIN PAGES (NO Navbar / Footer, AdminGuard wraps them) */}
                 <Route
                   path="/admin"
@@ -269,6 +284,16 @@ const App = () => (
                   <Route path="info/achievements/:id" element={<AchievementFormAdmin />} />
                   <Route path="info/hero-images" element={<HeroImagesAdmin />} />
                   <Route path="publish" element={<Publish />} />
+
+                  {/* ─── Store Admin Routes ─────────────────────────────── */}
+                  <Route path="store" element={<StoreAdminHub />} />
+                  <Route path="store/categories" element={<StoreCategoriesAdmin />} />
+                  <Route path="store/categories/new" element={<StoreCategoryForm />} />
+                  <Route path="store/categories/:id" element={<StoreCategoryForm />} />
+                  <Route path="store/products" element={<StoreProductsAdmin />} />
+                  <Route path="store/products/new" element={<StoreProductForm />} />
+                  <Route path="store/products/:id" element={<StoreProductForm />} />
+                  <Route path="store/orders" element={<StoreOrdersAdmin />} />
 
 
                   {/* Make sure imports above are un-commented to use these! */}

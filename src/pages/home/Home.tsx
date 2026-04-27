@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   ChevronLeft, Sparkles, BookOpen, Calendar,
-  Briefcase, Play, Zap, Users, ArrowLeft, ArrowUpRight, GraduationCap, Shield,
+  Briefcase, Play, Zap, Users, ArrowLeft, ArrowUpRight, GraduationCap, Shield, ShoppingBag
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { BottomNav } from '@/components/layout/BottomNav';
@@ -111,6 +111,14 @@ const Home = () => {
       gradient: 'from-pink-500/20 to-pink-500/5',
       iconColor: 'text-pink-500',
       badge: language === 'ar' ? 'دورات' : 'Courses',
+    },
+    {
+      icon: ShoppingBag,
+      label: language === 'ar' ? 'المتجر' : 'Store',
+      path: '/store?ref=home',
+      gradient: 'from-indigo-500/20 to-indigo-500/5',
+      iconColor: 'text-indigo-500',
+      badge: language === 'ar' ? 'جديد' : 'New',
     },
     {
       icon: Users,

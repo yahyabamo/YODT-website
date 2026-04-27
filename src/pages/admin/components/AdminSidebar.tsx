@@ -7,7 +7,7 @@ import {
     Users, ShieldCheck, Vote,
     HeartHandshake, Compass, Clapperboard,
     Briefcase, Map, GraduationCap, BookOpen,
-    MessageSquare, TrendingUp, Handshake, Tag, BarChart, Layout, FileText
+    MessageSquare, TrendingUp, Handshake, Tag, BarChart, Layout, FileText, ShoppingBag, ListOrdered
 } from "lucide-react";
 
 const B = "#8B1A2A"; // Primary Brand Color
@@ -58,6 +58,15 @@ export const navGroups = [
             { id: "jobadmin", path: "/admin/jobadmin", label: "إدارة الوظائف", icon: Briefcase, permission: null, adminOnly: false },
             { id: "appsmapadmin", path: "/admin/appsmapadmin", label: "تطبيقات وخرائط", icon: Map, permission: null, adminOnly: false },
             { id: "guideadmin", path: "/admin/guideadmin", label: "الدليل والأسئلة", icon: BookOpen, permission: null, adminOnly: false },
+        ]
+    },
+    {
+        title: "إدارة المتجر", // Store Management
+        items: [
+            { id: "store", path: "/admin/store", label: "نظرة عامة المتجر", icon: ShoppingBag, permission: null, adminOnly: true },
+            { id: "store/categories", path: "/admin/store/categories", label: "فئات المتجر", icon: Tag, permission: null, adminOnly: true },
+            { id: "store/products", path: "/admin/store/products", label: "المنتجات", icon: ShoppingBag, permission: null, adminOnly: true },
+            { id: "store/orders", path: "/admin/store/orders", label: "الطلبات", icon: ListOrdered, permission: null, adminOnly: true },
         ]
     },
     {

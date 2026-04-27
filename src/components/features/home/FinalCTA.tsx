@@ -33,6 +33,11 @@ const ctaText = {
         en: 'Register Your Free Membership',
         tr: 'Ücretsiz Üyeliğine Kayıt Ol',
     },
+    storeBtn: {
+        ar: 'تصفح منتجات المتجر',
+        en: 'Browse Store Products',
+        tr: 'Mağaza Ürünlerine Göz At',
+    },
 } as const;
 
 export const FinalCTA: React.FC<FinalCTAProps> = ({ onOpenModal }) => {
@@ -79,11 +84,11 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ onOpenModal }) => {
                     {ctaText.subtitle[lang]}
                 </p>
 
-                {/* CTA Button */}
-                <div className="mb-16">
+                {/* CTA Buttons */}
+                <div className="mb-16 flex flex-col sm:flex-row items-center justify-center gap-4">
                     <button
                         onClick={() => navigate('/login')}
-                        className="inline-flex items-center justify-center gap-2 px-10 py-5 bg-primary text-primary-foreground font-sans font-bold text-sm sm:text-base rounded-2xl shadow-xl shadow-primary/25 hover:shadow-2xl hover:shadow-primary/30 hover:-translate-y-1.5 transition-all duration-300 ease-out group"
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-10 py-5 bg-primary text-primary-foreground font-sans font-bold text-sm sm:text-base rounded-2xl shadow-xl shadow-primary/25 hover:shadow-2xl hover:shadow-primary/30 hover:-translate-y-1.5 transition-all duration-300 ease-out group"
                     >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform duration-300">
                             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -92,6 +97,18 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ onOpenModal }) => {
                             <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                         </svg>
                         <span>{ctaText.registerBtn[lang]}</span>
+                    </button>
+
+                    <button
+                        onClick={() => navigate('/store')}
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-10 py-5 bg-card text-foreground border border-border font-sans font-bold text-sm sm:text-base rounded-2xl shadow-sm hover:shadow-md hover:border-primary/50 hover:-translate-y-1.5 transition-all duration-300 ease-out group"
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary group-hover:scale-110 transition-transform duration-300">
+                            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+                            <path d="M3 6h18"/>
+                            <path d="M16 10a4 4 0 0 1-8 0"/>
+                        </svg>
+                        <span>{ctaText.storeBtn[lang]}</span>
                     </button>
                 </div>
 
