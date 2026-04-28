@@ -108,15 +108,15 @@ export const StorePromo = () => {
 
                     {/* Visual Side */}
                     <div className="w-full lg:w-1/2 reveal-right relative mt-10 lg:mt-0">
-                        <div className="relative w-full max-w-lg mx-auto aspect-square">
+                        <div className="relative w-full max-w-lg mx-auto aspect-square sm:aspect-auto sm:min-h-[400px]">
                             {/* Decorative Frame */}
-                            <div className="absolute inset-4 border-2 border-amber-500/20 rounded-[40px] -rotate-6 transition-transform duration-700 group-hover:rotate-0" />
-                            <div className="absolute inset-4 bg-gradient-to-br from-card to-background rounded-[40px] border border-border/60 overflow-hidden shadow-2xl flex items-center justify-center p-6">
+                            <div className="absolute inset-2 sm:inset-4 border-2 border-amber-500/20 rounded-[24px] sm:rounded-[40px] -rotate-3 sm:-rotate-6 transition-transform duration-700 group-hover:rotate-0" />
+                            <div className="absolute inset-2 sm:inset-4 bg-gradient-to-br from-card to-background rounded-[24px] sm:rounded-[40px] border border-border/60 overflow-hidden shadow-2xl flex items-center justify-center p-3 sm:p-6">
 
                                 {/* Abstract composition representing the store */}
                                 <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url(/assets/yemen-pattern.svg)', backgroundSize: '100px 100px' }} />
 
-                                <div className="relative z-10 w-full h-full flex flex-col justify-between">
+                                <div className="relative z-10 w-full h-full flex flex-col justify-between py-2 sm:py-0 gap-4 sm:gap-0">
 
                                     {displayedProducts.length > 0 ? (
                                         <>
@@ -124,17 +124,17 @@ export const StorePromo = () => {
                                             {displayedProducts[0] && (
                                                 <div
                                                     onClick={() => navigate(`/store/${displayedProducts[0].id}`)}
-                                                    className="w-[85%] sm:w-3/4 bg-background/90 backdrop-blur-md rounded-3xl p-4 shadow-lg border border-border/80 flex items-center gap-5 transform -translate-y-2 translate-x-4 sm:translate-x-8 rotate-3 animate-float hover:scale-105 hover:border-primary/50 transition-transform cursor-pointer"
+                                                    className="w-full sm:w-[85%] bg-background/90 backdrop-blur-md rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-lg border border-border/80 flex items-center gap-3 sm:gap-5 transform sm:-translate-y-2 sm:translate-x-4 sm:rotate-3 animate-float hover:scale-105 hover:border-primary/50 transition-transform cursor-pointer"
                                                 >
-                                                    <div className="w-20 h-20 bg-secondary/80 rounded-2xl shrink-0 flex items-center justify-center text-muted-foreground/40 border border-border/40 overflow-hidden">
+                                                    <div className="w-14 h-14 sm:w-20 sm:h-20 bg-secondary/80 rounded-xl sm:rounded-2xl shrink-0 flex items-center justify-center text-muted-foreground/40 border border-border/40 overflow-hidden">
                                                         {displayedProducts[0].thumbnail ? (
                                                             <img src={displayedProducts[0].thumbnail} alt="" className="w-full h-full object-cover" />
                                                         ) : (
-                                                            <ShoppingBag size={32} />
+                                                            <ShoppingBag size={24} className="sm:w-8 sm:h-8" />
                                                         )}
                                                     </div>
-                                                    <div className="flex-1 space-y-1">
-                                                        <div className="font-bold text-foreground line-clamp-1">{getField(displayedProducts[0], 'name', lang)}</div>
+                                                    <div className="flex-1 space-y-0.5 sm:space-y-1 min-w-0">
+                                                        <div className="font-bold text-foreground text-sm sm:text-base line-clamp-1">{getField(displayedProducts[0], 'name', lang)}</div>
                                                         <div className="text-xs text-muted-foreground font-medium" dir="ltr">
                                                             {displayedProducts[0].price} {displayedProducts[0].currency}
                                                         </div>
@@ -151,11 +151,11 @@ export const StorePromo = () => {
                                             {displayedProducts[1] && (
                                                 <div
                                                     onClick={() => navigate(`/store/${displayedProducts[1].id}`)}
-                                                    className="w-[85%] sm:w-3/4 bg-background/90 backdrop-blur-md rounded-3xl p-4 shadow-lg border border-border/80 flex items-center gap-5 self-end transform translate-y-2 -translate-x-4 sm:-translate-x-8 -rotate-3 animate-float hover:scale-105 hover:border-primary/50 transition-transform cursor-pointer"
+                                                    className="w-full sm:w-[85%] bg-background/90 backdrop-blur-md rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-lg border border-border/80 flex items-center gap-3 sm:gap-5 self-end transform sm:translate-y-2 sm:-translate-x-4 sm:-rotate-3 animate-float hover:scale-105 hover:border-primary/50 transition-transform cursor-pointer"
                                                     style={{ animationDelay: '2.5s' }}
                                                 >
-                                                    <div className="flex-1 space-y-1 text-right">
-                                                        <div className="font-bold text-foreground line-clamp-1">{getField(displayedProducts[1], 'name', lang)}</div>
+                                                    <div className="flex-1 space-y-0.5 sm:space-y-1 text-right min-w-0">
+                                                        <div className="font-bold text-foreground text-sm sm:text-base line-clamp-1">{getField(displayedProducts[1], 'name', lang)}</div>
                                                         <div className="text-xs text-muted-foreground font-medium" dir="ltr">
                                                             {displayedProducts[1].price} {displayedProducts[1].currency}
                                                         </div>
@@ -165,11 +165,11 @@ export const StorePromo = () => {
                                                             </span>
                                                         )}
                                                     </div>
-                                                    <div className="w-20 h-20 bg-secondary/80 rounded-2xl shrink-0 flex items-center justify-center text-muted-foreground/40 border border-border/40 overflow-hidden">
+                                                    <div className="w-14 h-14 sm:w-20 sm:h-20 bg-secondary/80 rounded-xl sm:rounded-2xl shrink-0 flex items-center justify-center text-muted-foreground/40 border border-border/40 overflow-hidden">
                                                         {displayedProducts[1].thumbnail ? (
                                                             <img src={displayedProducts[1].thumbnail} alt="" className="w-full h-full object-cover" />
                                                         ) : (
-                                                            <ShoppingBag size={32} />
+                                                            <ShoppingBag size={24} className="sm:w-8 sm:h-8" />
                                                         )}
                                                     </div>
                                                 </div>
@@ -178,40 +178,40 @@ export const StorePromo = () => {
                                     ) : (
                                         <>
                                             {/* Mock Product Card 1 */}
-                                            <div className="w-[85%] sm:w-3/4 bg-background/80 backdrop-blur-md rounded-3xl p-4 shadow-lg border border-border/80 flex items-center gap-5 transform -translate-y-2 translate-x-4 sm:translate-x-8 rotate-3 animate-float hover:scale-105 transition-transform cursor-default">
-                                                <div className="w-20 h-20 bg-secondary/80 rounded-2xl shrink-0 flex items-center justify-center text-muted-foreground/40 border border-border/40">
-                                                    <ShoppingBag size={32} />
+                                            <div className="w-full sm:w-[85%] bg-background/80 backdrop-blur-md rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-lg border border-border/80 flex items-center gap-3 sm:gap-5 transform sm:-translate-y-2 sm:translate-x-4 sm:rotate-3 animate-float hover:scale-105 transition-transform cursor-default">
+                                                <div className="w-14 h-14 sm:w-20 sm:h-20 bg-secondary/80 rounded-xl sm:rounded-2xl shrink-0 flex items-center justify-center text-muted-foreground/40 border border-border/40">
+                                                    <ShoppingBag size={24} className="sm:w-8 sm:h-8" />
                                                 </div>
-                                                <div className="flex-1 space-y-3">
-                                                    <div className="w-3/4 h-3.5 bg-muted-foreground/20 rounded-full" />
-                                                    <div className="w-1/2 h-2.5 bg-muted-foreground/10 rounded-full" />
+                                                <div className="flex-1 space-y-2 sm:space-y-3 min-w-0">
+                                                    <div className="w-3/4 h-3 sm:h-3.5 bg-muted-foreground/20 rounded-full" />
+                                                    <div className="w-1/2 h-2 sm:h-2.5 bg-muted-foreground/10 rounded-full" />
                                                     <div className="flex items-center gap-2 mt-2">
-                                                        <div className="w-16 h-4 bg-primary/20 rounded-full" />
-                                                        <div className="w-8 h-4 bg-amber-500/20 rounded-full" />
+                                                        <div className="w-14 sm:w-16 h-3.5 sm:h-4 bg-primary/20 rounded-full" />
+                                                        <div className="w-6 sm:w-8 h-3.5 sm:h-4 bg-amber-500/20 rounded-full" />
                                                     </div>
                                                 </div>
                                             </div>
 
                                             {/* Mock Product Card 2 */}
-                                            <div className="w-[85%] sm:w-3/4 bg-background/80 backdrop-blur-md rounded-3xl p-4 shadow-lg border border-border/80 flex items-center gap-5 self-end transform translate-y-2 -translate-x-4 sm:-translate-x-8 -rotate-3 animate-float hover:scale-105 transition-transform cursor-default" style={{ animationDelay: '2s' }}>
-                                                <div className="flex-1 space-y-3 text-right">
-                                                    <div className="w-3/4 h-3.5 bg-muted-foreground/20 rounded-full ml-auto" />
-                                                    <div className="w-1/2 h-2.5 bg-muted-foreground/10 rounded-full ml-auto" />
+                                            <div className="w-full sm:w-[85%] bg-background/80 backdrop-blur-md rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-lg border border-border/80 flex items-center gap-3 sm:gap-5 self-end transform sm:translate-y-2 sm:-translate-x-4 sm:-rotate-3 animate-float hover:scale-105 transition-transform cursor-default" style={{ animationDelay: '2s' }}>
+                                                <div className="flex-1 space-y-2 sm:space-y-3 text-right min-w-0">
+                                                    <div className="w-3/4 h-3 sm:h-3.5 bg-muted-foreground/20 rounded-full ml-auto" />
+                                                    <div className="w-1/2 h-2 sm:h-2.5 bg-muted-foreground/10 rounded-full ml-auto" />
                                                     <div className="flex items-center justify-end gap-2 mt-2">
-                                                        <div className="w-12 h-4 bg-primary/20 rounded-full" />
+                                                        <div className="w-10 sm:w-12 h-3.5 sm:h-4 bg-primary/20 rounded-full" />
                                                     </div>
                                                 </div>
-                                                <div className="w-20 h-20 bg-amber-500/5 rounded-2xl shrink-0 flex items-center justify-center text-amber-500/40 border border-amber-500/20">
-                                                    <Gift size={32} />
+                                                <div className="w-14 h-14 sm:w-20 sm:h-20 bg-amber-500/5 rounded-xl sm:rounded-2xl shrink-0 flex items-center justify-center text-amber-500/40 border border-amber-500/20">
+                                                    <Gift size={24} className="sm:w-8 sm:h-8" />
                                                 </div>
                                             </div>
                                         </>
                                     )}
 
                                     {/* Center badge */}
-                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 bg-gradient-to-br from-background to-secondary rounded-full shadow-[0_0_40px_rgba(0,0,0,0.1)] border-4 border-background flex items-center justify-center text-amber-500 z-20">
+                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 sm:w-28 sm:h-28 bg-gradient-to-br from-background to-secondary rounded-full shadow-[0_0_40px_rgba(0,0,0,0.1)] border-4 border-background flex items-center justify-center text-amber-500 z-20">
                                         <div className="absolute inset-0 bg-amber-500/10 rounded-full animate-ping opacity-20" style={{ animationDuration: '3s' }} />
-                                        <ShoppingBag size={40} className="drop-shadow-sm" />
+                                        <ShoppingBag size={28} className="sm:w-10 sm:h-10 drop-shadow-sm" />
                                     </div>
                                 </div>
                             </div>

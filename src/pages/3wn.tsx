@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-
+import { AdSlot } from '@/components/ads/AdSlot';
 
 interface TrackPageState {
     track: any;
@@ -271,6 +271,8 @@ export default function Awn() {
                 </div>
             </header>
 
+            <AdSlot page="3wn" position="top" />
+
             {/* ── Hero ── */}
             <div className="relative overflow-hidden px-6 py-16 md:py-24 text-center"
                 style={{ background: "linear-gradient(135deg,#064e3b 0%,#065f46 45%,#0d9488 100%)" }}>
@@ -359,6 +361,7 @@ export default function Awn() {
                 )}
             </div>
 
+            <AdSlot page="3wn" position="bottom" className="mb-4" />
             <BottomNav />
 
             {selected && <RequestModal service={selected} onClose={() => setSelected(null)} />}

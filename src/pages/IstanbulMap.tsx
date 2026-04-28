@@ -1,10 +1,11 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronRight, MapPin } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { supabase } from '@/integrations/supabase/client';
+import { AdSlot } from '@/components/ads/AdSlot';
 
 interface Place {
   id: string; name: string; category: string; area: string;
@@ -36,6 +37,7 @@ const IstanbulMap = () => {
       <PageHeader title="خريطة إسطنبول" showBack />
 
       <div className="p-4 max-w-lg mx-auto space-y-4">
+        <AdSlot page="map" position="top" />
         {/* Map banner */}
         <Card className="border-0 shadow-soft overflow-hidden">
           <div className="relative h-48 bg-gradient-to-br from-primary/10 to-emerald-500/10">
@@ -120,6 +122,7 @@ const IstanbulMap = () => {
             </div>
           </>
         )}
+        <AdSlot page="map" position="bottom" className="mt-4" />
       </div>
 
       <BottomNav />

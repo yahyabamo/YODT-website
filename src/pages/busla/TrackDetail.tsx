@@ -40,6 +40,7 @@ import {
 import { lazy, Suspense } from 'react';
 import type { Note, Bookmark as BookmarkType, TrackMessage } from '@/integrations/supabase/types';
 import { SmartTopBar } from '@/components/layout/SmartTopBar';
+import { AdSlot } from '@/components/ads/AdSlot';
 
 // Lazy load PDF viewer to avoid SSR issues
 const PDFViewer = lazy(() => import('@/components/Pdfviewer'));
@@ -359,6 +360,7 @@ export default function TrackDetailPage() {
 
             {/* Main Content */}
             <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
+                <AdSlot page="track_details" position="top" />
                 {/* No book assigned state */}
                 {!state.track?.current_book?.file_url ? (
                     <Card className="border-0 shadow-md bg-white">
@@ -698,6 +700,7 @@ export default function TrackDetailPage() {
                         </Card>
                     )}
                 </div>
+                <AdSlot page="track_details" position="bottom" className="mt-4" />
             </div>
         </div>
     );

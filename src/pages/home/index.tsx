@@ -11,6 +11,7 @@ import { StorePromo } from '../../components/features/home/StorePromo';
 import { Partners } from '../../components/features/home/Partners';
 import { FinalCTA } from '../../components/features/home/FinalCTA';
 import { Footer } from '../../components/features/home/Footer';
+import { AdSlot } from '../../components/ads/AdSlot';
 
 const Index = () => {
   const { language: lang } = useLanguage();
@@ -127,15 +128,17 @@ const Index = () => {
       */}
 
       <Hero onOpenModal={openModal} />
+      <AdSlot page="home" position="after_hero" className="container mx-auto px-6 py-2" heightClass="h-[70px] sm:h-[90px]" />
       <About />
       <Guide />
       <Activities />
 
-
       <Discounts />
+      <AdSlot page="home" position="after_partners" className="container mx-auto px-6 py-2" heightClass="h-[70px] sm:h-[90px]" />
       <StorePromo />
       <Partners />
       {/* <MotivationalQuote /> */}
+      <AdSlot page="home" position="bottom" className="container mx-auto px-6 py-2" heightClass="h-[70px] sm:h-[90px]" />
       <FinalCTA onOpenModal={openModal} />
       {/* <Footer /> */}
     </div>

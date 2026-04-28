@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SmartTopBar } from '@/components/layout/SmartTopBar';
@@ -616,6 +616,8 @@ export default function JobsPage() {
         </div>
       </header>
 
+      <AdSlot page="jobs" position="top" />
+
       {/* ── Hero ── */}
       <div className="relative overflow-hidden px-6 py-16 md:py-24 text-center
   bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-800
@@ -730,6 +732,8 @@ export default function JobsPage() {
           </div>
         )}
       </div>
+
+      <AdSlot page="jobs" position="bottom" className="mb-4" />
       <BottomNav />
 
       {/* Modals */}

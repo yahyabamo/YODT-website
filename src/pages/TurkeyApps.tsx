@@ -1,10 +1,11 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Download, Star, Smartphone } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { supabase } from '@/integrations/supabase/client';
+import { AdSlot } from '@/components/ads/AdSlot';
 
 interface TurkeyApp {
   id: string; name: string; name_tr: string; category: string;
@@ -77,6 +78,7 @@ const TurkeyApps = () => {
       <PageHeader title="تطبيقات مهمة في تركيا" showBack />
 
       <div className="px-4 py-4 max-w-lg mx-auto">
+        <AdSlot page="turkey_apps" position="top" className="mb-6" />
         {/* Intro */}
         <Card className="border-0 shadow-soft bg-gradient-to-br from-primary/10 to-primary/5 mb-6">
           <CardContent className="p-4">
@@ -161,6 +163,7 @@ const TurkeyApps = () => {
             </p>
           </CardContent>
         </Card>
+        <AdSlot page="turkey_apps" position="bottom" className="mt-8" />
       </div>
 
       <BottomNav />

@@ -7,6 +7,7 @@ import { useStoreProducts } from '@/hooks/store/useStoreProducts';
 import { useLanguage } from '@/context/LanguageContext';
 import { storeText } from '@/i18n/pages';
 import { ShoppingBag } from 'lucide-react';
+import { AdSlot } from '@/components/ads/AdSlot';
 
 export default function StorePage() {
   const { language } = useLanguage();
@@ -18,6 +19,9 @@ export default function StorePage() {
   return (
     <StoreLayout>
       <div className="max-w-screen-xl mx-auto px-4 py-8 space-y-8">
+
+        {/* Top Ad Slot */}
+        <AdSlot page="store" position="top" className="mb-2" />
         
         {/* Hero Section */}
         <div className="bg-primary/10 rounded-3xl p-8 md:p-12 border border-primary/20 relative overflow-hidden">
@@ -74,6 +78,9 @@ export default function StorePage() {
             </div>
           )}
         </section>
+
+        {/* Bottom Ad Slot */}
+        <AdSlot page="store" position="bottom" className="mt-2" />
 
       </div>
     </StoreLayout>

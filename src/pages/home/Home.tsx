@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { useLanguage } from '@/context/LanguageContext';
 import { QuickServicesSection } from '@/components/QuickServicesSection';
 import ReelsShelf from '@/pages/home/ReelsShelf';
+import { AdSlot } from '@/components/ads/AdSlot';
 
 /**
  * Home Page - Institutional Dashboard Redesign
@@ -177,6 +178,7 @@ const Home = () => {
 
         {/* Section 1: Hero Welcome Area */}
         <section className="px-4 animate-fade-in relative overflow-hidden">
+          <AdSlot page="home_tsx" position="top" className="mb-6" />
           <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, var(--primary) 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
 
           <div className="flex items-center justify-between relative z-10">
@@ -282,6 +284,9 @@ const Home = () => {
 
         <ReelsShelf />
 
+        <div className="px-4">
+          <AdSlot page="home_tsx" position="bottom" className="mt-8" />
+        </div>
       </main>
 
       <BottomNav />

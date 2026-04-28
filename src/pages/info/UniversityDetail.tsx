@@ -4,6 +4,7 @@ import { ArrowRight } from 'lucide-react';
 import { fetchUniversityById, InfoUniversity } from '@/service/infoCMS';
 import { useLanguage } from '@/context/LanguageContext';
 import { commonText, pagesText, getField } from '@/i18n/pages';
+import { AdSlot } from '@/components/ads/AdSlot';
 
 export default function UniversityDetail() {
   const { language: lang } = useLanguage();
@@ -47,6 +48,7 @@ export default function UniversityDetail() {
 
       {/* Return button */}
       <div style={{ maxWidth: '1260px', margin: '0 auto', padding: '24px clamp(16px, 4vw, 40px) 0' }}>
+        <AdSlot page="university_details" position="top" className="mb-6" />
         <button
           onClick={() => navigate('/universities')}
           style={{
@@ -155,6 +157,7 @@ export default function UniversityDetail() {
             🌐 {commonText.visitWebsite[lang]} ↗
           </a>
         )}
+        <AdSlot page="university_details" position="bottom" className="mt-8" />
       </div>
     </div>
   );

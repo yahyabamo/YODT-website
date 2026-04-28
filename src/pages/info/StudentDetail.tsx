@@ -4,6 +4,7 @@ import { ArrowRight } from 'lucide-react';
 import { fetchStudentById, InfoStudent } from '@/service/infoCMS';
 import { useLanguage } from '@/context/LanguageContext';
 import { commonText, getField } from '@/i18n/pages';
+import { AdSlot } from '@/components/ads/AdSlot';
 
 export default function StudentDetail() {
   const { language: lang } = useLanguage();
@@ -45,6 +46,7 @@ export default function StudentDetail() {
 
       {/* Return button */}
       <div style={{ maxWidth: '800px', margin: '0 auto', padding: '24px clamp(16px, 4vw, 40px) 0' }}>
+        <AdSlot page="student_details" position="top" className="mb-6" />
         <button
           onClick={() => navigate('/students')}
           style={{
@@ -131,6 +133,7 @@ export default function StudentDetail() {
             </p>
           </div>
         )}
+        <AdSlot page="student_details" position="bottom" className="mt-8" />
       </div>
     </div>
   );
