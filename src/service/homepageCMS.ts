@@ -53,6 +53,8 @@ export interface HomepageActivity {
   items?: HomepageActivityItem[];
   created_at?: string;
   updated_at?: string;
+  image_url: string;
+  gallery: string[];
 }
 
 export interface HomepageActivityItem {

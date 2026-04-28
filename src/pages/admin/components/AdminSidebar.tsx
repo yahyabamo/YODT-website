@@ -7,7 +7,7 @@ import {
     Users, ShieldCheck, Vote,
     HeartHandshake, Compass, Clapperboard,
     Briefcase, Map, GraduationCap, BookOpen,
-    MessageSquare, TrendingUp, Handshake, Tag, BarChart, Layout, FileText, ShoppingBag, ListOrdered
+    MessageSquare, TrendingUp, Handshake, Tag, BarChart, Layout, FileText, ShoppingBag, ListOrdered, Inbox
 } from "lucide-react";
 
 const B = "#8B1A2A"; // Primary Brand Color
@@ -67,6 +67,15 @@ export const navGroups = [
             { id: "store/categories", path: "/admin/store/categories", label: "فئات المتجر", icon: Tag, permission: null, adminOnly: true },
             { id: "store/products", path: "/admin/store/products", label: "المنتجات", icon: ShoppingBag, permission: null, adminOnly: true },
             { id: "store/orders", path: "/admin/store/orders", label: "الطلبات", icon: ListOrdered, permission: null, adminOnly: true },
+        ]
+    },
+    {
+        title: "مشاريع الطلاب", // Student Projects Management
+        items: [
+            { id: "student-projects", path: "/admin/student-projects", label: "نظرة عامة", icon: Briefcase, permission: null, adminOnly: true },
+            { id: "student-projects/submissions", path: "/admin/student-projects/submissions", label: "الطلبات الواردة", icon: Inbox, permission: null, adminOnly: true },
+            { id: "student-projects/projects", path: "/admin/student-projects/projects", label: "المشاريع المنشورة", icon: Briefcase, permission: null, adminOnly: true },
+            { id: "student-projects/categories", path: "/admin/student-projects/categories", label: "فئات المشاريع", icon: Tag, permission: null, adminOnly: true },
         ]
     },
     {

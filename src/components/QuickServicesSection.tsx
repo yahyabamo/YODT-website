@@ -8,6 +8,7 @@ import { useLanguage } from '@/context/LanguageContext';
 const unionProjects = [
     { icon: '✦', label: 'عون', description: 'عون للشباب ', path: '/3wn', color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20', shadow: 'rgba(245,158,11,0.22)' },
     { icon: '◈', label: 'مفهوم', description: 'المحتوى المرئي ', path: '/home/reels', color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', shadow: 'rgba(16,185,129,0.22)' },
+    { icon: '💼', label: 'مشاريع', description: 'مشاريع الطلاب', path: '/student-projects?ref=home', color: 'text-yellow-400', bg: 'bg-yellow-500/10', border: 'border-yellow-500/20', shadow: 'rgba(234,179,8,0.22)' },
 ];
 
 // Angle spreads per project count — fan opens downward

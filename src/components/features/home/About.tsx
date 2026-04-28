@@ -33,9 +33,9 @@ const pillars = [
 
 const stats = [
     { value: '+100', ar: 'عضو مسجل', en: 'Members', tr: 'Üye' },
-    { value: '+10',  ar: 'شريك',      en: 'Partners', tr: 'Ortak' },
-    { value: '+20',  ar: 'فعالية سنوية', en: 'Annual Events', tr: 'Yıllık Etkinlik' },
-    { value: '∞',   ar: 'دعم مستمر',  en: 'Ongoing Support', tr: 'Sürekli Destek' },
+    { value: '+10', ar: 'شريك', en: 'Partners', tr: 'Ortak' },
+    { value: '+20', ar: 'فعالية سنوية', en: 'Annual Events', tr: 'Yıllık Etkinlik' },
+    { value: '∞', ar: 'دعم مستمر', en: 'Ongoing Support', tr: 'Sürekli Destek' },
 ];
 
 const aboutText = {
@@ -91,7 +91,7 @@ export const About = () => {
             className="relative py-24 bg-secondary/40 overflow-hidden"
         >
             {/* Yemen pattern faint overlay */}
-            <div 
+            <div
                 className="absolute inset-0 z-0 opacity-[0.02] dark:opacity-[0.04] mix-blend-overlay pointer-events-none"
                 style={{
                     backgroundImage: 'url(/assets/yemen-pattern.svg)',
@@ -101,10 +101,10 @@ export const About = () => {
             />
 
             <div className="container relative z-10 mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-                
+
                 {/* ── Left: Text ── */}
                 <div className="scroll-reveal opacity-0 translate-y-8 transition-all duration-700 ease-out flex flex-col">
-                    
+
                     {/* Eyebrow */}
                     <div className="flex items-center gap-3 mb-4">
                         <span className="w-8 h-px bg-gradient-to-r from-primary to-transparent"></span>
@@ -137,8 +137,8 @@ export const About = () => {
                     {/* Pillar cards */}
                     <div className="flex flex-col gap-4">
                         {pillars.map((pillar) => (
-                            <div 
-                                key={pillar.ar} 
+                            <div
+                                key={pillar.ar}
                                 className="flex items-start gap-4 p-5 rounded-2xl bg-background border border-border/60 hover:border-primary/40 hover:shadow-md hover:-translate-y-1 transition-all duration-300 ease-out group"
                             >
                                 <span className="text-2xl mt-1 shrink-0 group-hover:scale-110 transition-transform duration-300">{pillar.icon}</span>
@@ -156,10 +156,10 @@ export const About = () => {
                 {/* ── Right: Stats card ── */}
                 <div className="scroll-reveal opacity-0 translate-y-8 transition-all duration-700 ease-out delay-150 order-first lg:order-last">
                     <div className="rounded-[24px] bg-card border border-border overflow-hidden shadow-xl shadow-foreground/5">
-                        
+
                         {/* Card header */}
                         <div className="p-8 bg-gradient-to-br from-primary/90 to-primary relative overflow-hidden">
-                            <div 
+                            <div
                                 className="absolute inset-0 opacity-10 mix-blend-overlay pointer-events-none"
                                 style={{
                                     backgroundImage: 'url(/assets/yemen-pattern.svg)',

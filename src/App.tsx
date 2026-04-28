@@ -144,6 +144,16 @@ import StoreProductsAdmin from "./pages/admin/store/StoreProductsAdmin";
 import StoreProductForm from "./pages/admin/store/StoreProductForm";
 import StoreOrdersAdmin from "./pages/admin/store/StoreOrdersAdmin";
 
+// ─── Student Projects Pages ───────────────────────────────────────────────────
+import StudentProjectsPage from "./pages/student-projects/StudentProjectsPage";
+import StudentProjectDetailPage from "./pages/student-projects/StudentProjectDetailPage";
+import StudentProjectsAdminHub from "./pages/admin/student-projects/StudentProjectsAdminHub";
+import SubmissionsAdmin from "./pages/admin/student-projects/SubmissionsAdmin";
+import ProjectsAdmin from "./pages/admin/student-projects/ProjectsAdmin";
+import ProjectFormAdmin from "./pages/admin/student-projects/ProjectFormAdmin";
+import ProjectCategoriesAdmin from "./pages/admin/student-projects/ProjectCategoriesAdmin";
+
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -221,6 +231,11 @@ const App = () => (
                 <Route path="/store" element={<StorePage />} />
                 <Route path="/store/:productId" element={<StoreProductPage />} />
 
+                {/* ─── Student Projects Public Routes (Standalone — own dual layout) ── */}
+                <Route path="/student-projects" element={<StudentProjectsPage />} />
+                <Route path="/student-projects/:slug" element={<StudentProjectDetailPage />} />
+
+
                 {/* 2. PROTECTED ADMIN PAGES (NO Navbar / Footer, AdminGuard wraps them) */}
                 <Route
                   path="/admin"
@@ -294,6 +309,15 @@ const App = () => (
                   <Route path="store/products/new" element={<StoreProductForm />} />
                   <Route path="store/products/:id" element={<StoreProductForm />} />
                   <Route path="store/orders" element={<StoreOrdersAdmin />} />
+
+                  {/* ─── Student Projects Admin Routes ──────────────────── */}
+                  <Route path="student-projects" element={<StudentProjectsAdminHub />} />
+                  <Route path="student-projects/submissions" element={<SubmissionsAdmin />} />
+                  <Route path="student-projects/projects" element={<ProjectsAdmin />} />
+                  <Route path="student-projects/new" element={<ProjectFormAdmin />} />
+                  <Route path="student-projects/:id" element={<ProjectFormAdmin />} />
+                  <Route path="student-projects/categories" element={<ProjectCategoriesAdmin />} />
+
 
 
                   {/* Make sure imports above are un-commented to use these! */}

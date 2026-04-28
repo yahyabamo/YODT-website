@@ -4,43 +4,43 @@ import { FileText, GraduationCap, Users, Medal, Trophy, ChevronLeft, Image } fro
 import { B } from './info/CMSShared';
 
 const SECTIONS = [
-  { 
-    id: 'articles', 
-    title: 'المقالات', 
-    description: 'إدارة مقالات إسطنبول، اليمن، والمحتوى العام', 
-    icon: FileText, 
+  {
+    id: 'articles',
+    title: 'المقالات',
+    description: 'إدارة مقالات إسطنبول، اليمن، والمحتوى العام',
+    icon: FileText,
     path: '/admin/info/articles',
     color: '#3b82f6'
   },
-  { 
-    id: 'universities', 
-    title: 'الجامعات', 
-    description: 'دليل الجامعات التركية وشروط القبول', 
-    icon: GraduationCap, 
+  {
+    id: 'universities',
+    title: 'الجامعات',
+    description: 'دليل الجامعات التركية وشروط القبول',
+    icon: GraduationCap,
     path: '/admin/info/universities',
     color: '#10b981'
   },
-  { 
-    id: 'students', 
-    title: 'طلاب متميزون', 
-    description: 'تكريم وإبراز نجاحات الطلاب في الجامعات', 
-    icon: Users, 
+  {
+    id: 'students',
+    title: 'كادر الاتحاد',
+    description: 'إدارة أعضاء هيئة الاتحاد',
+    icon: Users,
     path: '/admin/info/students',
     color: '#f59e0b'
   },
-  { 
-    id: 'icons', 
-    title: 'رموزنا', 
-    description: 'توثيق الشخصيات والرموز الوطنية اليمنية', 
-    icon: Medal, 
-    path: '/admin/info/icons',
-    color: '#8b5cf6'
-  },
-  { 
-    id: 'achievements', 
-    title: 'إنجازات', 
-    description: 'سجل الفخر والجوائز للجالية اليمنية', 
-    icon: Trophy, 
+  // { 
+  //   id: 'icons', 
+  //   title: 'رموزنا', 
+  //   description: 'توثيق الشخصيات والرموز الوطنية اليمنية', 
+  //   icon: Medal, 
+  //   path: '/admin/info/icons',
+  //   color: '#8b5cf6'
+  // },
+  {
+    id: 'achievements',
+    title: 'إنجازات',
+    description: 'سجل الفخر والجوائز للجالية اليمنية',
+    icon: Trophy,
     path: '/admin/info/achievements',
     color: '#ec4899'
   },
@@ -68,12 +68,12 @@ export default function InfoCMSAdmin() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
         {SECTIONS.map(s => (
-          <div 
-            key={s.id} 
+          <div
+            key={s.id}
             onClick={() => navigate(s.path)}
-            style={{ 
-              background: '#fff', border: '1px solid #e5e7eb', borderRadius: 24, 
-              padding: '24px 28px', cursor: 'pointer', transition: 'all 0.2s ease', 
+            style={{
+              background: '#fff', border: '1px solid #e5e7eb', borderRadius: 24,
+              padding: '24px 28px', cursor: 'pointer', transition: 'all 0.2s ease',
               display: 'flex', flexDirection: 'column', gap: 16,
               boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
             }}
@@ -88,14 +88,14 @@ export default function InfoCMSAdmin() {
               e.currentTarget.style.borderColor = '#e5e7eb';
             }}
           >
-            <div style={{ 
-              width: 52, height: 52, borderRadius: 16, 
+            <div style={{
+              width: 52, height: 52, borderRadius: 16,
               background: `${s.color}15`, color: s.color,
               display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}>
               <s.icon size={26} />
             </div>
-            
+
             <div>
               <div style={{ fontWeight: 900, fontSize: 18, color: '#111', marginBottom: 6 }}>{s.title}</div>
               <p style={{ margin: 0, fontSize: 13, color: '#6b7280', lineHeight: 1.5 }}>{s.description}</p>

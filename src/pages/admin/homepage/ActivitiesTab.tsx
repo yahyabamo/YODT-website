@@ -1,11 +1,23 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
-import { Plus, ChevronDown, ChevronUp, Pencil, Trash2 } from 'lucide-react';
+import { Plus, ChevronDown, ChevronUp, Pencil, Trash2, Image as ImageIcon, X, Upload } from 'lucide-react';
 import {
   fetchAllActivities, fetchActivityItems, upsertActivity, upsertActivityItem, deleteActivity, deleteActivityItem,
   type HomepageActivity, type HomepageActivityItem
 } from '@/service/homepageCMS';
 import { B, Spinner, Badge, FieldRow, inputStyle, TriLangInput, Modal, ActionBar, RowActions } from './HomepageShared';
+
+// Cloudinary Upload Function
+async function uploadImage(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", "activity_unsigned");
+  formData.append("folder", "partners");
+  const res = await fetch("https://api.cloudinary.com/v1_1/dknz5c7d0/image/upload", { method: "POST", body: formData });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || "Upload failed");
+  return data.secure_url;
+}
 
 export default function ActivitiesTab() {
   const [programs, setPrograms] = useState<HomepageActivity[]>([]);
@@ -15,19 +27,17 @@ export default function ActivitiesTab() {
   const [progModal, setProgModal] = useState<HomepageActivity | null>(null);
   const [itemModal, setItemModal] = useState<HomepageActivityItem | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploadingImg, setUploadingImg] = useState(false);
 
   const BLANK_PROG: HomepageActivity = {
-    icon: '🎯', name_ar: '', name_en: '', name_tr: '',
-    tag_ar: '', tag_en: '', tag_tr: '',
-    desc_ar: '', desc_en: '', desc_tr: '',
+    icon: '🎯', image_url: '', gallery: [], name_ar: '', name_en: '', name_tr: '',
+    tag_ar: '', tag_en: '', tag_tr: '', desc_ar: '', desc_en: '', desc_tr: '',
     is_published: true, order_index: programs.length,
   };
 
   const blankItem = (actId: string): HomepageActivityItem => ({
-    activity_id: actId,
-    icon: '📌', title_ar: '', title_en: '', title_tr: '',
-    desc_ar: '', desc_en: '', desc_tr: '',
-    freq_ar: '', freq_en: '', freq_tr: '',
+    activity_id: actId, icon: '📌', title_ar: '', title_en: '', title_tr: '',
+    desc_ar: '', desc_en: '', desc_tr: '', freq_ar: '', freq_en: '', freq_tr: '',
     order_index: allItems.filter(i => i.activity_id === actId).length,
   });
 
@@ -44,6 +54,34 @@ export default function ActivitiesTab() {
 
   const handleProgField = (f: string, v: any) => setProgModal(m => m ? { ...m, [f]: v } : m);
   const handleItemField = (f: string, v: any) => setItemModal(m => m ? { ...m, [f]: v } : m);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, isGallery: boolean = false) => {
+    const file = e.target.files?.[0];
+    if (!file || !progModal) return;
+
+    setUploadingImg(true);
+    try {
+      const url = await uploadImage(file);
+      if (isGallery) {
+        const currentGallery = progModal.gallery || [];
+        handleProgField('gallery', [...currentGallery, url]);
+      } else {
+        handleProgField('image_url', url);
+      }
+      toast.success('تم رفع الصورة بنجاح');
+    } catch {
+      toast.error('فشل رفع الصورة');
+    } finally {
+      setUploadingImg(false);
+    }
+  };
+
+  const removeGalleryImage = (index: number) => {
+    if (!progModal) return;
+    const newGallery = [...(progModal.gallery || [])];
+    newGallery.splice(index, 1);
+    handleProgField('gallery', newGallery);
+  };
 
   const saveProg = async () => {
     if (!progModal) return;
@@ -91,7 +129,9 @@ export default function ActivitiesTab() {
           return (
             <div key={p.id} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, overflow: 'hidden' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px' }}>
-                <div style={{ fontSize: 26, flexShrink: 0 }}>{p.icon}</div>
+                <div style={{ width: 40, height: 40, borderRadius: 8, overflow: 'hidden', flexShrink: 0, background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
+                  {p.image_url ? <img src={p.image_url} alt="icon" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : p.icon}
+                </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 700, fontSize: 14, color: '#111' }}>{p.name_ar} / {p.name_en}</div>
                   <div style={{ fontSize: 12, color: '#6b7280' }}>{p.tag_ar} — {items.length} نشاط فرعي</div>
@@ -146,12 +186,49 @@ export default function ActivitiesTab() {
 
       {progModal && (
         <Modal title={progModal.id ? 'تعديل البرنامج' : 'إضافة برنامج جديد'} onClose={() => setProgModal(null)}>
-          <FieldRow label="الأيقونة (emoji)">
-            <input style={{ ...inputStyle, width: 80 }} value={progModal.icon} onChange={e => handleProgField('icon', e.target.value)} />
+
+          <FieldRow label="الصورة الرئيسية للبرنامج">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {progModal.image_url ? (
+                <div style={{ position: 'relative', width: 60, height: 60, borderRadius: 8, overflow: 'hidden', border: '1px solid #e5e7eb' }}>
+                  <img src={progModal.image_url} alt="Main" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <button onClick={() => handleProgField('image_url', '')} style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><X size={12} /></button>
+                </div>
+              ) : (
+                <div style={{ width: 60, height: 60, borderRadius: 8, background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', border: '1px dashed #d1d5db' }}>
+                  <ImageIcon size={24} />
+                </div>
+              )}
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid #d1d5db', padding: '6px 12px', borderRadius: 8, fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>
+                {uploadingImg ? <Spinner /> : <Upload size={14} />}
+                رفع صورة
+                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleImageUpload(e, false)} disabled={uploadingImg} />
+              </label>
+            </div>
           </FieldRow>
+
           <TriLangInput label="اسم البرنامج" fieldAr="name_ar" fieldEn="name_en" fieldTr="name_tr" valueAr={progModal.name_ar} valueEn={progModal.name_en} valueTr={progModal.name_tr} onChange={handleProgField} />
           <TriLangInput label="التصنيف (tag)" fieldAr="tag_ar" fieldEn="tag_en" fieldTr="tag_tr" valueAr={progModal.tag_ar} valueEn={progModal.tag_en} valueTr={progModal.tag_tr} onChange={handleProgField} />
           <TriLangInput label="الوصف" fieldAr="desc_ar" fieldEn="desc_en" fieldTr="desc_tr" valueAr={progModal.desc_ar} valueEn={progModal.desc_en} valueTr={progModal.desc_tr} onChange={handleProgField} multiline />
+
+          <FieldRow label="معرض الصور (Gallery)">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                {(progModal.gallery || []).map((img, idx) => (
+                  <div key={idx} style={{ position: 'relative', width: 80, height: 80, borderRadius: 8, overflow: 'hidden', border: '1px solid #e5e7eb' }}>
+                    <img src={img} alt={`Gallery ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <button onClick={() => removeGalleryImage(idx)} style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(220, 38, 38, 0.9)', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><X size={12} /></button>
+                  </div>
+                ))}
+                <label style={{ width: 80, height: 80, borderRadius: 8, background: '#fafafa', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#6b7280', border: '1px dashed #d1d5db', cursor: 'pointer', fontSize: 11, gap: 4 }}>
+                  {uploadingImg ? <Spinner /> : <Plus size={20} />}
+                  إضافة
+                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleImageUpload(e, true)} disabled={uploadingImg} />
+                </label>
+              </div>
+            </div>
+          </FieldRow>
+
           <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
             <FieldRow label="الترتيب">
               <input style={{ ...inputStyle, width: 80 }} type="number" value={progModal.order_index} onChange={e => handleProgField('order_index', +e.target.value)} />
@@ -165,6 +242,7 @@ export default function ActivitiesTab() {
         </Modal>
       )}
 
+      {/* Item Modal remains unchanged */}
       {itemModal && (
         <Modal title={itemModal.id ? 'تعديل النشاط الفرعي' : 'إضافة نشاط فرعي'} onClose={() => setItemModal(null)}>
           <FieldRow label="الأيقونة (emoji)">
