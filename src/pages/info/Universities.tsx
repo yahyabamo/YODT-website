@@ -7,6 +7,7 @@ import { fetchUniversities, InfoUniversity } from '@/service/infoCMS';
 import { fetchHeroImages } from '@/service/heroImages';
 import { useLanguage } from '@/context/LanguageContext';
 import { pagesText, commonText, getField } from '@/i18n/pages';
+import { AdSlot } from '@/components/ads/AdSlot';
 
 function Skeleton() {
   return (
@@ -52,6 +53,7 @@ export default function Universities() {
 
       {/* Return button */}
       <div style={{ maxWidth: '1260px', margin: '0 auto', padding: '24px clamp(16px, 4vw, 40px) 0' }}>
+        <AdSlot page="universities" position="top" className="mb-6" />
         <button
           onClick={() => navigate('/')}
           style={{
@@ -110,6 +112,7 @@ export default function Universities() {
             <p style={{ fontSize: '0.95rem' }}>{commonText.noUniversities[lang]}</p>
           </div>
         )}
+        <AdSlot page="universities" position="bottom" className="mt-8" />
       </section>
     </div>
   );

@@ -7,6 +7,7 @@ import { fetchArticles, InfoArticle } from '@/service/infoCMS';
 import { fetchHeroImages } from '@/service/heroImages';
 import { useLanguage } from '@/context/LanguageContext';
 import { aboutIstanbulText, commonText, getField } from '@/i18n/pages';
+import { AdSlot } from '@/components/ads/AdSlot';
 
 
 
@@ -89,6 +90,7 @@ export default function AboutIstanbul() {
 
       {/* Return button */}
       <div style={{ maxWidth: '1260px', margin: '0 auto', padding: '24px clamp(16px, 4vw, 40px) 0' }}>
+        <AdSlot page="about_istanbul" position="top" className="mb-6" />
         <button
           onClick={() => navigate('/')}
           style={{
@@ -153,6 +155,7 @@ export default function AboutIstanbul() {
             <p style={{ fontSize: '0.9rem' }}>{commonText.noArticles[lang]}</p>
           </div>
         )}
+        <AdSlot page="about_istanbul" position="bottom" className="mt-8" />
       </section>
     </div>
   );

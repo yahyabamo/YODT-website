@@ -1,4 +1,4 @@
-﻿import { HelpCircle } from 'lucide-react';
+import { HelpCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/accordion';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { BottomNav } from '@/components/layout/BottomNav';
+import { AdSlot } from '@/components/ads/AdSlot';
 
 const FAQ = () => {
   const [faqs, setFaqs] = useState<any[]>([]);
@@ -39,6 +40,7 @@ const FAQ = () => {
       <PageHeader title="الأسئلة الشائعة" />
 
       <div className="px-4 py-4 max-w-lg mx-auto">
+        <AdSlot page="faq" position="top" />
         {/* Header */}
         <div className="text-center py-6 animate-slide-up">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
@@ -91,6 +93,7 @@ const FAQ = () => {
             تواصل معنا
           </button>
         </div>
+        <AdSlot page="faq" position="bottom" className="mt-8" />
       </div>
 
       <BottomNav />

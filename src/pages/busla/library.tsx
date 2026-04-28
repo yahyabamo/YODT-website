@@ -13,6 +13,7 @@ import { SmartTopBar } from '@/components/layout/SmartTopBar';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
+import { AdSlot } from '@/components/ads/AdSlot';
 
 interface TrackPageState {
     track: any;
@@ -119,6 +120,7 @@ export default function LibraryPage() {
 
 
             <div className="px-4 py-4 max-w-lg mx-auto">
+                <AdSlot page="library" position="top" className="mb-6" />
                 {/* Search */}
                 <div className="relative mb-4">
                     <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -220,6 +222,7 @@ export default function LibraryPage() {
                         )}
                     </>
                 )}
+                <AdSlot page="library" position="bottom" className="mt-8" />
             </div>
 
             <BottomNav />

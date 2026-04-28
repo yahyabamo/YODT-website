@@ -7,7 +7,7 @@ import {
     Users, ShieldCheck, Vote,
     HeartHandshake, Compass, Clapperboard,
     Briefcase, Map, GraduationCap, BookOpen,
-    MessageSquare, TrendingUp, Handshake, Tag, BarChart, Layout, FileText, ShoppingBag, ListOrdered, Inbox
+    MessageSquare, TrendingUp, Handshake, Tag, BarChart, Layout, FileText, ShoppingBag, ListOrdered, Inbox, Megaphone
 } from "lucide-react";
 
 const B = "#8B1A2A"; // Primary Brand Color
@@ -76,6 +76,12 @@ export const navGroups = [
             { id: "student-projects/submissions", path: "/admin/student-projects/submissions", label: "الطلبات الواردة", icon: Inbox, permission: null, adminOnly: true },
             { id: "student-projects/projects", path: "/admin/student-projects/projects", label: "المشاريع المنشورة", icon: Briefcase, permission: null, adminOnly: true },
             { id: "student-projects/categories", path: "/admin/student-projects/categories", label: "فئات المشاريع", icon: Tag, permission: null, adminOnly: true },
+        ]
+    },
+    {
+        title: "الإعلانات", // Ads Management
+        items: [
+            { id: "ads", path: "/admin/ads", label: "إدارة الإعلانات", icon: Megaphone, permission: null, adminOnly: true },
         ]
     },
     {

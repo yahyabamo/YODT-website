@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 
 const guideCards = [
@@ -70,81 +70,162 @@ const guideText = {
 
 export const Guide = () => {
     const { language: lang } = useLanguage();
+    const sectionRef = useRef<HTMLElement>(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('guide-reveal-visible');
+                    }
+                });
+            },
+            { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+        );
+
+        const els = sectionRef.current?.querySelectorAll('.guide-reveal');
+        els?.forEach((el) => observer.observe(el));
+        return () => observer.disconnect();
+    }, []);
 
     const titleLines = guideText.title[lang].split('\n');
 
     return (
-        <section id="guide" style={{ background: 'var(--bg-1)' }}>
-            <div className="container section-pad">
+        <section
+            id="guide"
+            ref={sectionRef}
+            className="relative overflow-hidden"
+            style={{ background: 'var(--bg-1)' }}
+        >
+            {/* Subtle background texture */}
+            <div className="absolute inset-0 opacity-[0.02] pointer-events-none"
+                style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, var(--text) 1px, transparent 0)', backgroundSize: '32px 32px' }}
+            />
+
+            <div className="container section-pad relative z-10">
                 {/* Section header */}
-                <div className="guide-intro reveal" style={{ maxWidth: '560px', margin: '0 auto 56px', textAlign: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '16px' }}>
-                        <div style={{ height: '1px', width: '32px', background: 'var(--gold)' }} />
-                        <span style={{ color: 'var(--gold)', fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+                <div className="guide-reveal text-center mb-12 sm:mb-16 max-w-xl mx-auto px-4">
+                    <div className="flex items-center justify-center gap-3 mb-5">
+                        <span className="h-px w-8 bg-[var(--gold)]" />
+                        <span className="text-[var(--gold)] text-[11px] font-semibold uppercase tracking-[0.2em]">
                             {guideText.eyebrow[lang]}
                         </span>
-                        <div style={{ height: '1px', width: '32px', background: 'var(--gold)' }} />
+                        <span className="h-px w-8 bg-[var(--gold)]" />
                     </div>
 
-                    <h2 className="heading-lg" style={{ marginBottom: '14px', fontSize: 'clamp(1.4rem, 3vw, 1.9rem)' }}>
-                        {titleLines[0]}{titleLines[1] && <><br />{titleLines[1]}</>}
+                    <h2 className="font-bold leading-tight mb-4" style={{ fontSize: 'clamp(1.6rem, 4vw, 2.2rem)' }}>
+                        {titleLines[0]}
+                        {titleLines[1] && (
+                            <>
+                                <br />
+                                {titleLines[1]}
+                            </>
+                        )}
                     </h2>
 
-                    <p style={{ color: 'var(--text-2)', fontSize: '0.93rem', lineHeight: 1.8 }}>
+                    <p className="text-[var(--text-2)] text-sm sm:text-base leading-relaxed max-w-md mx-auto">
                         {guideText.desc[lang]}
                     </p>
                 </div>
 
                 {/* Guide cards grid */}
-                <div
-                    className="guide-grid"
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-                        gap: '16px',
-                    }}
-                >
-                    {guideCards.map((card) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 px-4 sm:px-0">
+                    {guideCards.map((card, index) => (
                         <div
                             key={card.ar}
-                            className="reveal"
+                            className={`
+                                guide-reveal group relative
+                                ${card.wide ? 'sm:col-span-2 lg:col-span-2' : 'col-span-1'}
+                            `}
                             style={{
-                                gridColumn: card.wide ? 'span 2' : 'span 1',
-                                padding: '24px',
-                                borderRadius: '16px',
-                                background: 'var(--bg-1)',
-                                border: '1px solid var(--border)',
-                                cursor: 'default',
-                                transition: 'transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease',
-                                position: 'relative',
-                                overflow: 'hidden',
-                            }}
-                            onMouseEnter={e => {
-                                (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)';
-                                (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-red)';
-                                (e.currentTarget as HTMLElement).style.boxShadow = '0 12px 32px rgba(122,28,28,0.12)';
-                            }}
-                            onMouseLeave={e => {
-                                (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
-                                (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)';
-                                (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+                                transitionDelay: `${index * 80}ms`,
+                                opacity: 0,
+                                transform: 'translateY(24px)',
                             }}
                         >
-                            {/* Card icon */}
-                            <div style={{ fontSize: card.wide ? '2rem' : '1.75rem', marginBottom: '14px' }}>{card.icon}</div>
-                            <h3 style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text)', marginBottom: '8px' }}>
-                                {card[lang]}
-                            </h3>
-                            <p style={{ fontSize: '0.83rem', color: 'var(--text-3)', lineHeight: 1.7, margin: 0 }}>
-                                {lang === 'ar' ? card.descAr : lang === 'en' ? card.descEn : card.descTr}
-                            </p>
+                            <div
+                                className="relative h-full p-6 sm:p-7 rounded-2xl sm:rounded-3xl border transition-all duration-500 ease-out cursor-default overflow-hidden"
+                                style={{
+                                    background: 'var(--bg-1)',
+                                    borderColor: 'var(--border)',
+                                }}
+                                onMouseEnter={(e) => {
+                                    const el = e.currentTarget;
+                                    el.style.borderColor = 'var(--border-red)';
+                                    el.style.transform = 'translateY(-6px)';
+                                    el.style.boxShadow = '0 20px 40px -12px rgba(122,28,28,0.15)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    const el = e.currentTarget;
+                                    el.style.borderColor = 'var(--border)';
+                                    el.style.transform = 'translateY(0)';
+                                    el.style.boxShadow = 'none';
+                                }}
+                            >
+                                {/* Hover glow effect */}
+                                <div
+                                    className="absolute -top-20 -right-20 w-40 h-40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+                                    style={{ background: 'radial-gradient(circle, rgba(122,28,28,0.08) 0%, transparent 70%)' }}
+                                />
 
-                            {/* Arrow indicator */}
-                            <div style={{ position: 'absolute', bottom: '20px', left: '20px', color: 'var(--text-3)', fontSize: '1rem', opacity: 0.5 }}>→</div>
+                                {/* Top accent line */}
+                                <div
+                                    className="absolute top-0 left-6 right-6 h-[2px] scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"
+                                    style={{ background: 'var(--border-red)' }}
+                                />
+
+                                {/* Card content */}
+                                <div className="relative z-10">
+                                    {/* Icon with background */}
+                                    <div
+                                        className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-2xl mb-5 text-2xl sm:text-[1.75rem] transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3"
+                                        style={{
+                                            background: 'var(--bg-2)',
+                                            border: '1px solid var(--border)',
+                                        }}
+                                    >
+                                        {card.icon}
+                                    </div>
+
+                                    <h3 className="font-bold text-base sm:text-lg mb-2.5" style={{ color: 'var(--text)' }}>
+                                        {card[lang]}
+                                    </h3>
+
+                                    <p className="text-xs sm:text-sm leading-[1.8] mb-6" style={{ color: 'var(--text-3)' }}>
+                                        {lang === 'ar' ? card.descAr : lang === 'en' ? card.descEn : card.descTr}
+                                    </p>
+
+                                    {/* Action link */}
+                                    <div className="flex items-center gap-2 group/link cursor-pointer">
+                                        <span className="text-xs font-semibold uppercase tracking-wider transition-colors duration-300" style={{ color: 'var(--text-2)' }}>
+                                            {lang === 'ar' ? 'استكشف' : lang === 'en' ? 'Explore' : 'Keşfet'}
+                                        </span>
+                                        <svg
+                                            className="w-4 h-4 transition-all duration-300 group-hover/link:translate-x-1"
+                                            style={{ color: 'var(--border-red)' }}
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     ))}
                 </div>
             </div>
+
+            {/* CSS for reveal animation */}
+            <style>{`
+                .guide-reveal-visible {
+                    opacity: 1 !important;
+                    transform: translateY(0) !important;
+                    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+                }
+            `}</style>
         </section>
     );
 };

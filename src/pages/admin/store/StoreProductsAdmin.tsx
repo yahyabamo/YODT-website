@@ -89,7 +89,7 @@ export default function StoreProductsAdmin() {
                       {prod.name_ar}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
-                      {prod.store_categories?.name_ar || '-'}
+                      {prod.category_id?.name_ar || '-'}
                     </td>
                     <td className="px-4 py-3 font-medium text-primary" dir="ltr">
                       {prod.price} {prod.currency}
@@ -110,17 +110,17 @@ export default function StoreProductsAdmin() {
                     </td>
                     <td className="px-4 py-3 text-left">
                       <div className="flex justify-end gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                           onClick={() => navigate(`/admin/store/products/${prod.id}`)}
                         >
                           <Edit size={16} />
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
                           onClick={() => handleDelete(prod.id, prod.name_ar)}
                         >

@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
+import { AdSlot } from '@/components/ads/AdSlot';
 
 
 interface TrackPageState {
@@ -111,6 +112,7 @@ const HomeOffers = () => {
                 </div>
             </header>
             <div className="px-4 py-4 max-w-lg mx-auto space-y-4">
+                <AdSlot page="offers" position="top" />
                 {/* Hero Section */}
                 <Card className="shadow-card overflow-hidden">
                     <div className="bg-gradient-to-r from-rose-500 to-rose-600 p-6 text-white relative">
@@ -219,6 +221,10 @@ const HomeOffers = () => {
                         })
                     )}
                 </div>
+            </div>
+
+            <div className="px-4 pb-4 max-w-lg mx-auto">
+                <AdSlot page="offers" position="bottom" />
             </div>
 
             <BottomNav />

@@ -153,6 +153,10 @@ import ProjectsAdmin from "./pages/admin/student-projects/ProjectsAdmin";
 import ProjectFormAdmin from "./pages/admin/student-projects/ProjectFormAdmin";
 import ProjectCategoriesAdmin from "./pages/admin/student-projects/ProjectCategoriesAdmin";
 
+// ─── Ads Management Pages ──────────────────────────────────────────────────────────────
+import AdsAdmin from "./pages/admin/ads/AdsAdmin";
+import AdForm from "./pages/admin/ads/AdForm";
+
 
 const queryClient = new QueryClient();
 
@@ -318,7 +322,10 @@ const App = () => (
                   <Route path="student-projects/:id" element={<ProjectFormAdmin />} />
                   <Route path="student-projects/categories" element={<ProjectCategoriesAdmin />} />
 
-
+                  {/* ─── Ads Admin Routes ────────────────────────────────── */}
+                  <Route path="ads" element={<AdsAdmin />} />
+                  <Route path="ads/new" element={<AdForm />} />
+                  <Route path="ads/:id" element={<AdForm />} />
 
                   {/* Make sure imports above are un-commented to use these! */}
                   <Route path="info/articles" element={<ArticlesAdmin />} />

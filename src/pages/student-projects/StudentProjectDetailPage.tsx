@@ -7,6 +7,7 @@ import { useStudentProjectBySlug, useProjectImages } from '@/hooks/studentProjec
 import { ProjectSubmissionForm } from '@/components/student-projects/ProjectSubmissionForm';
 import { ProjectsLayout } from '@/components/student-projects/ProjectsLayout';
 import { useProjectsNavigation } from '@/hooks/studentProjects/useProjectsNavigation';
+import { AdSlot } from '@/components/ads/AdSlot';
 
 export default function StudentProjectDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -82,6 +83,7 @@ export default function StudentProjectDetailPage() {
           dir={isRtl ? 'rtl' : 'ltr'}
           style={{ maxWidth: '960px', margin: '0 auto', padding: '40px clamp(16px, 4vw, 40px) 80px' }}
         >
+          <AdSlot page="student_project_details" position="top" className="mb-6" />
           {/* Back Button */}
           <button
             onClick={() => window.history.back()}
@@ -327,6 +329,7 @@ export default function StudentProjectDetailPage() {
               </button> */}
             </div>
           </div>
+          <AdSlot page="student_project_details" position="bottom" className="mt-8" />
         </div>
       </div>
 

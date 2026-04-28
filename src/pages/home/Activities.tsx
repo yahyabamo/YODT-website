@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { SmartTopBar } from '@/components/layout/SmartTopBar';
 import { useCallback } from 'react';
 import { ArrowRight } from 'lucide-react';
+import { AdSlot } from '@/components/ads/AdSlot';
 
 
 interface TrackPageState {
@@ -145,6 +146,7 @@ const HomeActivities = () => {
                 </div>
             </header>
             <div className="px-4 py-4 max-w-lg mx-auto space-y-4">
+                <AdSlot page="activities" position="top" />
                 {/* Hero Section */}
                 <Card className="shadow-card overflow-hidden">
                     <div className="gradient-primary p-6 text-white">
@@ -259,6 +261,9 @@ const HomeActivities = () => {
                         })
                     )}
                 </div>
+            </div>
+            <div className="px-4 pb-4 max-w-lg mx-auto">
+                <AdSlot page="offers" position="bottom" />
             </div>
 
             <BottomNav />

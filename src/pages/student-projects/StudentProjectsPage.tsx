@@ -8,6 +8,7 @@ import { ProjectCard } from '@/components/student-projects/ProjectCard';
 import { ProjectCategoryFilter } from '@/components/student-projects/ProjectCategoryFilter';
 import { ProjectSubmissionForm } from '@/components/student-projects/ProjectSubmissionForm';
 import { ProjectsLayout } from '@/components/student-projects/ProjectsLayout';
+import { AdSlot } from '@/components/ads/AdSlot';
 
 type SortMode = 'newest' | 'featured' | 'az';
 
@@ -174,6 +175,7 @@ export default function StudentProjectsPage() {
             padding: '40px clamp(16px, 4vw, 40px) 0',
           }}
         >
+          <AdSlot page="student_projects" position="top" className="mb-6" />
           {/* Search + Sort row */}
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap' }}>
             {/* Search */}
@@ -306,6 +308,7 @@ export default function StudentProjectsPage() {
             padding: '0 clamp(16px, 4vw, 40px) 80px',
           }}
         >
+          <AdSlot page="student_projects" position="bottom" className="mb-8" />
           <div style={{
             position: 'relative', overflow: 'hidden',
             background: 'linear-gradient(135deg, rgba(139,26,42,0.2) 0%, rgba(200,168,75,0.08) 100%)',

@@ -6,6 +6,7 @@ import {
     ChevronRight, Clock, CheckCircle2, Circle,
     PlayCircle, Lock, ArrowRight, AlertCircle,
 } from 'lucide-react'
+import { AdSlot } from '@/components/ads/AdSlot'
 
 declare global {
     interface Window {
@@ -210,6 +211,7 @@ export default function CoursePage() {
 
             <div className="flex flex-col lg:flex-row max-w-7xl mx-auto">
                 <div className="flex-1 min-w-0 p-4 md:p-6">
+                    <AdSlot page="academy_course_details" position="top" className="mb-6" />
 
                     {/* ── YouTube container ──
                         overflow-hidden is REMOVED — it was clipping the iframe.
@@ -295,6 +297,7 @@ export default function CoursePage() {
                             </button>
                         </div>
                     )}
+                    <AdSlot page="academy_course_details" position="bottom" className="mt-8" />
                 </div>
 
                 {/* Sidebar */}
