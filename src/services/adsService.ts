@@ -32,7 +32,6 @@ export const AD_PAGE_OPTIONS = [
 export const AD_POSITION_OPTIONS = [
   { value: 'top', label: 'أعلى الصفحة / Top of Page' },
   { value: 'bottom', label: 'أسفل الصفحة / Bottom of Page' },
-  { value: 'after_hero', label: 'بعد القسم الرئيسي / After Hero (Home only)' },
   { value: 'after_partners', label: 'بعد الشركاء / After Partners (Home only)' },
   { value: 'between_sections', label: 'بين الأقسام / Between Sections' },
 ] as const;
