@@ -38,6 +38,7 @@ export const Navbar: React.FC = () => {
         { path: '/students', key: 'ourStudents' as const },
         { path: '/store', key: 'store' as const },
         { path: '/achievements', key: 'achievements' as const },
+        { path: '/student-projects', key: 'studentProjects' as const },
     ];
 
     const isActive = (path: string) =>

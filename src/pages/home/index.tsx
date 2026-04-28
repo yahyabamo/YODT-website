@@ -7,6 +7,7 @@ import { About } from '../../components/features/home/About';
 import { Guide } from '../../components/features/home/Guide';
 import { Activities } from '../../components/features/home/Activities';
 import { Discounts } from '../../components/features/home/Discounts';
+import { StorePromo } from '../../components/features/home/StorePromo';
 import { Partners } from '../../components/features/home/Partners';
 import { FinalCTA } from '../../components/features/home/FinalCTA';
 import { Footer } from '../../components/features/home/Footer';
@@ -132,6 +133,7 @@ const Index = () => {
 
 
       <Discounts />
+      <StorePromo />
       <Partners />
       {/* <MotivationalQuote /> */}
       <FinalCTA onOpenModal={openModal} />

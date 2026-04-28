@@ -3,6 +3,7 @@ import { fetchActivitiesWithItems, type HomepageActivity, type HomepageActivityI
 import { useLanguage } from '@/context/LanguageContext';
 import { getField } from '@/i18n/pages';
 
+
 const SLIDE_DURATION = 7000;
 
 function SkeletonActivities() {
@@ -31,7 +32,7 @@ function SkeletonActivities() {
 }
 
 const activitiesText = {
-    eyebrow: { ar: 'الأنشطة والفعاليات', en: 'Activities & Events', tr: 'Etkinlikler & Faaliyetler' },
+    eyebrow: { ar: 'الأنشطة والمشاريع', en: 'Activities & Projects', tr: 'Etkinlikler & Projeler' },
     title: { ar: 'برامجنا ومبادراتنا', en: 'Our Programs & Initiatives', tr: 'Programlarımız & Girişimlerimiz' },
     desc: {
         ar: 'تُمثّل هذه البرامج نبض اتحادنا وروح مجتمعنا اليمني في إسطنبول',
@@ -118,14 +119,15 @@ export const Activities = () => {
     const prog = programs[current];
     const items: HomepageActivityItem[] = prog.items ?? [];
     const progName = getField(prog, 'name', lang);
-    const progTag  = getField(prog, 'tag', lang);
+    const progTag = getField(prog, 'tag', lang);
     const progDesc = getField(prog, 'desc', lang);
+    const galleryItems = prog.gallery || [];
 
     return (
         <section id="activities" className="relative py-24 bg-background overflow-hidden">
-            
+
             {/* Subtle background pattern (optional) */}
-            <div 
+            <div
                 className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03] pointer-events-none mix-blend-overlay"
                 style={{
                     backgroundImage: 'url(/assets/yemen-pattern.svg)',
@@ -165,8 +167,12 @@ export const Activities = () => {
                                 aria-pressed={isActive}
                                 aria-label={pName}
                             >
-                                <div className={`w-[72px] h-[72px] rounded-full flex items-center justify-center text-3xl transition-all duration-300 ease-out border-2 ${isActive ? 'bg-primary/10 border-primary shadow-[0_0_0_4px_rgba(var(--primary),0.1)] scale-110' : 'bg-card border-border group-hover:border-primary/50 group-hover:-translate-y-1'}`}>
-                                    {p.icon}
+                                <div className={`w-[72px] h-[72px] rounded-full overflow-hidden flex items-center justify-center text-3xl transition-all duration-300 ease-out border-2 ${isActive ? 'bg-primary/10 border-primary shadow-[0_0_0_4px_rgba(var(--primary),0.1)] scale-110' : 'bg-card border-border group-hover:border-primary/50 group-hover:-translate-y-1'}`}>
+                                    {p.image_url ? (
+                                        <img src={p.image_url} alt={pName} className="w-full h-full object-cover" />
+                                    ) : (
+                                        p.icon
+                                    )}
                                 </div>
                                 <span className={`font-sans text-[11px] font-bold tracking-wide transition-colors duration-300 ${isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`}>
                                     {pName}
@@ -178,50 +184,76 @@ export const Activities = () => {
 
                 {/* ── Progress Bar ── */}
                 <div className="h-1 bg-secondary rounded-full mb-10 overflow-hidden max-w-4xl mx-auto">
-                    <div 
+                    <div
                         className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all ease-linear"
                         style={{ width: `${progress}%`, transitionDuration: '100ms' }}
                     />
                 </div>
 
                 {/* ── Selected Program Hero Card ── */}
-                <div 
-                    className={`rounded-[24px] p-6 lg:p-10 mb-8 flex flex-col sm:flex-row items-center gap-8 border border-primary/20 bg-primary/5 dark:bg-primary/10 shadow-lg shadow-primary/5 transition-all duration-300 ease-out ${animating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'}`}
+                <div
+                    className={`rounded-[24px] p-6 lg:p-10 mb-8 flex flex-col items-start gap-8 border border-primary/20 bg-primary/5 dark:bg-primary/10 shadow-lg shadow-primary/5 transition-all duration-300 ease-out ${animating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'}`}
                 >
-                    <div className="w-24 h-24 rounded-full shrink-0 flex items-center justify-center text-4xl bg-gradient-to-br from-primary/80 to-primary text-white shadow-xl shadow-primary/20">
-                        {prog.icon}
-                    </div>
-                    <div className="text-center sm:text-start flex-1">
-                        <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 font-sans text-xs font-bold uppercase tracking-wider mb-3">
-                            {progTag}
-                        </span>
-                        <h3 className="text-2xl lg:text-3xl font-display font-bold text-foreground mb-2">
-                            {progName}
-                        </h3>
-                        <p className="text-muted-foreground font-sans text-sm leading-relaxed max-w-3xl">
-                            {progDesc}
-                        </p>
+                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8 w-full">
+                        <div className="w-24 h-24 rounded-full shrink-0 flex items-center justify-center overflow-hidden text-4xl bg-gradient-to-br from-primary/80 to-primary text-white shadow-xl shadow-primary/20">
+                            {prog.image_url ? (
+                                <img src={prog.image_url} alt={progName} className="w-full h-full object-cover" />
+                            ) : (
+                                prog.icon
+                            )}
+                        </div>
+                        <div className="text-center sm:text-start flex-1 w-full">
+                            <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 font-sans text-xs font-bold uppercase tracking-wider mb-3">
+                                {progTag}
+                            </span>
+                            <h3 className="text-2xl lg:text-3xl font-display font-bold text-foreground mb-2">
+                                {progName}
+                            </h3>
+                            <p className="text-muted-foreground font-sans text-sm leading-relaxed max-w-3xl">
+                                {progDesc}
+                            </p>
+
+                            {/* ── Dynamic Gallery Section ── */}
+                            {galleryItems.length > 0 && (
+                                <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 w-full">
+                                    {galleryItems.map((imgUrl, idx) => (
+                                        <div
+                                            key={idx}
+                                            className="group relative aspect-video sm:aspect-square overflow-hidden rounded-xl border border-border shadow-sm bg-card hover:shadow-md transition-all duration-300"
+                                        >
+                                            <img
+                                                src={imgUrl}
+                                                alt={`${progName} gallery image ${idx + 1}`}
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
+                                            />
+                                            {/* Optional dark overlay on hover for premium feel */}
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
                 {/* ── Activity Item Cards ── */}
-                <div 
+                <div
                     className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 transition-all duration-300 delay-100 ease-out ${animating ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'}`}
                 >
                     {items.map((act, i) => {
                         const actTitle = getField(act, 'title', lang);
-                        const actDesc  = getField(act, 'desc', lang);
-                        const actFreq  = getField(act, 'freq', lang);
+                        const actDesc = getField(act, 'desc', lang);
+                        const actFreq = getField(act, 'freq', lang);
                         return (
-                            <div 
-                                key={act.id ?? i} 
+                            <div
+                                key={act.id ?? i}
                                 className="group flex flex-col bg-card border border-border rounded-2xl overflow-hidden hover:-translate-y-1.5 hover:shadow-xl hover:border-primary/30 transition-all duration-300 ease-out"
                             >
                                 <div className="w-full h-[140px] relative bg-secondary/50 flex items-center justify-center overflow-hidden">
                                     {act.image_url ? (
-                                        <img 
-                                            src={act.image_url} 
-                                            alt={actTitle} 
+                                        <img
+                                            src={act.image_url}
+                                            alt={actTitle}
                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                                         />
                                     ) : (

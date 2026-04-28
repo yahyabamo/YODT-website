@@ -383,9 +383,9 @@ export const Partners = () => {
 
     return (
         <section id="partners" className="relative py-24 bg-secondary/30 overflow-hidden">
-            
+
             {/* Soft Yemen Pattern Overlay */}
-            <div 
+            <div
                 className="absolute inset-0 opacity-[0.02] dark:opacity-[0.04] pointer-events-none mix-blend-overlay"
                 style={{
                     backgroundImage: 'url(/assets/yemen-pattern.svg)',
