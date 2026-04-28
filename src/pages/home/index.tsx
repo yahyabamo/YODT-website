@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { Navbar } from '../../components/features/home/Navbar';
@@ -20,7 +19,6 @@ const Index = () => {
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
-    // Respect the user's current theme — do NOT force dark mode
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
   }, [isDark]);
 
@@ -30,7 +28,6 @@ const Index = () => {
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
 
-  // Scroll Listener
   useEffect(() => {
     const handleScroll = () => {
       const nav = document.getElementById('navbar');
@@ -46,7 +43,6 @@ const Index = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Reveal Animation Observer
   useEffect(() => {
     const revealEls = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
 
@@ -62,7 +58,6 @@ const Index = () => {
     return () => observer.disconnect();
   }, [modalOpen]);
 
-  // Counter Animation Observer
   useEffect(() => {
     const counters = document.querySelectorAll('.counter');
     const speed = 200;
@@ -111,24 +106,8 @@ const Index = () => {
         onOpenModal={openModal}
       /> */}
 
-      {/*
-        VISUAL RHYTHM — Alternating between bg / bg-1:
-        1. Hero       → var(--bg)      [dark base]
-          ↓ JambiyaDivider (Hero → About)  — already inside Hero.tsx
-        2. About      → var(--bg)      [base — shares bg with Hero gradient fade]
-        3. Guide      → var(--bg-1)    [slightly lighter]
-        4. Activities → var(--bg)      [back to base]
-          ↓ JambiyaDivider (Activities → Discounts)
-        5. Discounts  → var(--bg-1)    [lighter again]
-        6. Partners   → var(--bg-1)    [same level, part of Discounts visual block]
-        7. Quote      → var(--bg-1)    [gentle break, gold accent]
-        8. FinalCTA   → var(--bg)→bg-2 [gradient, feels like a conclusion]
-          ↓ JambiyaDivider   — inside Footer.tsx
-        9. Footer     → var(--bg)      [matches page base]
-      */}
-
       <Hero onOpenModal={openModal} />
-      <AdSlot page="home" position="after_hero" className="container mx-auto px-6 py-2" heightClass="h-[70px] sm:h-[90px]" />
+      <AdSlot page="home" position="top" className="container mx-auto px-6 py-2" heightClass="h-[70px] sm:h-[90px]" />
       <About />
       <Guide />
       <Activities />
