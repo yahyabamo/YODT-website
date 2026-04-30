@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { getField } from '@/i18n/pages';
 import {
@@ -35,7 +35,7 @@ const isRTL = (lang: string) => lang === 'ar';
 
 // ─── Shimmer Skeleton ─────────────────────────────────────────
 function Shimmer({ className = '', height = '150px' }: { className?: string; height?: string | number }) {
-    return <div className={`bg-secondary animate-pulse rounded-2xl ${className}`} style={{ height }} />;
+    return <div className={`animate-pulse rounded-2xl bg-secondary ${className}`} style={{ height }} />;
 }
 
 // ─── Image Gallery ────────────────────────────────────────────
@@ -45,33 +45,32 @@ function ImageGallery({ images, alt }: { images: string[]; alt: string }) {
 
     return (
         <div>
-            {/* Main image */}
-            <div className="relative h-[280px] rounded-2xl overflow-hidden bg-background border border-border flex items-center justify-center p-2">
+            <div className="relative flex h-[280px] items-center justify-center overflow-hidden rounded-2xl border border-border bg-background p-2">
                 <img
                     src={images[active]}
                     alt={alt}
-                    className="max-w-full max-h-full object-contain block transition-opacity duration-300 ease-out"
+                    className="block max-h-full max-w-full object-contain transition-opacity duration-300 ease-out"
                 />
                 {images.length > 1 && (
-                    <div className="absolute bottom-3 inset-inline-end-3 bg-black/65 text-white rounded-full px-3 py-1 text-[11px] font-bold backdrop-blur-md">
+                    <div className="absolute bottom-3 right-3 rounded-full bg-black/65 px-3 py-1 text-[11px] font-bold text-white backdrop-blur-md">
                         {active + 1} / {images.length}
                     </div>
                 )}
             </div>
 
-            {/* Thumbnails */}
             {images.length > 1 && (
-                <div className="flex gap-2 mt-3 overflow-x-auto pb-2 scrollbar-hide">
+                <div className="mt-3 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                     {images.map((img, i) => (
                         <button
                             key={i}
                             onClick={() => setActive(i)}
-                            className={`shrink-0 w-16 h-16 rounded-xl flex items-center justify-center p-1 cursor-pointer transition-all duration-200 border-2 ${i === active ? 'border-primary bg-primary/5' : 'border-transparent bg-secondary hover:border-primary/40'}`}
+                            className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-2 p-1 transition-all duration-200 ${i === active ? 'border-primary bg-primary/5' : 'border-transparent bg-secondary hover:border-primary/40'
+                                }`}
                         >
                             <img
                                 src={img}
                                 alt={`${alt} ${i + 1}`}
-                                className="max-w-full max-h-full object-contain rounded-md"
+                                className="max-h-full max-w-full rounded-md object-contain"
                             />
                         </button>
                     ))}
@@ -85,47 +84,64 @@ function ImageGallery({ images, alt }: { images: string[]; alt: string }) {
 function PartnerLogo({ partner, lang }: { partner: HomepagePartnerDisplay; lang: string }) {
     const name = getField(partner, 'name', lang) || partner.name;
     const abbr = (partner.name_ar || partner.name || '?')
-        .split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase();
+        .split(' ')
+        .slice(0, 2)
+        .map((w: string) => w[0])
+        .join('')
+        .toUpperCase();
 
-    return (
-        <a
-            href={partner.website || undefined}
-            target={partner.website ? '_blank' : undefined}
-            rel={partner.website ? 'noopener noreferrer' : undefined}
-            className="group flex flex-col items-center gap-4 px-4 py-6 rounded-2xl bg-card border border-border transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl hover:border-primary/40 relative overflow-hidden"
-            style={{ cursor: partner.website ? 'pointer' : 'default' }}
-        >
-            {/* Top accent bar */}
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-accent scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out origin-left" />
-
-            {/* Logo container */}
-            <div className="w-24 h-24 rounded-2xl bg-secondary border border-border/50 flex items-center justify-center overflow-hidden p-3 transition-all duration-300 group-hover:bg-background group-hover:shadow-md">
-                {partner.logo_url ? (
-                    <img
-                        src={partner.logo_url}
-                        alt={name}
-                        loading="lazy"
-                        className="max-w-full max-h-full object-contain filter grayscale opacity-75 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300 ease-out"
-                    />
-                ) : (
-                    <span className="font-sans font-black text-2xl text-muted-foreground group-hover:text-primary transition-colors duration-300">
-                        {abbr}
-                    </span>
-                )}
+    const content = (
+        <>
+            <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-primary/80 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+            <div className="flex h-full flex-col items-center justify-center gap-3 rounded-2xl bg-white/90 px-4 py-4 text-center shadow-sm ring-1 ring-border/60 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-lg dark:bg-card/90">
+                <div className="flex h-20 w-full items-center justify-center rounded-xl border border-border/60 bg-white p-3 shadow-sm dark:bg-background">
+                    {partner.logo_url ? (
+                        <img
+                            src={partner.logo_url}
+                            alt={name}
+                            loading="lazy"
+                            className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                        />
+                    ) : (
+                        <span className="text-2xl font-black text-muted-foreground transition-colors duration-300 group-hover:text-primary">
+                            {abbr}
+                        </span>
+                    )}
+                </div>
+                <span className="line-clamp-2 text-[11px] font-bold leading-tight text-foreground/90 transition-colors duration-300 group-hover:text-primary">
+                    {name}
+                </span>
             </div>
+        </>
+    );
 
-            {/* Name */}
-            <span className="font-sans text-xs font-bold text-foreground text-center line-clamp-2 leading-relaxed group-hover:text-primary transition-colors duration-300">
-                {name}
-            </span>
+    return partner.website ? (
+        <a
+            href={partner.website}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group relative block h-full w-[150px] min-w-[150px]"
+            aria-label={name}
+        >
+            {content}
         </a>
+    ) : (
+        <div className="group relative block h-full w-[150px] min-w-[150px]">{content}</div>
     );
 }
 
 // ─── Offer Card ───────────────────────────────────────────────
 function OfferCard({
-    offer, lang, onOpen, index,
-}: { offer: HomepageOfferDisplay; lang: string; onOpen: (o: HomepageOfferDisplay) => void; index: number }) {
+    offer,
+    lang,
+    onOpen,
+    index,
+}: {
+    offer: HomepageOfferDisplay;
+    lang: string;
+    onOpen: (o: HomepageOfferDisplay) => void;
+    index: number;
+}) {
     const title = getField(offer, 'title', lang) || offer.title;
     const desc = getField(offer, 'description', lang);
     const target = getField(offer, 'target_audience', lang);
@@ -137,30 +153,29 @@ function OfferCard({
 
     return (
         <article
-            className="group flex flex-col bg-card border border-border rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ease-out hover:-translate-y-1.5 hover:shadow-xl hover:border-primary/40 animate-in slide-in-from-bottom-8 fade-in"
+            className="group flex cursor-pointer flex-col overflow-hidden rounded-[22px] border border-border bg-card transition-all duration-300 ease-out hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl"
             onClick={() => onOpen(offer)}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => e.key === 'Enter' && onOpen(offer)}
             style={{ animationDelay: `${index * 80}ms` }}
         >
-            {/* Image area */}
-            <div className="h-[200px] bg-secondary flex items-center justify-center overflow-hidden relative border-b border-border/50">
+            <div className="relative flex h-[170px] items-center justify-center overflow-hidden border-b border-border/50 bg-secondary sm:h-[200px]">
                 {thumb ? (
                     <>
                         <img
                             src={thumb}
                             alt={title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                            className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
                         />
                         {allImages.length > 1 && (
-                            <div className="absolute bottom-2.5 inset-inline-end-2.5 bg-black/65 text-white rounded-full px-2.5 py-1 text-[10px] font-sans font-bold backdrop-blur-md">
+                            <div className="absolute bottom-2.5 right-2.5 rounded-full bg-black/65 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-md">
                                 +{allImages.length - 1} {t('more', lang)}
                             </div>
                         )}
                     </>
                 ) : (
-                    <div className="flex flex-col items-center gap-2 text-muted-foreground opacity-60 group-hover:scale-110 transition-transform duration-500">
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground/70 transition-transform duration-500 group-hover:scale-110">
                         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                             <rect x="3" y="3" width="18" height="18" rx="2" />
                             <circle cx="8.5" cy="8.5" r="1.5" />
@@ -169,65 +184,56 @@ function OfferCard({
                     </div>
                 )}
 
-                {/* Offer badge */}
-                <div className="absolute top-3 inset-inline-start-3 bg-primary text-primary-foreground font-sans text-[9px] font-black tracking-widest uppercase px-3 py-1 rounded-full shadow-lg shadow-primary/20">
+                <div className="absolute left-3 top-3 rounded-full bg-primary px-3 py-1 text-[9px] font-black uppercase tracking-[0.25em] text-primary-foreground shadow-lg shadow-primary/20">
                     {t('offer', lang)}
                 </div>
             </div>
 
-            {/* Card body */}
-            <div className="p-6 flex flex-col gap-4 flex-1">
-                {/* Partner row */}
+            <div className="flex flex-1 flex-col gap-3 p-4 sm:gap-4 sm:p-5 lg:p-6">
                 <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-lg bg-background border border-border flex items-center justify-center overflow-hidden shrink-0 p-1.5 shadow-sm">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-background p-1.5 shadow-sm sm:h-11 sm:w-11">
                         {offer.partners?.logo_url ? (
                             <img
                                 src={offer.partners.logo_url}
                                 alt={partnerName}
                                 loading="lazy"
-                                className="max-w-full max-h-full object-contain"
+                                className="max-h-full max-w-full object-contain"
                             />
                         ) : (
-                            <span className="font-sans font-black text-sm text-muted-foreground">
-                                {(partnerName || '?')[0]}
-                            </span>
+                            <span className="text-sm font-black text-muted-foreground">{(partnerName || '?')[0]}</span>
                         )}
                     </div>
-                    <span className="font-sans text-[11px] font-bold text-muted-foreground tracking-wider uppercase">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground sm:text-[11px]">
                         {partnerName}
                     </span>
                 </div>
 
-                {/* Title */}
-                <h3 className="font-sans font-bold text-base text-foreground group-hover:text-primary transition-colors">
+                <h3 className="text-sm font-bold leading-snug text-foreground transition-colors group-hover:text-primary sm:text-base">
                     {title}
                 </h3>
 
-                {/* Description */}
                 {desc && (
-                    <p className="font-sans text-[13px] text-muted-foreground leading-relaxed flex-1 line-clamp-3">
+                    <p className="line-clamp-2 flex-1 text-[12px] leading-relaxed text-muted-foreground sm:line-clamp-3 sm:text-[13px]">
                         {desc}
                     </p>
                 )}
 
-                {/* Tags */}
                 <div className="flex flex-wrap gap-2 pt-1">
                     {target && (
-                        <span className="inline-block px-2.5 py-1 bg-accent/10 text-accent border border-accent/20 rounded-md font-sans text-[10px] font-bold">
+                        <span className="inline-block rounded-md border border-accent/20 bg-accent/10 px-2.5 py-1 text-[10px] font-bold text-accent">
                             {target}
                         </span>
                     )}
                     {offer.partners?.city && (
-                        <span className="inline-block px-2.5 py-1 bg-secondary text-muted-foreground border border-border rounded-md font-sans text-[10px] font-bold">
+                        <span className="inline-block rounded-md border border-border bg-secondary px-2.5 py-1 text-[10px] font-bold text-muted-foreground">
                             {offer.partners.city}
                         </span>
                     )}
                 </div>
 
-                {/* CTA */}
-                <div className="mt-2 w-full py-2.5 rounded-xl border border-border bg-transparent text-foreground font-sans text-xs font-bold flex items-center justify-center gap-2 group-hover:bg-primary group-hover:border-primary group-hover:text-primary-foreground transition-all duration-300">
+                <div className="mt-1 flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-transparent py-2.5 text-xs font-bold text-foreground transition-all duration-300 group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground">
                     {t('details', lang)}
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1">
                         <path d={rtl ? 'M19 12H5M12 19l-7-7 7-7' : 'M5 12h14M12 5l7 7-7 7'} />
                     </svg>
                 </div>
@@ -248,9 +254,14 @@ function OfferModal({ offer, lang, onClose }: { offer: HomepageOfferDisplay; lan
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';
-        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose();
+        };
         window.addEventListener('keydown', onKey);
-        return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+        return () => {
+            document.body.style.overflow = '';
+            window.removeEventListener('keydown', onKey);
+        };
     }, [onClose]);
 
     const metaItems = [
@@ -264,21 +275,19 @@ function OfferModal({ offer, lang, onClose }: { offer: HomepageOfferDisplay; lan
             onClick={onClose}
             role="dialog"
             aria-modal="true"
-            className="fixed inset-0 z-[200] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm sm:p-6"
             style={{ direction: rtl ? 'rtl' : 'ltr' }}
         >
             <div
                 onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-[660px] max-h-[90vh] bg-card border border-border rounded-3xl overflow-hidden shadow-2xl flex flex-col relative animate-in zoom-in-95 duration-300"
+                className="relative flex max-h-[90vh] w-full max-w-[660px] flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-2xl animate-in zoom-in-95 duration-300"
             >
-                {/* Header strip */}
                 <div className="h-2 w-full bg-gradient-to-r from-background via-primary to-background" />
 
-                {/* Close button */}
                 <button
                     onClick={onClose}
                     aria-label={t('close', lang)}
-                    className="absolute top-6 inset-inline-end-6 w-9 h-9 rounded-full bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-background hover:scale-110 transition-all z-10"
+                    className="absolute right-6 top-6 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-secondary text-muted-foreground transition-all hover:scale-110 hover:bg-background hover:text-foreground"
                 >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <line x1="18" y1="6" x2="6" y2="18" />
@@ -286,57 +295,51 @@ function OfferModal({ offer, lang, onClose }: { offer: HomepageOfferDisplay; lan
                     </svg>
                 </button>
 
-                {/* Scrollable Content */}
                 <div className="overflow-y-auto p-6 sm:p-10">
-
-                    {/* Partner identity */}
-                    <div className="flex items-center gap-4 mb-8 pr-10">
-                        <div className="w-16 h-16 rounded-2xl bg-secondary border border-border/60 flex items-center justify-center shrink-0 p-2">
+                    <div className="mb-8 flex items-center gap-4 pr-10">
+                        <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border/60 bg-secondary p-2">
                             {offer.partners?.logo_url ? (
                                 <img
                                     src={offer.partners.logo_url}
                                     alt={partnerName}
-                                    className="max-w-full max-h-full object-contain"
+                                    className="max-h-full max-w-full object-contain"
                                 />
                             ) : (
-                                <span className="font-sans font-black text-2xl text-muted-foreground">{(partnerName || '?')[0]}</span>
+                                <span className="text-2xl font-black text-muted-foreground">{(partnerName || '?')[0]}</span>
                             )}
                         </div>
                         <div>
-                            <span className="font-sans text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                            <span className="mb-1 block text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                 {partnerName}
                             </span>
-                            <h2 className="font-display text-2xl font-bold text-foreground leading-tight">
+                            <h2 className="text-2xl font-bold leading-tight text-foreground">
                                 {title}
                             </h2>
                         </div>
                     </div>
 
-                    {/* Gallery */}
                     {allImages.length > 0 && (
                         <div className="mb-8">
                             <ImageGallery images={allImages} alt={title} />
                         </div>
                     )}
 
-                    {/* Description */}
                     {desc && (
-                        <div className="p-5 sm:p-6 rounded-2xl bg-secondary/50 border border-border/50 border-inline-start-[3px] border-inline-start-primary mb-8">
-                            <p className="font-sans text-sm sm:text-base text-muted-foreground leading-relaxed">
+                        <div className="mb-8 rounded-2xl border border-border/50 border-l-[3px] border-l-primary bg-secondary/50 p-5 sm:p-6">
+                            <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
                                 {desc}
                             </p>
                         </div>
                     )}
 
-                    {/* Meta */}
                     {metaItems.length > 0 && (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
+                        <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
                             {metaItems.map(({ label, value }) => (
-                                <div key={label} className="p-4 rounded-xl border border-border bg-background">
-                                    <div className="font-sans text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                                <div key={label} className="rounded-xl border border-border bg-background p-4">
+                                    <div className="mb-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                                         {label}
                                     </div>
-                                    <div className="font-sans text-sm font-bold text-foreground">
+                                    <div className="text-sm font-bold text-foreground">
                                         {value}
                                     </div>
                                 </div>
@@ -344,13 +347,12 @@ function OfferModal({ offer, lang, onClose }: { offer: HomepageOfferDisplay; lan
                         </div>
                     )}
 
-                    {/* CTA */}
                     {offer.contact_link && (
                         <a
                             href={offer.contact_link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-sans text-sm font-bold flex items-center justify-center gap-2 hover:bg-primary/90 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 text-sm font-bold text-primary-foreground transition-all duration-300 hover:-translate-y-1 hover:bg-primary/90 hover:shadow-lg"
                         >
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.11 11.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.22 0h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 7.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
@@ -374,102 +376,109 @@ export const Partners = () => {
 
     useEffect(() => {
         Promise.all([fetchHomepagePartners(), fetchHomepageOffers()])
-            .then(([p, o]) => { setPartners(p); setOffers(o); })
+            .then(([p, o]) => {
+                setPartners(p);
+                setOffers(o);
+            })
             .catch((err) => console.error('Partners/Offers fetch failed', err))
             .finally(() => setLoading(false));
     }, []);
 
     const handleClose = useCallback(() => setSelected(null), []);
 
-    return (
-        <section id="partners" className="relative py-24 bg-secondary/30 overflow-hidden">
+    const marqueePartners = useMemo(() => {
+        if (!partners.length) return [];
+        return [...partners, ...partners];
+    }, [partners]);
 
-            {/* Soft Yemen Pattern Overlay */}
+    return (
+        <section id="partners" className="relative overflow-hidden bg-secondary/30 py-24">
             <div
-                className="absolute inset-0 opacity-[0.02] dark:opacity-[0.04] pointer-events-none mix-blend-overlay"
+                className="pointer-events-none absolute inset-0 mix-blend-overlay opacity-[0.02] dark:opacity-[0.04]"
                 style={{
                     backgroundImage: 'url(/assets/yemen-pattern.svg)',
                     backgroundSize: '180px 180px',
                 }}
             />
 
-            <div className="container relative z-10 mx-auto px-6 lg:px-12">
-
-                {/* ═══ SECTION HEADER ═══ */}
-                <div className="flex flex-col items-center text-center mb-16 animate-in slide-in-from-bottom-8 fade-in">
-                    <div className="flex items-center gap-3 mb-4">
-                        <span className="w-8 h-px bg-gradient-to-r from-primary to-transparent"></span>
-                        <span className="text-sm font-bold tracking-wider uppercase text-primary font-sans">
+            <div className="relative z-10 mx-auto container px-6 lg:px-12">
+                <div className="mb-16 flex animate-in flex-col items-center text-center slide-in-from-bottom-8 fade-in">
+                    <div className="mb-4 flex items-center gap-3">
+                        <span className="h-px w-8 bg-gradient-to-r from-primary to-transparent" />
+                        <span className="text-sm font-bold tracking-wider text-primary uppercase">
                             {t('title', lang)}
                         </span>
-                        <span className="w-8 h-px bg-gradient-to-l from-primary to-transparent"></span>
+                        <span className="h-px w-8 bg-gradient-to-l from-primary to-transparent" />
                     </div>
-                    <h2 className="text-4xl lg:text-5xl font-display font-black text-foreground mb-4">
+                    <h2 className="mb-4 text-4xl font-black text-foreground lg:text-5xl">
                         {t('title', lang)}
                     </h2>
-                    <p className="text-muted-foreground font-sans text-base max-w-xl mx-auto">
+                    <p className="mx-auto max-w-xl text-base text-muted-foreground">
                         {t('subtitle', lang)}
                     </p>
                 </div>
 
-                {/* ═══ OFFERS ═══ */}
                 <div className="mb-20">
-                    <div className="flex items-center justify-between mb-8 gap-4">
+                    <div className="mb-8 flex items-center gap-4">
                         <div className="flex items-center gap-3">
-                            <span className="w-6 h-1 bg-primary rounded-full"></span>
-                            <span className="font-sans text-sm font-bold uppercase text-primary tracking-wider">
+                            <span className="h-1 w-6 rounded-full bg-primary" />
+                            <span className="text-sm font-bold tracking-wider text-primary uppercase">
                                 {t('eyebrow', lang)}
                             </span>
                         </div>
-                        <div className="flex-1 h-px bg-border"></div>
+                        <div className="h-px flex-1 bg-border" />
                     </div>
 
                     {loading ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                             {Array.from({ length: 3 }).map((_, i) => (
-                                <Shimmer key={i} height="400px" />
+                                <Shimmer key={i} height="360px" />
                             ))}
                         </div>
                     ) : offers.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                             {offers.map((offer, i) => (
                                 <OfferCard key={offer.id} offer={offer} lang={lang} onOpen={setSelected} index={i} />
                             ))}
                         </div>
                     ) : (
-                        <div className="border-2 border-dashed border-border rounded-2xl p-14 text-center text-muted-foreground font-sans text-sm bg-background">
+                        <div className="rounded-2xl border-2 border-dashed border-border bg-background p-14 text-center text-sm text-muted-foreground">
                             {t('noOffers', lang)}
                         </div>
                     )}
                 </div>
 
-                {/* ═══ PARTNERS GRID ═══ */}
                 <div>
-                    <div className="flex items-center justify-between mb-8 gap-4">
+                    <div className="mb-8 flex items-center gap-4">
                         <div className="flex items-center gap-3">
-                            <span className="w-6 h-1 bg-accent rounded-full"></span>
-                            <span className="font-sans text-sm font-bold uppercase text-accent tracking-wider">
+                            <span className="h-1 w-6 rounded-full bg-accent" />
+                            <span className="text-sm font-bold tracking-wider text-accent uppercase">
                                 {t('partnersTitle', lang)}
                             </span>
                         </div>
-                        <div className="flex-1 h-px bg-border"></div>
+                        <div className="h-px flex-1 bg-border" />
                     </div>
 
-                    <div className="bg-background border border-border rounded-[24px] p-8 sm:p-10 shadow-sm">
+                    <div className="relative overflow-hidden rounded-[28px] border border-border bg-background/85 p-4 shadow-sm sm:p-6">
+                        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-gradient-to-r from-background to-transparent" />
+                        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-background to-transparent" />
+
                         {loading ? (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
                                 {Array.from({ length: 12 }).map((_, i) => (
-                                    <Shimmer key={i} height="120px" className="rounded-2xl" />
+                                    <Shimmer key={i} height="122px" className="rounded-2xl" />
                                 ))}
                             </div>
                         ) : partners.length > 0 ? (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6">
-                                {partners.map((p) => (
-                                    <PartnerLogo key={p.id} partner={p} lang={lang} />
-                                ))}
+                            <div className="partners-marquee overflow-hidden">
+                                <div className="partners-marquee-track flex w-max items-stretch gap-4 py-2">
+                                    {marqueePartners.map((p, idx) => (
+                                        <PartnerLogo key={`${p.id}-${idx}`} partner={p} lang={lang} />
+                                    ))}
+                                </div>
                             </div>
                         ) : (
-                            <div className="text-center p-12 text-muted-foreground text-sm font-sans">
+                            <div className="p-12 text-center text-sm text-muted-foreground">
                                 {t('noPartners', lang)}
                             </div>
                         )}
@@ -477,8 +486,34 @@ export const Partners = () => {
                 </div>
             </div>
 
-            {/* ═══ MODAL ═══ */}
             {selected && <OfferModal offer={selected} lang={lang} onClose={handleClose} />}
+
+            <style>{`
+                .partners-marquee-track {
+                    animation: partners-marquee-left 34s linear infinite;
+                }
+
+                .partners-marquee:hover .partners-marquee-track {
+                    animation-play-state: paused;
+                }
+
+                @keyframes partners-marquee-left {
+                    0% {
+                        transform: translateX(0);
+                    }
+                    100% {
+                        transform: translateX(-50%);
+                    }
+                }
+
+                @media (prefers-reduced-motion: reduce) {
+                    .partners-marquee-track {
+                        animation: none;
+                    }
+                }
+            `}</style>
         </section>
     );
 };
+
+export default Partners;
