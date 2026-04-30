@@ -41,9 +41,9 @@ const stats = [
 const aboutText = {
     eyebrow: { ar: 'من نحن', en: 'About Us', tr: 'Hakkımızda' },
     title: {
-        ar: 'اتحاد يبني جسورًا\nبين الطلاب',
-        en: 'Building Bridges\nBetween Students',
-        tr: 'Öğrenciler Arasında\nKöprüler İnşa Ediyoruz',
+        ar: 'اتحاد يبني جسورًا بين الطلاب',
+        en: 'Building Bridges Between Students',
+        tr: 'Öğrenciler Arasında Köprüler İnşa Ediyoruz',
     },
     p1: {
         ar: 'تأسس اتحاد الطلاب اليمنيين في تركيا – فرع إسطنبول كمنظومة دعم شاملة للطلاب اليمنيين، نؤمن أن كل طالب يستحق بيئة داعمة تُعينه على النجاح الأكاديمي والاندماج الاجتماعي.',
@@ -108,8 +108,11 @@ export const About = () => {
                     {/* Eyebrow */}
                     <div className="flex items-center gap-3 mb-4">
                         <span className="w-8 h-px bg-gradient-to-r from-primary to-transparent"></span>
-                        <span className="text-sm font-bold tracking-wider uppercase text-primary font-sans">
-                            {aboutText.eyebrow[lang]}
+                        <span className="
+  text-sm font-bold
+  text-primary
+  font-sans
+">                            {aboutText.eyebrow[lang]}
                         </span>
                     </div>
 

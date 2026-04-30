@@ -11,6 +11,7 @@ import { AdSlot } from '@/components/ads/AdSlot';
 
 
 
+
 function SectionBlock({ icon, title, body }: { icon: string; title: string; body: string }) {
   return (
     <div style={{
@@ -65,6 +66,7 @@ export default function AboutIstanbul() {
   const [heroImages, setHeroImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
+
   useEffect(() => {
     fetchArticles('istanbul')
       .then(setArticles)
@@ -86,6 +88,7 @@ export default function AboutIstanbul() {
         description={aboutIstanbulText.heroDesc[lang]}
         gradient="linear-gradient(135deg, #07080b 0%, #1a0505 40%, #07080b 100%)"
         backgroundImages={heroImages}
+        isLoading={loading} /* 👈 NEW: Pass the loading state down */
       />
 
       {/* Return button */}

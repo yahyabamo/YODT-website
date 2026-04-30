@@ -16,11 +16,10 @@ interface ImageUploaderProps {
 // 1. Create this utility function
 const compressImageForHero = async (file: File): Promise<File> => {
   const options = {
-    maxSizeMB: 0.5,             // Target max size of 500KB (perfect for heroes)
-    maxWidthOrHeight: 1920,     // Max HD width
+    maxSizeMB: 1,                 // slightly higher → better quality
+    maxWidthOrHeight: 2000,       // keep quality for hero
     useWebWorker: true,
-    fileType: 'image/webp',     // Force modern, highly compressed format
-    initialQuality: 0.8         // 80% quality retains visuals but drops size
+    initialQuality: 0.85,// 80% quality retains visuals but drops size
   };
 
   try {

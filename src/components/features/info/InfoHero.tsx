@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface InfoHeroProps {
@@ -10,276 +10,314 @@ interface InfoHeroProps {
     ctaLabel?: string;
     ctaPath?: string;
     gradient?: string;
+    isLoading?: boolean;
 }
+
+const optimizeImageUrl = (url: string) => {
+    if (url.includes('cloudinary.com') && !url.includes('q_auto')) {
+        return url.replace('/upload/', '/upload/q_auto,f_auto/');
+    }
+    return url;
+};
+
+type RevealPhase = 'loading' | 'revealing' | 'complete';
 
 export const InfoHero: React.FC<InfoHeroProps> = ({
     eyebrow,
     title,
     description,
-    backgroundImage,
     backgroundImages,
+    backgroundImage,
     ctaLabel,
     ctaPath,
-    gradient = 'linear-gradient(135deg, #1a0a0a 0%, #3b0007 50%, #1a0a0a 100%)',
+    gradient = 'linear-gradient(135deg, #07080b 0%, #1a0505 40%, #07080b 100%)',
+    isLoading = false,
 }) => {
     const navigate = useNavigate();
-
-    // Normalize images array
-    const images: string[] =
-        backgroundImages && backgroundImages.length > 0
-            ? backgroundImages
-            : backgroundImage
-                ? [backgroundImage]
-                : [];
-
-    const hasImages = images.length > 0;
-
-    // Carousel State
     const [activeIdx, setActiveIdx] = useState(0);
-    const [loadedImages, setLoadedImages] = useState<Record<number, boolean>>({});
-
-    // Touch / Swipe State
     const [touchStart, setTouchStart] = useState<number | null>(null);
-    const [touchEnd, setTouchEnd] = useState<number | null>(null);
+    const [revealPhase, setRevealPhase] = useState<RevealPhase>('loading');
+    const [textVisible, setTextVisible] = useState(false);
+    const [loadedImages, setLoadedImages] = useState<boolean[]>([]);
+    const sectionRef = useRef<HTMLElement>(null);
 
-    // Minimum swipe distance (in px)
-    const minSwipeDistance = 50;
+    const rawImages = backgroundImages?.length ? backgroundImages : backgroundImage ? [backgroundImage] : [];
+    const images = rawImages.map(optimizeImageUrl);
+    const hasImages = images.length > 0;
+    const isCarousel = images.length > 1;
 
-    // Auto-play interval
+    useEffect(() => {
+        if (hasImages) {
+            setLoadedImages(new Array(images.length).fill(false));
+        }
+    }, [hasImages, images.length]);
+
+    useEffect(() => {
+        if (!hasImages || !images[0]) return;
+        const preloadLink = document.createElement('link');
+        preloadLink.rel = 'preload';
+        preloadLink.as = 'image';
+        preloadLink.href = images[0];
+        preloadLink.fetchPriority = 'high';
+        document.head.appendChild(preloadLink);
+        return () => {
+            if (document.head.contains(preloadLink)) document.head.removeChild(preloadLink);
+        };
+    }, [hasImages, images]);
+
+    useEffect(() => {
+        if (isLoading || !hasImages) {
+            setRevealPhase(!isLoading ? 'complete' : 'loading');
+            return;
+        }
+        const firstImg = new window.Image();
+        firstImg.src = images[0];
+        if (firstImg.complete) {
+            setRevealPhase('revealing');
+            setTimeout(() => setRevealPhase('complete'), 1200);
+        } else {
+            firstImg.onload = () => {
+                setRevealPhase('revealing');
+                setTimeout(() => setRevealPhase('complete'), 1200);
+            };
+        }
+    }, [isLoading, hasImages, images]);
+
+    useEffect(() => {
+        if (isLoading) return;
+        if (!hasImages) {
+            const timer = setTimeout(() => setTextVisible(true), 120);
+            return () => clearTimeout(timer);
+        }
+        if (loadedImages[0] && revealPhase !== 'loading') {
+            const timer = setTimeout(() => setTextVisible(true), 80);
+            return () => clearTimeout(timer);
+        }
+    }, [loadedImages[0], revealPhase, hasImages, isLoading]);
+
+    useEffect(() => {
+        if (!isCarousel || revealPhase !== 'complete') return;
+        const interval = setInterval(() => {
+            setActiveIdx((prev) => (prev + 1) % images.length);
+        }, 6800);
+        return () => clearInterval(interval);
+    }, [isCarousel, revealPhase, images.length]);
+
     useEffect(() => {
         if (images.length <= 1) return;
-        const interval = setInterval(() => {
-            setActiveIdx((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-        }, 6000);
-        return () => clearInterval(interval);
-    }, [images.length]);
+        images.slice(1).forEach(src => { new window.Image().src = src; });
+    }, [images]);
 
-    // Touch Handlers
-    const onTouchStart = (e: React.TouchEvent) => {
-        setTouchEnd(null); // Reset touch end
+    useEffect(() => {
+        if (!isCarousel || revealPhase !== 'complete') return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'ArrowLeft') {
+                setActiveIdx((prev) => (prev - 1 + images.length) % images.length);
+            } else if (e.key === 'ArrowRight') {
+                setActiveIdx((prev) => (prev + 1) % images.length);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isCarousel, revealPhase, images.length]);
+
+    const handleTouchStart = (e: React.TouchEvent) => {
         setTouchStart(e.targetTouches[0].clientX);
     };
 
-    const onTouchMove = (e: React.TouchEvent) => {
-        setTouchEnd(e.targetTouches[0].clientX);
+    const handleTouchEnd = (e: React.TouchEvent) => {
+        if (touchStart === null) return;
+        const touchEnd = e.changedTouches[0].clientX;
+        const diff = touchStart - touchEnd;
+
+        if (diff > 50) goNext();
+        else if (diff < -50) goPrev();
+
+        setTouchStart(null);
     };
 
-    const onTouchEnd = () => {
-        if (!touchStart || !touchEnd) return;
-        const distance = touchStart - touchEnd;
-        const isLeftSwipe = distance > minSwipeDistance;
-        const isRightSwipe = distance < -minSwipeDistance;
-
-        if (isLeftSwipe) {
-            setActiveIdx((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-        }
-        if (isRightSwipe) {
-            setActiveIdx((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-        }
-    };
-
-    // Image Load Handler
     const handleImageLoad = (idx: number) => {
-        setLoadedImages((prev) => ({ ...prev, [idx]: true }));
+        setLoadedImages(prev => {
+            if (prev[idx]) return prev;
+            const newState = [...prev];
+            newState[idx] = true;
+            return newState;
+        });
     };
 
-    const goTo = (idx: number) => setActiveIdx(idx);
+    const goPrev = () => setActiveIdx((prev) => (prev - 1 + images.length) % images.length);
+    const goNext = () => setActiveIdx((prev) => (prev + 1) % images.length);
+
+    const isComplete = revealPhase === 'complete';
 
     return (
         <section
+            ref={sectionRef}
             style={{
                 position: 'relative',
-                marginTop: '-72px', // Account for navbar
-                minHeight: hasImages ? 'clamp(500px, 85vh, 800px)' : 'clamp(320px, 45vh, 420px)',
+                marginTop: '-72px',
+                minHeight: hasImages ? 'clamp(450px, 65vh, 700px)' : 'clamp(320px, 45vh, 450px)',
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'center',
                 overflow: 'hidden',
-                background: hasImages ? '#050505' : gradient,
-                isolation: 'isolate',
+                background: gradient,
+                touchAction: 'pan-y',
             }}
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
         >
-            {/* ──────────────────────────────────────────────────────────────────────
-          1. CAROUSEL TRACK (Hardware Accelerated Sliding)
-      ─────────────────────────────────────────────────────────────────────── */}
+            {/* Background Images */}
             {hasImages && (
-                <div
-                    style={{
+                <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
+                    {images.map((src, idx) => (
+                        <img
+                            key={idx}
+                            src={src}
+                            alt=""
+                            // FIX: Removed lazy loading. Let the browser fetch them so they are ready for swipe!
+                            // @ts-ignore
+                            fetchpriority={idx === 0 ? "high" : "auto"}
+                            onLoad={() => handleImageLoad(idx)}
+                            style={{
+                                position: 'absolute',
+                                inset: 0,
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                objectPosition: 'center',
+                                // FIX: Simply check if it's the active index. Removes the blank swipe bug.
+                                opacity: idx === activeIdx ? 1 : 0,
+                                transform: idx === activeIdx ? 'translateZ(0) scale(1.04)' : 'translateZ(0) scale(1.08)',
+                                transition: isComplete
+                                    ? 'opacity 1.5s ease-in-out, transform 12s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                                    : 'opacity 0.3s ease-out',
+                                filter: revealPhase === 'revealing' && idx === activeIdx ? 'brightness(0.4)' : 'none',
+                                willChange: 'transform, opacity',
+                                WebkitBackfaceVisibility: 'hidden',
+                            }}
+                        />
+                    ))}
+                    <div style={{
                         position: 'absolute',
                         inset: 0,
-                        display: 'flex',
-                        transform: `translateX(-${activeIdx * 100}%)`,
-                        transition: 'transform 0.65s cubic-bezier(0.25, 1, 0.5, 1)', // Smooth iOS-like easing
-                        willChange: 'transform',
-                        zIndex: 0,
-                    }}
-                >
-                    {images.map((img, idx) => (
-                        <div
-                            key={idx}
-                            style={{
-                                position: 'relative',
-                                minWidth: '100%',
-                                height: '100%',
-                                overflow: 'hidden',
-                            }}
-                        >
-                            {/* Skeleton Loader */}
-                            {!loadedImages[idx] && (
-                                <div
-                                    style={{
-                                        position: 'absolute',
-                                        inset: 0,
-                                        background: 'linear-gradient(90deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%)',
-                                        backgroundSize: '200% 100%',
-                                        animation: 'pulse 1.5s infinite',
-                                    }}
-                                />
-                            )}
-
-                            {/* Native IMG for better LCP & Performance */}
-                            <img
-                                src={img}
-                                alt={`Hero visual ${idx + 1}`}
-                                loading={idx === 0 ? 'eager' : 'lazy'} // Eager load first image!
-                                onLoad={() => handleImageLoad(idx)}
-                                style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit: 'cover',
-                                    objectPosition: 'center',
-                                    opacity: loadedImages[idx] ? 1 : 0,
-                                    transition: 'opacity 0.4s ease-in',
-                                    transform: activeIdx === idx ? 'scale(1)' : 'scale(1.05)',
-                                    transitionProperty: 'opacity, transform',
-                                    transitionDuration: '0.4s, 6s',
-                                    transitionTimingFunction: 'ease-out',
-                                }}
-                            />
-                        </div>
-                    ))}
+                        zIndex: 2,
+                        background: 'linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.75) 60%, rgba(0,0,0,0.95) 100%)',
+                    }} />
                 </div>
             )}
 
-            {/* ──────────────────────────────────────────────────────────────────────
-          2. PREMIUM OVERLAYS & TEXTURES
-      ─────────────────────────────────────────────────────────────────────── */}
-            {hasImages && (
+            {/* Arrow Buttons (FIX: Removed invalid media query, now visible on all devices) */}
+            {isCarousel && isComplete && (
                 <>
-                    {/* Subtle Pattern Overlay (Requested) */}
-                    <div
-                        aria-hidden="true"
+                    <button
+                        onClick={goPrev}
+                        aria-label="Previous image"
                         style={{
                             position: 'absolute',
-                            inset: 0,
-                            zIndex: 1,
-                            backgroundImage: 'url(/yemen-pattern.jpg)', // Make sure this is in your public folder
-                            backgroundSize: '300px',
-                            opacity: 0.04, // Very subtle
-                            mixBlendMode: 'overlay',
-                            pointerEvents: 'none',
+                            left: '16px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            zIndex: 20,
+                            background: 'rgba(255,255,255,0.1)',
+                            backdropFilter: 'blur(8px)',
+                            border: '1px solid rgba(255,255,255,0.2)',
+                            borderRadius: '50%',
+                            width: '44px',
+                            height: '44px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            color: 'white',
+                            fontSize: '24px',
+                            transition: 'all 0.2s ease',
                         }}
-                    />
-
-                    {/* Smart Gradient: Darker at bottom for text, darker at top for navbar */}
-                    <div
-                        aria-hidden="true"
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                    >
+                        ‹
+                    </button>
+                    <button
+                        onClick={goNext}
+                        aria-label="Next image"
                         style={{
                             position: 'absolute',
-                            inset: 0,
-                            zIndex: 2,
-                            background: `linear-gradient(
-                180deg,
-                rgba(0,0,0,0.4) 0%,     
-                rgba(0,0,0,0.1) 20%,    
-                rgba(0,0,0,0.1) 50%,    
-                rgba(0,0,0,0.65) 85%,   
-                rgba(5,5,5,0.95) 100%   
-              )`,
-                            pointerEvents: 'none',
+                            right: '16px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            zIndex: 20,
+                            background: 'rgba(255,255,255,0.1)',
+                            backdropFilter: 'blur(8px)',
+                            border: '1px solid rgba(255,255,255,0.2)',
+                            borderRadius: '50%',
+                            width: '44px',
+                            height: '44px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            color: 'white',
+                            fontSize: '24px',
+                            transition: 'all 0.2s ease',
                         }}
-                    />
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                    >
+                        ›
+                    </button>
                 </>
             )}
 
-            {/* ──────────────────────────────────────────────────────────────────────
-          3. NO-PHOTO MODE DECORATIONS
-      ─────────────────────────────────────────────────────────────────────── */}
-            {!hasImages && (
-                <>
-                    <div aria-hidden="true" style={{
-                        position: 'absolute', inset: 0, zIndex: 0,
-                        backgroundImage: 'linear-gradient(rgba(200,168,75,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(200,168,75,0.04) 1px, transparent 1px)',
-                        backgroundSize: '40px 40px',
-                    }} />
-                    <div aria-hidden="true" style={{
-                        position: 'absolute', top: '-60px', right: '10%', zIndex: 0,
-                        width: '300px', height: '300px', borderRadius: '50%',
-                        background: 'radial-gradient(circle, rgba(139,26,42,0.35) 0%, transparent 70%)',
-                        filter: 'blur(40px)',
-                    }} />
-                </>
-            )}
-
-            {/* ──────────────────────────────────────────────────────────────────────
-          4. CONTENT CONTAINER (Mobile Optimized)
-      ─────────────────────────────────────────────────────────────────────── */}
+            {/* Content */}
             <div
                 style={{
                     position: 'relative',
-                    zIndex: 3,
-                    width: '100%',
-                    maxWidth: '1260px',
-                    margin: '0 auto',
-                    padding: 'clamp(120px, 18vw, 180px) clamp(24px, 5vw, 48px) clamp(60px, 8vw, 90px)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
+                    zIndex: 10,
+                    maxWidth: '860px',
+                    padding: 'clamp(24px, 5vw, 48px)',
                     textAlign: 'center',
-                    pointerEvents: 'none', // Lets swipes pass through to the section
+                    opacity: textVisible ? 1 : 0,
+                    transform: textVisible ? 'translateY(0px)' : 'translateY(30px)',
+                    transition: 'opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1), transform 0.8s cubic-bezier(0.23, 1, 0.32, 1)',
+                    marginTop: '40px',
                 }}
             >
                 {eyebrow && (
                     <div style={{
-                        display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20,
-                        pointerEvents: 'auto'
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '16px',
+                        marginBottom: '16px',
                     }}>
-                        <div style={{ height: 1, width: 40, background: '#c8a84b' }} />
-                        <span style={{
-                            color: '#c8a84b', fontSize: '0.75rem', fontWeight: 700,
-                            textTransform: 'uppercase', letterSpacing: '0.25em',
-                        }}>
+                        <div style={{ height: '2px', width: '40px', background: '#c8a84b' }} />
+                        <span style={{ color: '#c8a84b', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase' }}>
                             {eyebrow}
                         </span>
-                        <div style={{ height: 1, width: 40, background: '#c8a84b' }} />
+                        <div style={{ height: '2px', width: '40px', background: '#c8a84b' }} />
                     </div>
                 )}
 
                 <h1 style={{
-                    color: '#ffffff',
-                    fontSize: 'clamp(2.2rem, 6vw, 4rem)',
+                    fontSize: 'clamp(2.2rem, 5vw, 4rem)',
                     fontWeight: 800,
                     lineHeight: 1.1,
-                    marginBottom: 24,
-                    maxWidth: 800,
-                    textShadow: '0 4px 24px rgba(0,0,0,0.6)',
+                    color: '#fff',
+                    marginBottom: '20px',
                     letterSpacing: '-0.02em',
-                    pointerEvents: 'auto'
+                    textShadow: '0 4px 24px rgba(0,0,0,0.8)',
                 }}>
                     {title}
                 </h1>
 
                 {description && (
                     <p style={{
-                        color: 'rgba(255,255,255,0.85)',
-                        fontSize: 'clamp(1rem, 2vw, 1.15rem)',
-                        maxWidth: 600,
-                        margin: '0 auto 40px',
+                        fontSize: 'clamp(1rem, 1.8vw, 1.15rem)',
+                        color: 'rgba(255,255,255,0.9)',
+                        maxWidth: '680px',
+                        margin: '0 auto 32px',
                         lineHeight: 1.6,
-                        textShadow: '0 2px 10px rgba(0,0,0,0.5)',
-                        pointerEvents: 'auto'
                     }}>
                         {description}
                     </p>
@@ -289,76 +327,59 @@ export const InfoHero: React.FC<InfoHeroProps> = ({
                     <button
                         onClick={() => navigate(ctaPath)}
                         style={{
-                            padding: '14px 36px',
-                            borderRadius: '50px', // More modern pill shape
-                            background: '#7a1c1c',
-                            color: '#fff',
+                            padding: '14px 40px',
                             fontSize: '1rem',
-                            fontWeight: 600,
-                            border: 'none',
+                            fontWeight: 700,
+                            borderRadius: '50px',
+                            background: 'linear-gradient(135deg, #8f2020, #7a1c1c)',
+                            color: '#fff',
+                            border: '1px solid rgba(255,255,255,0.1)',
                             cursor: 'pointer',
-                            boxShadow: '0 8px 24px rgba(122, 28, 28, 0.4)',
+                            boxShadow: '0 8px 24px rgba(122,28,28,0.4)',
                             transition: 'all 0.3s ease',
-                            pointerEvents: 'auto'
                         }}
                         onMouseEnter={e => {
-                            (e.currentTarget as HTMLElement).style.background = '#8f2020';
-                            (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.transform = 'translateY(-3px)';
+                            e.currentTarget.style.boxShadow = '0 12px 32px rgba(122,28,28,0.6)';
                         }}
                         onMouseLeave={e => {
-                            (e.currentTarget as HTMLElement).style.background = '#7a1c1c';
-                            (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = '0 8px 24px rgba(122,28,28,0.4)';
                         }}
                     >
                         {ctaLabel}
                     </button>
                 )}
-
-                {/* ──────────────────────────────────────────────────────────────────────
-            5. DESKTOP ARROWS & MOBILE DOTS
-        ─────────────────────────────────────────────────────────────────────── */}
-                {images.length > 1 && (
-                    <div style={{ pointerEvents: 'auto', width: '100%', marginTop: 40, position: 'relative' }}>
-
-                        {/* Desktop Arrows (Hidden on small screens via CSS/media query logic conceptually) */}
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            gap: '12px'
-                        }}>
-                            {images.map((_, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => goTo(idx)}
-                                    aria-label={`Go to slide ${idx + 1}`}
-                                    style={{
-                                        width: idx === activeIdx ? '32px' : '8px',
-                                        height: '8px',
-                                        borderRadius: '4px',
-                                        border: 'none',
-                                        padding: 0,
-                                        cursor: 'pointer',
-                                        background: idx === activeIdx ? '#c8a84b' : 'rgba(255,255,255,0.3)',
-                                        transition: 'all 0.4s cubic-bezier(0.25, 1, 0.5, 1)',
-                                    }}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                )}
             </div>
 
-            {/* Injecting minimal keyframes for the skeleton loader */}
-            <style>
-                {`
-          @keyframes pulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
-          }
-        `}
-            </style>
+            {/* Dots */}
+            {isCarousel && isComplete && (
+                <div style={{
+                    position: 'absolute',
+                    bottom: '24px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    display: 'flex',
+                    gap: '8px',
+                    zIndex: 20,
+                }}>
+                    {images.map((_, i) => (
+                        <button
+                            key={i}
+                            onClick={() => setActiveIdx(i)}
+                            style={{
+                                width: i === activeIdx ? '32px' : '8px',
+                                height: '8px',
+                                borderRadius: '4px',
+                                background: i === activeIdx ? '#c8a84b' : 'rgba(255,255,255,0.3)',
+                                border: 'none',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                            }}
+                        />
+                    ))}
+                </div>
+            )}
         </section>
     );
 };

@@ -86,8 +86,13 @@ export const Hero: React.FC<HeroProps> = ({ onOpenModal }) => {
                     </div>
 
                     {/* Headline */}
-                    <h1 className="text-5xl lg:text-7xl font-display font-black text-foreground leading-[1.1] tracking-tight mb-6 animate-in slide-in-from-bottom-6 duration-700 delay-150 fade-in">
-                        {t.titleLine1[lang]}
+                    <h1 className="
+  text-5xl lg:text-70xl
+  font-display font-black
+  text-foreground
+  leading-[1.35]
+  mb-6
+">                        {t.titleLine1[lang]}
                         <br />
                         <span className="bg-gradient-to-br from-primary via-primary/90 to-accent bg-clip-text text-transparent">
                             {t.titleHighlight[lang]}

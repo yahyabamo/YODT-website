@@ -101,7 +101,8 @@
 @layer base {
   :root {
     /* ═══ TYPOGRAPHY SCALE (Premium Arabic) ═══ */
-    --font-display: 'IBM Plex Sans Arabic', -apple-system, sans-serif;
+    --font-display: 'ThmanyahSerifDisplay', 'IBM Plex Sans Arabic', 'Tajawal', 'Cairo', system-ui, -apple-system, sans-serif;
+    --font-sans: 'ThmanyahSans', 'IBM Plex Sans Arabic', 'Tajawal', 'Cairo', system-ui, -apple-system, sans-serif;
     --font-naskh: 'Noto Naskh Arabic', serif;
 
     /* Headings - Bolder for Arabic */
@@ -123,7 +124,7 @@
     /* 11px - Tiny */
 
     /* Line heights */
-    --leading-tight: 1.4;
+    --leading-tight: 1.5; /* Increased to prevent clipping of Arabic ascenders/descenders */
     --leading-normal: 1.65;
     --leading-relaxed: 1.85;
 
@@ -263,22 +264,35 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-display);
+    font-family: var(--font-sans);
     font-size: var(--text-body);
     line-height: var(--leading-normal);
-    letter-spacing: 0.01em;
     font-weight: 400;
     min-height: 100vh;
     min-height: 100dvh;
+    
+    /* Global Arabic Typography Fixes */
+    font-feature-settings: "liga" 1, "calt" 1;
+    font-kerning: normal;
+    text-rendering: optimizeLegibility;
+    letter-spacing: normal !important;
   }
 
-  /* Typography Hierarchy */
+  /* Typography Hierarchy & Shared Arabic Styles */
+  h1, .h1, h2, .h2, h3, .h3, h4, .h4, .arabic-heading {
+    font-family: var(--font-display);
+    font-feature-settings: "liga" 1, "calt" 1;
+    font-kerning: normal;
+    text-rendering: optimizeLegibility;
+    letter-spacing: normal !important;
+    transform: none; /* Avoid transforms that break Arabic rendering */
+  }
+
   h1,
   .h1 {
     font-size: var(--text-h1);
     font-weight: 700;
     line-height: var(--leading-tight);
-    letter-spacing: -0.01em;
     color: hsl(var(--foreground));
   }
 
@@ -293,6 +307,14 @@
   h3,
   .h3 {
     font-size: var(--text-h3);
+    font-weight: 600;
+    line-height: var(--leading-tight);
+    color: hsl(var(--foreground));
+  }
+
+  h4,
+  .h4 {
+    font-size: 1.125rem; /* 18px */
     font-weight: 600;
     line-height: var(--leading-tight);
     color: hsl(var(--foreground));
@@ -351,7 +373,6 @@
     font-size: var(--text-xs);
     font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
   }
 
   /* Shadow utilities */
@@ -380,6 +401,8 @@
     gap: var(--space-lg);
   }
 
+
+
   .p-section {
     padding: var(--space-md);
   }
@@ -388,6 +411,7 @@
   .animate-fade-in {
     animation: fadeIn 0.25s ease-out forwards;
   }
+
 
   .animate-slide-up {
     animation: slideUp 0.35s ease-out forwards;
@@ -982,7 +1006,6 @@
     font-family: var(--f-sans);
     font-size: 0.7rem;
     font-weight: 700;
-    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--ds-gold);
   }
@@ -992,8 +1015,7 @@
     font-family: var(--f-display);
     font-size: clamp(2.6rem, 5.5vw, 4.8rem);
     font-weight: 900;
-    line-height: 1.12;
-    letter-spacing: -0.02em;
+    line-height: 1.3;
     color: var(--ds-text);
   }
 
@@ -1001,8 +1023,7 @@
     font-family: var(--f-display);
     font-size: clamp(1.9rem, 3.8vw, 3.2rem);
     font-weight: 800;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
+    line-height: 1.4;
     color: var(--ds-text);
   }
 
@@ -1010,7 +1031,7 @@
     font-family: var(--f-sans);
     font-size: clamp(1.25rem, 2.2vw, 1.75rem);
     font-weight: 700;
-    line-height: 1.3;
+    line-height: 1.4;
     color: var(--ds-text);
   }
 
@@ -1042,7 +1063,6 @@
     font-family: var(--f-sans);
     font-size: 0.7rem;
     font-weight: 700;
-    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--ds-text-3);
   }
@@ -1102,7 +1122,6 @@
     font-family: var(--f-sans);
     font-weight: 700;
     font-size: 0.88rem;
-    letter-spacing: 0.03em;
     cursor: pointer;
     border: none;
     transition: all 0.28s var(--ds-card-ease);
@@ -1158,7 +1177,6 @@
     font-family: var(--f-sans);
     font-size: 0.68rem;
     font-weight: 700;
-    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 
@@ -1318,7 +1336,6 @@
     font-family: var(--f-ui);
     font-size: 0.72rem;
     font-weight: 700;
-    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: #fff;
     background: linear-gradient(135deg, var(--red-700) 0%, var(--red-500) 60%, #e05a2b 100%);
@@ -1406,7 +1423,7 @@
   [data-lang="en"] .heading-xl {
     font-family: var(--f-en);
     font-style: italic;
-    line-height: 1.1;
+    line-height: 1.4;
     font-size: clamp(2rem, 5vw, 4rem);
   }
 
@@ -1476,7 +1493,6 @@
     font-family: var(--f-ui);
     font-weight: 600;
     font-size: 0.92rem;
-    letter-spacing: 0.02em;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     border: none;
@@ -1624,7 +1640,6 @@
     font-family: var(--f-ui);
     font-size: 0.65rem;
     color: var(--text-3);
-    letter-spacing: 0.05em;
   }
 
   .nav-links {
@@ -1668,7 +1683,6 @@
     padding: 6px 12px;
     font-size: 0.72rem;
     font-weight: 600;
-    letter-spacing: 0.06em;
     color: var(--text-3);
     cursor: pointer;
     transition: all 0.2s;
@@ -1915,7 +1929,6 @@
   .eyebrow-text {
     font-size: 0.72rem;
     font-weight: 600;
-    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--red-400);
     font-family: var(--f-sans);
@@ -1930,7 +1943,6 @@
     color: var(--text);
     opacity: 0;
     animation: revealUp 0.9s 0.25s ease forwards;
-    letter-spacing: -0.02em;
   }
 
   [data-lang="en"] .hero-title {
@@ -2256,7 +2268,6 @@
   .scroll-label {
     font-size: 0.65rem;
     color: var(--text-3);
-    letter-spacing: 0.1em;
   }
 
   /* Animations */
@@ -2479,7 +2490,6 @@
   .about-card-label {
     font-size: 0.72rem;
     color: var(--text-3);
-    letter-spacing: 0.1em;
     text-transform: uppercase;
     margin-bottom: 8px;
   }
@@ -2784,7 +2794,6 @@
     font-size: 0.8rem;
     color: var(--text-2);
     font-weight: 600;
-    letter-spacing: 0.04em;
   }
 
   [data-lang="en"] .placeholder-text {
@@ -2799,7 +2808,7 @@
     font-family: var(--f-ui);
     font-size: 0.68rem;
     font-weight: 700;
-    letter-spacing: 0.1em;
+
     text-transform: uppercase;
     color: var(--red-400);
     margin-bottom: 8px;
@@ -2883,7 +2892,6 @@
     padding: 4px 10px;
     border-radius: 100px;
     font-weight: 600;
-    letter-spacing: 0.06em;
     font-family: var(--f-ui);
   }
 
@@ -3006,7 +3014,7 @@
     border-radius: 100px;
     font-size: 0.7rem;
     font-weight: 700;
-    letter-spacing: 0.06em;
+
     text-transform: uppercase;
     color: var(--red-400);
     font-family: var(--f-ui);
@@ -4263,7 +4271,6 @@
   .quote-author {
     font-size: 0.82rem;
     color: var(--gold);
-    letter-spacing: 0.08em;
     font-family: var(--f-ui);
   }
 
@@ -4300,7 +4307,7 @@
     font-weight: 700;
     font-size: 0.65rem;
     color: var(--text-3);
-    letter-spacing: 0.04em;
+
     transition: background 0.2s ease;
   }
 
