@@ -87,9 +87,11 @@ export const navGroups = [
     {
         title: "التفاعل والشركاء", // Remaining admin-specific management
         items: [
+            { id: "requests", path: "/admin/requests", label: "الاقتراحات  ", icon: MessageSquare, permission: null, adminOnly: false },
             { id: "engagement-chat", path: "/admin/engagement/chat", label: "إدارة الدردشة", icon: MessageSquare, permission: null, adminOnly: false },
             { id: "engagement-weekly", path: "/admin/engagement/weekly", label: "التفاعل الأسبوعي", icon: TrendingUp, permission: null, adminOnly: false },
             { id: "partners", path: "/admin/partners", label: "إدارة الشركاء", icon: Handshake, permission: "partners", adminOnly: false },
+            { id: "relations", path: "/admin/relations", label: "إدارة العلاقات", icon: Handshake, permission: "partners", adminOnly: false },
             { id: "offers", path: "/admin/offers", label: "إدارة العروض", icon: Tag, permission: "partners", adminOnly: false },
         ]
     }

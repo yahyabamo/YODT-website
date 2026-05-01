@@ -14,6 +14,7 @@ export default function PointsHistoryAdmin() {
     const [history, setHistory] = useState<PointHistory[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState("all");
+    const [activityFilter, setActivityFilter] = useState("all");
     const typeLabels: any = { activity: "فعالية", volunteer: "تطوع", achievement: "إنجاز", deduction: "خصم", manual: "يدوي" };
 
     useEffect(() => {
@@ -28,7 +29,13 @@ export default function PointsHistoryAdmin() {
             .finally(() => setLoading(false));
     }, []);
 
-    const filtered = filter === "all" ? history : history.filter(h => h.reason_type === filter);
+    const activityNames = Array.from(new Set(history.filter(h => h.reason_type === 'activity').map(h => h.reason)));
+
+    const filtered = history.filter(h => {
+        if (filter !== "all" && h.reason_type !== filter) return false;
+        if (filter === "activity" && activityFilter !== "all" && h.reason !== activityFilter) return false;
+        return true;
+    });
 
     return (
         <div>
@@ -41,7 +48,7 @@ export default function PointsHistoryAdmin() {
                 {["all", "activity", "volunteer", "achievement", "deduction", "manual"].map(f => (
                     <button
                         key={f}
-                        onClick={() => setFilter(f)}
+                        onClick={() => { setFilter(f); setActivityFilter("all"); }}
                         className="px-3.5 py-2 rounded-xl border-none cursor-pointer font-semibold text-xs shadow-sm"
                         style={{
                             background: filter === f ? B : "#fff",
@@ -52,6 +59,21 @@ export default function PointsHistoryAdmin() {
                     </button>
                 ))}
             </div>
+
+            {filter === "activity" && activityNames.length > 0 && (
+                <div className="mb-4">
+                    <select 
+                        value={activityFilter} 
+                        onChange={(e) => setActivityFilter(e.target.value)}
+                        className="w-full md:w-auto px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold focus:outline-none focus:border-[#059669] focus:ring-1 focus:ring-[#059669] bg-white text-gray-700 shadow-sm"
+                    >
+                        <option value="all">جميع الفعاليات</option>
+                        {activityNames.map(name => (
+                            <option key={name} value={name}>{name}</option>
+                        ))}
+                    </select>
+                </div>
+            )}
 
             <div className="bg-white rounded-2xl shadow-sm border border-[#f0f0f0] overflow-hidden">
                 {loading ? <Spinner /> : (

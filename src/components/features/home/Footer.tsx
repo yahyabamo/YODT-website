@@ -5,6 +5,8 @@ import { navbarText } from '@/i18n/pages';
 import { fetchFooter, type HomepageFooter } from '@/service/homepageCMS';
 import { useLanguage } from '@/context/LanguageContext';
 import { footerText, getField } from '@/i18n/pages';
+import { PatternDivider } from '@/components/PatternDivider'; // ← ADD THIS
+
 
 // Social link wrapper — renders as <a> if URL is set, else plain div
 function SocialBtn({ href, title, children }: { href?: string; title: string; children: React.ReactNode }) {
@@ -163,23 +165,12 @@ export const Footer = () => {
             <footer className="site-footer">
                 {/* Signature Brand Divider */}
 
-                {/* <div style={{
-                    height: '50px',
-                    width: '100%',
-                    marginBottom: '60px',
-                    backgroundColor: '#f4ece1',
-                    // Indigo and Silver pattern
-                    backgroundImage: `
-        linear-gradient(45deg, #4d0e0eff 25%, transparent 25%), 
-        linear-gradient(-45deg, #4d0e0eff 25%, transparent 25%), 
-        linear-gradient(45deg, transparent 75%, #610c0cff 75%), 
-        linear-gradient(-45deg, transparent 75%, #630e0eff 75%)
-    `,
-                    backgroundSize: '20px 20px', // Smaller, finer weave
-                    backgroundPosition: '0 0, 10px 0, 10px 0, 0 0',
-                    borderBottom: '3px solid #832020ff',
-                    opacity: 0.9
-                }} /> */}
+                <PatternDivider
+                    height={40}
+                    variant="diamonds"        // diamond/coin grid (yemen-pattern.svg)
+                    opacity={1}
+                    style={{ borderBottom: '2px solid rgba(122,28,28,0.6)' }}
+                />
                 {/* الجزء الأول: القوائم والمعلومات التقليدية */}
                 <div className="footer-grid">
                     <div className="footer-brand">

@@ -164,6 +164,7 @@ const Profile = () => {
     // { icon: CreditCard, label: 'الاشتراكات', path: '/subscriptions', color: 'bg-primary/10 text-primary' },
     { icon: Heart, label: 'الداعمون والشركاء', path: '/partners', color: 'bg-red-500/10 text-red-600' },
     { icon: StickyNote, label: 'الملاحظات', path: '/notes', color: 'bg-blue-500/10 text-blue-600' },
+    { icon: Activity, label: 'طلباتي ومقترحاتي', path: '/profile/requests', color: 'bg-indigo-500/10 text-indigo-600' },
   ];
 
   if (authLoading || loading) {
@@ -220,14 +221,10 @@ const Profile = () => {
                 )}
               </div>
 
-              {isEditing && (
-                <>
-                  <h2 className="text-xl font-bold mt-4">{profile.full_name}</h2>
-                  <p className="text-sm text-muted-foreground">
-                    {profile.university || 'لم يتم تحديد الجامعة'}
-                  </p>
-                </>
-              )}
+              <h2 className="text-xl font-bold mt-4">{profile.full_name}</h2>
+              <p className="text-sm text-muted-foreground">
+                {profile.university || 'لم يتم تحديد الجامعة'}
+              </p>
 
               <div className="flex gap-6 mt-4">
                 <div className="text-center">

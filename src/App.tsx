@@ -36,6 +36,8 @@ import PointsHistoryAdmin from "./pages/admin/PointsHistoryAdmin";
 import { AuthProvider, AdminGuard } from './context/AuthContext';
 import NotFound from "./pages/NotFound";
 import Suggestions from "./pages/Suggestions";
+import MyRequests from "./pages/profile/MyRequests";
+import RequestsAdmin from "./pages/admin/RequestsAdmin";
 import { useAuth } from '@/context/AuthContext';
 import Community from "./pages/Community";
 import Transparency from "./pages/Transparency";
@@ -133,6 +135,7 @@ import PartnersTabAdmin from "./pages/admin/homepage/PartnersTab";
 import FooterTabAdmin from "./pages/admin/homepage/FooterTab";
 // import Homepageshared from "./pages/admin/HomepageManager";
 import Publish from "./pages/admin/publish";
+import RelationsAdmin from "./pages/admin/RelationsAdmin";
 
 // ─── Store Pages ──────────────────────────────────────────────────────────────
 import StorePage from "./pages/store/StorePage";
@@ -184,6 +187,7 @@ const App = () => (
                 <Route path="/discounts" element={<Discounts />} />
                 <Route path="/membership-card" element={<MembershipCard />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/profile/requests" element={<MyRequests />} />
                 <Route path="/certificates" element={<Certificates />} />
                 <Route path="/jobs" element={<Jobs />} />
                 <Route path="/volunteers" element={<Volunteers />} />
@@ -230,7 +234,7 @@ const App = () => (
                 <Route path="/engagement/chat" element={<Chat />} />
                 <Route path="/engagement/points" element={<EngagementPoints />} />
                 <Route path="/verify-member/:id" element={<Verify />} />
-                
+
                 {/* ─── Store Public Routes (Standalone Layout) ───────────── */}
                 <Route path="/store" element={<StorePage />} />
                 <Route path="/store/:productId" element={<StoreProductPage />} />
@@ -251,6 +255,7 @@ const App = () => (
                 >
                   <Route index element={<DashboardAdmin />} />
                   <Route path="dashboard" element={<DashboardAdmin />} />
+                  <Route path="requests" element={<RequestsAdmin />} />
                   <Route path="scanner" element={<ScannerAdmin />} />
                   <Route path="users" element={<UsersAdmin />} />
                   <Route path="activities" element={<ActivitiesAdmin />} />
@@ -303,6 +308,7 @@ const App = () => (
                   <Route path="info/achievements/:id" element={<AchievementFormAdmin />} />
                   <Route path="info/hero-images" element={<HeroImagesAdmin />} />
                   <Route path="publish" element={<Publish />} />
+                  <Route path="relations" element={<RelationsAdmin />} />
 
                   {/* ─── Store Admin Routes ─────────────────────────────── */}
                   <Route path="store" element={<StoreAdminHub />} />
