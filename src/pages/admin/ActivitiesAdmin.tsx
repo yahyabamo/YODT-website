@@ -63,6 +63,7 @@ export default function ActivitiesAdmin() {
     const [attendees, setAttendees] = useState<any[]>([]);
     const [loadingAttendees, setLoadingAttendees] = useState(false);
     const [openImage, setOpenImage] = useState<string | null>(null);
+    const [attendanceFilter, setAttendanceFilter] = useState<"all" | "male" | "female">("all");
 
     const load = async (showLoading = true) => {
         if (showLoading) setLoading(true);
@@ -73,6 +74,7 @@ export default function ActivitiesAdmin() {
 
     const loadAttendees = async (activityId: string) => {
         setLoadingAttendees(true);
+        setAttendanceFilter("all");
         try {
             const data = await fetchActivityAttendees(activityId);
             setAttendees(data);
@@ -81,6 +83,37 @@ export default function ActivitiesAdmin() {
         } finally {
             setLoadingAttendees(false);
         }
+    };
+
+    const filteredAttendees = attendees.filter(att => {
+        if (attendanceFilter === "all") return true;
+        return att.profiles?.gender === attendanceFilter;
+    });
+
+    const exportToExcel = () => {
+        if (!selectedActivity || filteredAttendees.length === 0) return;
+        
+        const headers = ["الاسم", "الجامعة", "الجنس", "وقت التسجيل"];
+        const rows = filteredAttendees.map(att => [
+            att.profiles?.full_name || '—',
+            att.profiles?.university || '—',
+            att.profiles?.gender === 'male' ? 'ذكر' : att.profiles?.gender === 'female' ? 'أنثى' : '—',
+            new Date(att.created_at).toLocaleString('ar')
+        ]);
+        
+        const csvContent = "\uFEFF" + [
+            headers.join(","),
+            ...rows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+        ].join("\n");
+        
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `حضور_${selectedActivity.title}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     useEffect(() => { load(); }, []);
@@ -238,6 +271,16 @@ export default function ActivitiesAdmin() {
                             <h2 className="text-xl font-bold truncate pr-2">حضور الفعالية: {selectedActivity?.title}</h2>
                             <button onClick={() => setAttendanceModal(false)} className="text-gray-500 hover:text-gray-700 bg-gray-100 rounded-lg p-2 flex items-center justify-center shrink-0">✕</button>
                         </div>
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
+                            <div className="flex gap-2 w-full sm:w-auto">
+                                <button onClick={() => setAttendanceFilter("all")} className={`flex-1 sm:flex-none px-4 py-2 text-sm rounded-xl font-bold transition-colors ${attendanceFilter === 'all' ? 'bg-[#059669] text-white shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>الكل</button>
+                                <button onClick={() => setAttendanceFilter("male")} className={`flex-1 sm:flex-none px-4 py-2 text-sm rounded-xl font-bold transition-colors ${attendanceFilter === 'male' ? 'bg-[#059669] text-white shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>ذكور</button>
+                                <button onClick={() => setAttendanceFilter("female")} className={`flex-1 sm:flex-none px-4 py-2 text-sm rounded-xl font-bold transition-colors ${attendanceFilter === 'female' ? 'bg-[#059669] text-white shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>إناث</button>
+                            </div>
+                            <button onClick={exportToExcel} className="w-full sm:w-auto px-5 py-2 text-sm bg-[#e0f2fe] text-[#0284c7] rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#bae6fd] transition-colors shadow-sm">
+                                📊 تصدير Excel
+                            </button>
+                        </div>
 
                         <div className="overflow-y-auto flex-1 h-full min-h-[200px]">
                             {loadingAttendees ? (
@@ -255,7 +298,7 @@ export default function ActivitiesAdmin() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {attendees.map((att, idx) => (
+                                            {filteredAttendees.map((att, idx) => (
                                                 <tr key={idx} className="border-b border-[#f9fafb] hover:bg-gray-50">
                                                     <td className="py-3 px-4 font-semibold">{att.profiles?.full_name || '—'}</td>
                                                     <td className="py-3 px-4 text-gray-600 truncate max-w-[150px]" title={att.profiles?.university || ''}>{att.profiles?.university || '—'}</td>

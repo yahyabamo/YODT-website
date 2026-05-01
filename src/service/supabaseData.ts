@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 
+
 // ── Auth Helpers ──────────────────────────────────────────────
 
 export async function getCurrentUser() {
@@ -20,6 +21,35 @@ export async function getProfile(userId) {
     return data
 }
 
+
+// -- دوال الكادر (Cadre) --
+export async function fetchCadres() {
+    const { data, error } = await supabase
+        .from('cadre')
+        .select('*')
+        .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data;
+}
+
+export async function upsertCadre(payload: any) {
+    const { data, error } = await supabase
+        .from('cadre')
+        .upsert(payload)
+        .select()
+        .single();
+    if (error) throw error;
+    return data;
+}
+
+export async function deleteCadre(id: string) {
+    const { error } = await supabase
+        .from('cadre')
+        .delete()
+        .eq('id', id);
+    if (error) throw error;
+    return true;
+}
 export async function isAdmin(userId) {
     const { data } = await supabase
         .from('profiles')
@@ -176,7 +206,8 @@ export const fetchActivityAttendees = async (activityId: string) => {
       profiles (
         full_name,
         university,
-        avatar_url
+        avatar_url,
+        gender
       )
     `)
         .eq('activity_id', activityId)
@@ -594,3 +625,379 @@ export async function submitServiceRequest(payload: {
     if (error) throw error;
     return data;
 }
+
+// ==========================================
+// CENTRALIZED REQUESTS SYSTEM
+// ==========================================
+
+export interface UnifiedRequest {
+    id: string;
+    source_table: "suggestions" | "service_requests" | "project_submissions" | "job_applications" | "store_orders";
+    type: string;
+    title: string | null;
+    message: string | null;
+    status: string;
+    admin_response: string | null;
+    responded_at: string | null;
+    last_updated_at: string;
+    created_at: string;
+    tracking_code: string | null;
+    user_id: string | null;
+    contact_email?: string | null;
+    contact_phone?: string | null;
+    user_name?: string | null;
+    user_phone?: string | null;
+    order_number?: string | null;
+}
+
+export async function submitSuggestion(payload: {
+    type: string;
+    message: string;
+    user_id?: string;
+    contact_email?: string;
+    contact_phone?: string;
+    tracking_code?: string;
+}) {
+    const { data, error } = await supabase
+        .from("suggestions")
+        .insert(payload)
+        .select()
+        .single();
+    if (error) throw error;
+    return data;
+}
+
+/**
+ * Fetch ALL suggestions for the admin panel — bypasses per-user RLS filter.
+ * Requires the admin Supabase policy "Allow admins to read all suggestions" to be present.
+ */
+export async function fetchSuggestions(): Promise<UnifiedRequest[]> {
+    const TYPE_LABELS: Record<string, string> = {
+        suggestion: 'اقتراح',
+        problem: 'مشكلة',
+        idea: 'فكرة',
+    };
+
+    const { data, error } = await supabase
+        .from('suggestions')
+        .select('*, profiles(full_name, phone)')
+        .order('created_at', { ascending: false })
+        .limit(500);
+
+    if (error) {
+        console.error('[fetchSuggestions] error:', error);
+        throw error;
+    }
+
+    return (data || []).map((s: any) => ({
+        id: s.id,
+        source_table: 'suggestions' as const,
+        type: s.type,
+        // Use the human-readable type as title — the raw `type` is 'suggestion'|'problem'|'idea'
+        title: TYPE_LABELS[s.type] || s.type || null,
+        message: s.message,
+        status: s.status || 'NEW',
+        admin_response: s.admin_response || null,
+        responded_at: s.responded_at || null,
+        last_updated_at: s.last_updated_at || s.updated_at || s.created_at,
+        created_at: s.created_at,
+        tracking_code: s.tracking_code || null,
+        user_id: s.user_id || null,
+        contact_email: s.contact_email || null,
+        contact_phone: s.contact_phone || null,
+        user_name: s.profiles?.full_name || null,
+        user_phone: s.profiles?.phone || null,
+    }));
+}
+
+export async function linkGuestRequests(userId: string, email?: string, phone?: string) {
+    if (!email && !phone) return;
+
+    const updates = [];
+    if (email) {
+        updates.push(supabase.from("suggestions").update({ user_id: userId }).eq("contact_email", email).is("user_id", null));
+        updates.push(supabase.from("service_requests").update({ user_id: userId }).eq("email", email).is("user_id", null));
+        updates.push(supabase.from("job_applications").update({ user_id: userId }).eq("email", email).is("user_id", null));
+    }
+    if (phone) {
+        updates.push(supabase.from("suggestions").update({ user_id: userId }).eq("contact_phone", phone).is("user_id", null));
+        updates.push(supabase.from("service_requests").update({ user_id: userId }).eq("phone", phone).is("user_id", null));
+        updates.push(supabase.from("job_applications").update({ user_id: userId }).eq("phone", phone).is("user_id", null));
+    }
+
+    await Promise.all(updates);
+}
+
+export async function fetchUserRequests(params: { userId?: string, email?: string, phone?: string, trackingCode?: string }) {
+    const allRequests: UnifiedRequest[] = [];
+
+    const buildOr = () => {
+        const conditions = [];
+        if (params.userId) conditions.push(`user_id.eq.${params.userId}`);
+        if (params.trackingCode) conditions.push(`tracking_code.eq.${params.trackingCode}`);
+        return conditions.join(",");
+    };
+
+    const buildEmailPhoneOr = (emailField: string, phoneField: string) => {
+        const conditions = [];
+        if (params.userId) conditions.push(`user_id.eq.${params.userId}`);
+        if (params.trackingCode) conditions.push(`tracking_code.eq.${params.trackingCode}`);
+        if (params.email) conditions.push(`${emailField}.eq.${params.email}`);
+        if (params.phone) conditions.push(`${phoneField}.eq.${params.phone}`);
+        return conditions.join(",");
+    };
+
+    try {
+        const suggOr = buildEmailPhoneOr("contact_email", "contact_phone");
+        if (suggOr) {
+            const { data: suggestions } = await supabase.from("suggestions").select("*").or(suggOr);
+            if (suggestions) {
+                allRequests.push(...suggestions.map(s => ({
+                    id: s.id,
+                    source_table: "suggestions" as const,
+                    type: s.type,
+                    title: s.type || null,
+                    message: s.message,
+                    status: s.status,
+                    admin_response: s.admin_response,
+                    responded_at: s.responded_at,
+                    last_updated_at: s.last_updated_at || s.updated_at || s.created_at,
+                    created_at: s.created_at,
+                    tracking_code: s.tracking_code,
+                    user_id: s.user_id,
+                    contact_email: s.contact_email,
+                    contact_phone: s.contact_phone
+                })));
+            }
+        }
+
+        const srvOr = buildEmailPhoneOr("email", "phone");
+        if (srvOr) {
+            const { data: serviceReqs } = await supabase.from("service_requests").select("*, services(title)").or(srvOr);
+            if (serviceReqs) {
+                allRequests.push(...serviceReqs.map(s => ({
+                    id: s.id,
+                    source_table: "service_requests" as const,
+                    type: "service",
+                    title: s.services?.title || null,
+                    message: s.notes || null,
+                    status: s.status,
+                    admin_response: s.admin_notes || s.admin_response,
+                    responded_at: s.responded_at || s.created_at,
+                    last_updated_at: s.last_updated_at || s.created_at,
+                    created_at: s.created_at,
+                    tracking_code: s.tracking_code,
+                    user_id: s.user_id,
+                    contact_email: s.email,
+                    contact_phone: s.phone
+                })));
+            }
+        }
+
+        const projOr = buildOr();
+        if (projOr) {
+            const { data: projects } = await supabase.from("project_submissions").select("*").or(projOr);
+            if (projects) {
+                allRequests.push(...projects.map(p => ({
+                    id: p.id,
+                    source_table: "project_submissions" as const,
+                    type: "project",
+                    title: p.title || null,
+                    message: p.description || null,
+                    status: p.status,
+                    admin_response: p.feedback || p.admin_response,
+                    responded_at: p.reviewed_at || p.responded_at,
+                    last_updated_at: p.last_updated_at || p.updated_at || p.submitted_at,
+                    created_at: p.submitted_at || p.created_at,
+                    tracking_code: p.tracking_code,
+                    user_id: p.user_id
+                })));
+            }
+        }
+
+        const jobOr = buildEmailPhoneOr("email", "phone");
+        if (jobOr) {
+            const { data: jobs } = await supabase.from("job_applications").select("*").or(jobOr);
+            if (jobs) {
+                allRequests.push(...jobs.map(j => ({
+                    id: j.id,
+                    source_table: "job_applications" as const,
+                    type: "job",
+                    title: j.job_title || null,
+                    message: j.cover_letter || null,
+                    status: j.status,
+                    admin_response: j.admin_response,
+                    responded_at: j.responded_at,
+                    last_updated_at: j.last_updated_at || j.created_at,
+                    created_at: j.created_at,
+                    tracking_code: j.tracking_code,
+                    user_id: j.user_id,
+                    contact_email: j.email,
+                    contact_phone: j.phone
+                })));
+            }
+        }
+
+        // ── Store Orders ──────────────────────────────────────────────────────────
+        const ordersConditions: string[] = [];
+        if (params.userId)      ordersConditions.push(`user_id.eq.${params.userId}`);
+        if (params.email)       ordersConditions.push(`customer_email.eq.${params.email}`);
+        if (params.phone)       ordersConditions.push(`customer_phone.eq.${params.phone}`);
+
+        if (ordersConditions.length > 0) {
+            const ordersOr = ordersConditions.join(",");
+            const { data: orders } = await supabase
+                .from("store_orders")
+                .select("id, order_number, user_id, product_name_ar, customer_phone, customer_email, customer_note, quantity, product_price, product_currency, status, admin_note, created_at, updated_at")
+                .or(ordersOr)
+                .order("created_at", { ascending: false });
+            if (orders) {
+                allRequests.push(...orders.map((o: any) => ({
+                    id: o.id,
+                    source_table: "store_orders" as const,
+                    type: "store",
+                    title: o.product_name_ar || null,
+                    message: o.customer_note || null,
+                    status: o.status || "pending",
+                    admin_response: o.admin_note || null,
+                    responded_at: null,
+                    last_updated_at: o.updated_at || o.created_at,
+                    created_at: o.created_at,
+                    tracking_code: o.order_number || null,
+                    user_id: o.user_id,
+                    contact_email: o.customer_email,
+                    contact_phone: o.customer_phone,
+                    order_number: o.order_number,
+                })));
+            }
+        }
+
+    } catch (err) {
+        console.error("Error fetching unified requests", err);
+    }
+
+    return allRequests.sort((a, b) => new Date(b.last_updated_at || b.created_at).getTime() - new Date(a.last_updated_at || a.created_at).getTime());
+}
+
+export async function fetchAllRequests() {
+    const allRequests: UnifiedRequest[] = [];
+
+    try {
+        const [suggRes, srvRes, projRes, jobRes] = await Promise.all([
+            supabase.from("suggestions").select("*").order("created_at", { ascending: false }).limit(200),
+            supabase.from("service_requests").select("*, services(title)").order("created_at", { ascending: false }).limit(200),
+            supabase.from("project_submissions").select("*").order("created_at", { ascending: false }).limit(200),
+            supabase.from("job_applications").select("*").order("created_at", { ascending: false }).limit(200)
+        ]);
+
+        if (suggRes.data) {
+            allRequests.push(...suggRes.data.map(s => ({
+                id: s.id,
+                source_table: "suggestions" as const,
+                type: s.type,
+                title: s.type || null,
+                message: s.message,
+                status: s.status,
+                admin_response: s.admin_response,
+                responded_at: s.responded_at,
+                last_updated_at: s.last_updated_at || s.updated_at || s.created_at,
+                created_at: s.created_at,
+                tracking_code: s.tracking_code,
+                user_id: s.user_id,
+                contact_email: s.contact_email,
+                contact_phone: s.contact_phone
+            })));
+        }
+
+        if (srvRes.data) {
+            allRequests.push(...srvRes.data.map(s => ({
+                id: s.id,
+                source_table: "service_requests" as const,
+                type: "service",
+                title: s.services?.title || null,
+                message: s.notes || null,
+                status: s.status,
+                admin_response: s.admin_notes || s.admin_response,
+                responded_at: s.responded_at || s.created_at,
+                last_updated_at: s.last_updated_at || s.created_at,
+                created_at: s.created_at,
+                tracking_code: s.tracking_code,
+                user_id: s.user_id,
+                contact_email: s.email,
+                contact_phone: s.phone
+            })));
+        }
+
+        if (projRes.data) {
+            allRequests.push(...projRes.data.map(p => ({
+                id: p.id,
+                source_table: "project_submissions" as const,
+                type: "project",
+                title: p.title || null,
+                message: p.description || null,
+                status: p.status,
+                admin_response: p.feedback || p.admin_response,
+                responded_at: p.reviewed_at || p.responded_at,
+                last_updated_at: p.last_updated_at || p.updated_at || p.submitted_at,
+                created_at: p.submitted_at || p.created_at,
+                tracking_code: p.tracking_code,
+                user_id: p.user_id
+            })));
+        }
+
+        if (jobRes.data) {
+            allRequests.push(...jobRes.data.map(j => ({
+                id: j.id,
+                source_table: "job_applications" as const,
+                type: "job",
+                title: j.job_title || null,
+                message: j.cover_letter || null,
+                status: j.status,
+                admin_response: j.admin_response,
+                responded_at: j.responded_at,
+                last_updated_at: j.last_updated_at || j.created_at,
+                created_at: j.created_at,
+                tracking_code: j.tracking_code,
+                user_id: j.user_id,
+                contact_email: j.email,
+                contact_phone: j.phone
+            })));
+        }
+
+    } catch (err) {
+        console.error("Error fetching all requests", err);
+    }
+
+    return allRequests.sort((a, b) => new Date(b.last_updated_at || b.created_at).getTime() - new Date(a.last_updated_at || a.created_at).getTime());
+}
+
+export async function updateRequestStatus(
+    source_table: string,
+    id: string,
+    status: string,
+    admin_response: string
+) {
+    let updatePayload: any = {
+        status,
+        admin_response,
+        responded_at: new Date().toISOString(),
+        last_updated_at: new Date().toISOString()
+    };
+
+    if (source_table === "service_requests") {
+        updatePayload = { status, admin_notes: admin_response, admin_response, responded_at: updatePayload.responded_at, last_updated_at: updatePayload.last_updated_at };
+    } else if (source_table === "project_submissions") {
+        updatePayload = { status, feedback: admin_response, admin_response, reviewed_at: updatePayload.responded_at, responded_at: updatePayload.responded_at, last_updated_at: updatePayload.last_updated_at };
+    }
+
+    const { data, error } = await supabase
+        .from(source_table)
+        .update(updatePayload)
+        .eq("id", id)
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+

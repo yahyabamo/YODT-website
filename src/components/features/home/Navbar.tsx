@@ -5,6 +5,7 @@ import logo from '@/assets/logo.png';
 import { useTheme } from '@/context/ThemeContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { navbarText } from '@/i18n/pages';
+import { PatternDivider } from '@/components/PatternDivider';
 
 export const Navbar: React.FC = () => {
     const { theme, toggleTheme } = useTheme();
@@ -211,6 +212,12 @@ export const Navbar: React.FC = () => {
                     </div>
                 </div>
                 {/* Signature Brand Divider */}
+
+                <PatternDivider
+                    height={28}
+                    variant="chevrons"        // zigzag pattern (yemen-pattern3.svg)
+                    opacity={isDark ? 0.55 : 0.30}  // subtle — doesn't fight the nav content
+                />
 
             </nav>
 
