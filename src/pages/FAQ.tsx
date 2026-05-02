@@ -92,14 +92,14 @@ const FAQ = () => {
         )}
 
         {/* Contact Section */}
-        <div className="mt-8 p-6 bg-primary/5 rounded-2xl text-center animate-slide-up" style={{ animationDelay: '0.4s' }}>
+        {/* <div className="mt-8 p-6 bg-primary/5 rounded-2xl text-center animate-slide-up" style={{ animationDelay: '0.4s' }}>
           <p className="text-sm text-muted-foreground mb-3">
             لم تجد إجابة لسؤالك؟
           </p>
           <button className="px-6 py-2 rounded-full gradient-primary text-primary-foreground font-medium text-sm shadow-soft hover:shadow-card transition-all">
             تواصل معنا
           </button>
-        </div>
+        </div> */}
         <AdSlot page="faq" position="bottom" className="mt-8" />
       </div>
 

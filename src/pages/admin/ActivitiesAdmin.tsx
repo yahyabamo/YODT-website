@@ -92,7 +92,7 @@ export default function ActivitiesAdmin() {
 
     const exportToExcel = () => {
         if (!selectedActivity || filteredAttendees.length === 0) return;
-        
+
         const headers = ["الاسم", "الجامعة", "الجنس", "وقت التسجيل"];
         const rows = filteredAttendees.map(att => [
             att.profiles?.full_name || '—',
@@ -100,12 +100,12 @@ export default function ActivitiesAdmin() {
             att.profiles?.gender === 'male' ? 'ذكر' : att.profiles?.gender === 'female' ? 'أنثى' : '—',
             new Date(att.created_at).toLocaleString('ar')
         ]);
-        
+
         const csvContent = "\uFEFF" + [
             headers.join(","),
             ...rows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))
         ].join("\n");
-        
+
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");

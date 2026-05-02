@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { InfoHero } from '@/components/features/info/InfoHero';
 import { InfoCard } from '@/components/features/info/InfoCard';
-import { fetchUniversities, InfoUniversity } from '@/service/infoCMS';
+import { fetchUniversities, fetchDepartments, InfoUniversity, InfoDepartment } from '@/service/infoCMS';
 import { fetchHeroImages } from '@/service/heroImages';
 import { useLanguage } from '@/context/LanguageContext';
 import { pagesText, commonText, getField } from '@/i18n/pages';
@@ -25,24 +25,23 @@ export default function Universities() {
   const { language: lang } = useLanguage();
   const navigate = useNavigate();
   const [universities, setUniversities] = useState<InfoUniversity[]>([]);
+  const [departments, setDepartments] = useState<InfoDepartment[]>([]);
   const [heroImages, setHeroImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchUniversities()
-      .then(setUniversities)
+    Promise.all([
+      fetchUniversities().then(setUniversities),
+      fetchDepartments().then(setDepartments),
+      fetchHeroImages('universities').then(rows => setHeroImages(rows.map(r => r.image_url)))
+    ])
       .catch(console.error)
       .finally(() => setLoading(false));
-    fetchHeroImages('universities')
-      .then(rows => setHeroImages(rows.map(r => r.image_url)))
-      .catch(console.error);
     window.scrollTo(0, 0);
   }, []);
 
   return (
     <div style={{ background: 'var(--bg, #07080b)', minHeight: '100vh' }}>
-
-      {/* Hero — flush with navbar, no gap */}
       <InfoHero
         eyebrow={pagesText.universities.heroEyebrow[lang]}
         title={pagesText.universities.heroTitle[lang]}
@@ -51,7 +50,6 @@ export default function Universities() {
         backgroundImages={heroImages}
       />
 
-      {/* Return button */}
       <div style={{ maxWidth: '1260px', margin: '0 auto', padding: '24px clamp(16px, 4vw, 40px) 0' }}>
         <AdSlot page="universities" position="top" className="mb-6" />
         <button
@@ -63,21 +61,14 @@ export default function Universities() {
             color: 'var(--text-2)', fontSize: '0.85rem', fontWeight: 600,
             cursor: 'pointer', transition: 'all 0.2s ease',
           }}
-          onMouseEnter={e => {
-            (e.currentTarget as HTMLElement).style.background = 'var(--bg-2)';
-            (e.currentTarget as HTMLElement).style.color = '#c8a84b';
-          }}
-          onMouseLeave={e => {
-            (e.currentTarget as HTMLElement).style.background = 'var(--bg-1)';
-            (e.currentTarget as HTMLElement).style.color = 'var(--text-2)';
-          }}
         >
           <ArrowRight size={16} />
           <span>{commonText.returnToHome[lang]}</span>
         </button>
       </div>
 
-      <section style={{ maxWidth: '1260px', margin: '0 auto', padding: '64px clamp(16px, 4vw, 40px) 80px' }}>
+      {/* UNIVERSITIES SECTION */}
+      <section style={{ maxWidth: '1260px', margin: '0 auto', padding: '64px clamp(16px, 4vw, 40px) 40px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}>
           <div style={{ height: '1px', flex: 1, background: 'var(--border)' }} />
           <span style={{ color: '#c8a84b', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
@@ -88,28 +79,51 @@ export default function Universities() {
 
         {loading ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
-            {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} />)}
+            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} />)}
           </div>
         ) : universities.length > 0 ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
             {universities.map(u => (
               <InfoCard
-                key={u.id}
-                id={u.id!}
-                name={getField(u, 'name', lang)}
-                bio={getField(u, 'description', lang)}
-                image_url={u.image_url}
-                badge={getField(u, 'location', lang)}
-                badgeColor="#1d4ed8"
+                key={u.id} id={u.id!} name={getField(u, 'name', lang)}
+                bio={getField(u, 'description', lang)} image_url={u.image_url}
+                badge={getField(u, 'location', lang)} badgeColor="#1d4ed8"
                 detailPath={`/universities/${u.id}`}
                 extraInfo={u.established ? `${pagesText.universities.established[lang]} ${u.established}` : undefined}
               />
             ))}
           </div>
+        ) : null}
+      </section>
+
+      {/* DEPARTMENTS SECTION */}
+      <section style={{ maxWidth: '1260px', margin: '0 auto', padding: '20px clamp(16px, 4vw, 40px) 80px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}>
+          <div style={{ height: '1px', flex: 1, background: 'var(--border)' }} />
+          <span style={{ color: '#c8a84b', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            {lang === 'ar' ? 'التخصصات' : 'Departments'} ({loading ? '…' : departments.length})
+          </span>
+          <div style={{ height: '1px', flex: 1, background: 'var(--border)' }} />
+        </div>
+
+        {loading ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} />)}
+          </div>
+        ) : departments.length > 0 ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+            {departments.map(d => (
+              <InfoCard
+                key={d.id} id={d.id!} name={getField(d, 'name', lang)}
+                bio={getField(d, 'description', lang)} image_url={d.image_url}
+                badge={d.duration ? `⏳ ${d.duration}` : undefined} badgeColor="#059669"
+                detailPath={`/departments/${d.id}`}
+              />
+            ))}
+          </div>
         ) : (
-          <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--text-3)' }}>
-            <div style={{ fontSize: '4rem', marginBottom: '16px' }}>🎓</div>
-            <p style={{ fontSize: '0.95rem' }}>{commonText.noUniversities[lang]}</p>
+          <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-3)' }}>
+            <p style={{ fontSize: '0.95rem' }}>{lang === 'ar' ? 'لا توجد تخصصات مضافة بعد' : 'No departments added yet'}</p>
           </div>
         )}
         <AdSlot page="universities" position="bottom" className="mt-8" />

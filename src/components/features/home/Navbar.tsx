@@ -213,11 +213,11 @@ export const Navbar: React.FC = () => {
                 </div>
                 {/* Signature Brand Divider */}
 
-                <PatternDivider
+                {/* <PatternDivider
                     height={28}
                     variant="chevrons"        // zigzag pattern (yemen-pattern3.svg)
                     opacity={isDark ? 0.55 : 0.30}  // subtle — doesn't fight the nav content
-                />
+                /> */}
 
             </nav>
 

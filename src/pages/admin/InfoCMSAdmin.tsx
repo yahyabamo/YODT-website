@@ -21,6 +21,14 @@ const SECTIONS = [
     color: '#10b981'
   },
   {
+    id: 'departments',
+    title: 'التخصصات',
+    description: 'إدارة التخصصات',
+    icon: GraduationCap,
+    path: '/admin/info/departments',
+    color: '#b910a3'
+  },
+  {
     id: 'students',
     title: 'كادر الاتحاد',
     description: 'إدارة أعضاء هيئة الاتحاد',

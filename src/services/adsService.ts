@@ -41,6 +41,7 @@ export const AD_POSITION_OPTIONS = [
 export interface SiteAd {
   id: string;
   image_url: string;
+  text_content?: string; // Added this
   redirect_url: string;
   alt_text: string;
   page_names: string[];
@@ -91,6 +92,7 @@ export async function fetchAllAdsAdmin(): Promise<SiteAd[]> {
 export async function upsertAd(data: Partial<SiteAd> & { id?: string }): Promise<SiteAd> {
   const cleanData: any = {
     image_url: data.image_url,
+    text_content: data.text_content, // Added this
     redirect_url: data.redirect_url,
     alt_text: data.alt_text ?? '',
     page_names: data.page_names ?? [],
