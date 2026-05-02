@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   ChevronLeft, Sparkles, BookOpen, Calendar,
-  Briefcase, Play, Zap, Users, ArrowLeft, ArrowUpRight, GraduationCap, Shield, ShoppingBag
+  Briefcase, Play, Zap, Users, ArrowLeft, ArrowUpRight, GraduationCap, Shield, ShoppingBag, MapPin, Star
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { BottomNav } from '@/components/layout/BottomNav';
@@ -22,6 +22,8 @@ import { QuickServicesSection } from '@/components/QuickServicesSection';
 import ReelsShelf from '@/pages/home/ReelsShelf';
 import { AdSlot } from '@/components/ads/AdSlot';
 import { SuggestionBoxes } from '@/components/SuggestionBoxes';
+import { fetchActivities } from '@/service/supabaseData'; // <-- Added import
+import { cn } from '@/lib/utils'; // <-- Added import for dynamic classes
 
 /**
  * Home Page - Institutional Dashboard Redesign
@@ -43,6 +45,9 @@ const Home = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // <-- Added state for the upcoming activity
+  const [upcomingActivity, setUpcomingActivity] = useState<any | null>(null);
+
   // Derive which admin permissions the logged-in user has
   const adminPerms: Permission[] = ALL_PERMISSIONS.filter(p =>
     canAccess(authProfile, p)
@@ -63,6 +68,7 @@ const Home = () => {
       navigate('/login');
     } else {
       fetchProfile();
+      loadUpcomingActivity(); // <-- Fetch upcoming activity on load
     }
   }, [user, authLoading]);
 
@@ -81,6 +87,30 @@ const Home = () => {
       toast.error(language === 'ar' ? 'حدث خطأ في تحميل البيانات' : 'Error loading data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // <-- Added function to fetch the next upcoming activity
+  const loadUpcomingActivity = async () => {
+    try {
+      const { data } = await fetchActivities({ pageSize: 50 });
+      const now = new Date();
+
+      // Filter for active events that are happening today or in the future
+      const futureActivities = (data || []).filter((a: any) =>
+        a.status === 'active' && new Date(a.event_date) >= now
+      );
+
+      // Sort to get the closest upcoming date first
+      futureActivities.sort((a: any, b: any) =>
+        new Date(a.event_date).getTime() - new Date(b.event_date).getTime()
+      );
+
+      if (futureActivities.length > 0) {
+        setUpcomingActivity(futureActivities[0]);
+      }
+    } catch (error) {
+      console.error('Error fetching upcoming activity:', error);
     }
   };
 
@@ -203,7 +233,6 @@ const Home = () => {
 
               {/* ── Admin Shortcut Shield ── */}
               {shieldPerms.length === 1 && (
-                /* Single permission: direct link */
                 <button
                   onClick={() => navigate(PERMISSION_PATHS[shieldPerms[0]])}
                   title={`لوحة ${PERMISSION_LABELS[shieldPerms[0]]}`}
@@ -215,7 +244,6 @@ const Home = () => {
               )}
 
               {shieldPerms.length > 1 && (
-                /* Multiple permissions: navigate to admin dashboard */
                 <button
                   onClick={() => navigate('/admin')}
                   title="لوحة الإدارة"
@@ -280,6 +308,91 @@ const Home = () => {
             ))}
           </div>
         </section>
+
+        {/* ── NEW: Upcoming Activity Banner ── */}
+        {upcomingActivity && (
+          <section className="px-4 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-h3 font-bold text-foreground tracking-tight">
+                {language === 'ar' ? 'النشاط القادم' : 'Upcoming Activity'}
+              </h2>
+              <button onClick={() => navigate('/home/activities')} className="text-sm text-primary font-medium hover:underline flex items-center gap-1">
+                {language === 'ar' ? 'عرض الكل' : 'View All'}
+              </button>
+            </div>
+
+            <div className="group relative bg-card rounded-3xl border border-border/40 shadow-xs hover:shadow-card transition-all overflow-hidden flex flex-col sm:flex-row">
+
+              {/* Image Left Side (or Top on Mobile) */}
+              <div className="relative w-full sm:w-2/5 h-48 sm:h-auto bg-muted overflow-hidden flex-shrink-0">
+                {upcomingActivity.image_url ? (
+                  <img
+                    src={upcomingActivity.image_url}
+                    alt={upcomingActivity.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 400 300" preserveAspectRatio="none"><rect width="400" height="300" fill="%23f3f4f6"/><text x="50%" y="50%" font-family="sans-serif" font-size="20" fill="%239ca3af" text-anchor="middle" dy=".3em">No Image</text></svg>';
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full gradient-primary/10 flex items-center justify-center">
+                    <Sparkles className="h-10 w-10 text-primary/30" />
+                  </div>
+                )}
+
+                {/* Points Reward Floating Badge */}
+                {upcomingActivity.points_reward > 0 && (
+                  <div className="absolute top-3 right-3 flex items-center gap-1 bg-white/95 backdrop-blur-sm text-yellow-600 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm">
+                    <Star className="h-3.5 w-3.5 fill-current" />
+                    +{upcomingActivity.points_reward} {language === 'ar' ? 'نقطة' : 'pts'}
+                  </div>
+                )}
+              </div>
+
+              {/* Content Right Side (or Bottom on Mobile) */}
+              <div className="p-5 flex flex-col justify-between w-full sm:w-3/5">
+                <div>
+                  <h3 className="font-bold text-lg text-foreground mb-2 line-clamp-1">{upcomingActivity.title}</h3>
+                  {upcomingActivity.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-2 mb-4 leading-relaxed">
+                      {upcomingActivity.description}
+                    </p>
+                  )}
+
+                  <div className="flex flex-wrap gap-2 text-xs text-muted-foreground font-medium mb-4">
+                    {upcomingActivity.event_date && (
+                      <div className="flex items-center gap-1.5 bg-secondary/50 px-2.5 py-1.5 rounded-lg">
+                        <Calendar className="h-3.5 w-3.5 text-primary" />
+                        <span>{new Date(upcomingActivity.event_date).toLocaleDateString(language === 'ar' ? "ar-SA" : "en-US", { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                      </div>
+                    )}
+                    {upcomingActivity.location && (
+                      <div className="flex items-center gap-1.5 bg-secondary/50 px-2.5 py-1.5 rounded-lg">
+                        <MapPin className="h-3.5 w-3.5 text-primary" />
+                        <span className="line-clamp-1">{upcomingActivity.location}</span>
+                      </div>
+                    )}
+                    {upcomingActivity.max_attendees > 0 && (
+                      <div className="flex items-center gap-1.5 bg-secondary/50 px-2.5 py-1.5 rounded-lg">
+                        <Users className="h-3.5 w-3.5 text-primary" />
+                        <span>{upcomingActivity.max_attendees} {language === 'ar' ? 'مقعد' : 'Seats'}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => navigate('/home/activities')}
+                  className="mt-auto w-full inline-flex items-center justify-center gap-2 bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-all"
+                >
+                  {language === 'ar' ? 'التفاصيل والحجز' : 'Details & Register'}
+                  <ArrowLeft className={cn("w-4 h-4", language === 'en' && "rotate-180")} />
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+        {/* ── END Upcoming Activity Banner ── */}
 
         <QuickServicesSection />
 

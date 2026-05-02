@@ -166,12 +166,12 @@ export const Footer = () => {
             <footer className="site-footer">
                 {/* Signature Brand Divider */}
 
-                <PatternDivider
+                {/* <PatternDivider
                     height={40}
                     variant="diamonds"        // diamond/coin grid (yemen-pattern.svg)
                     opacity={1}
                     style={{ borderBottom: '2px solid rgba(122,28,28,0.6)' }}
-                />
+                /> */}
                 {/* الجزء الأول: القوائم والمعلومات التقليدية */}
                 <div className="footer-grid">
                     <div className="footer-brand">

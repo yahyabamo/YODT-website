@@ -23,9 +23,10 @@ const ReelsShelf = () => {
     };
 
     useEffect(() => {
-        fetchReels({ pageSize: 4 })
+        // تم زيادة الحد إلى 10 مقاطع لتوفير محتوى للتمرير
+        fetchReels({ pageSize: 10 })
             .then(({ data }) => {
-                setReels((data || []).filter((r: any) => r.status === 'active').slice(0, 4));
+                setReels((data || []).filter((r: any) => r.status === 'active'));
             })
             .finally(() => setLoading(false));
     }, []);
@@ -40,9 +41,10 @@ const ReelsShelf = () => {
 
     if (loading) return (
         <section className="px-4">
-            <div className="grid grid-cols-2 gap-2">
+            {/* تم تحديث حالة التحميل (Skeleton) لتناسب التمرير الأفقي */}
+            <div className="flex gap-3 overflow-hidden">
                 {[...Array(4)].map((_, i) => (
-                    <div key={i} className="aspect-[9/16] rounded-2xl bg-muted animate-pulse" />
+                    <div key={i} className="w-[115px] shrink-0 aspect-[9/16] rounded-2xl bg-muted animate-pulse" />
                 ))}
             </div>
         </section>
@@ -53,7 +55,7 @@ const ReelsShelf = () => {
     return (
         <section className="px-4 animate-slide-up" style={{ animationDelay: '0.2s' }}>
             {/* Header */}
-            <div className="flex items-center justify-between mb-3" dir="rtl">
+            <div className="flex items-center justify-between mb-4" dir="rtl">
                 <div className="flex items-center gap-2">
                     <div className="w-1 h-5 rounded-full bg-primary" />
                     <h2 className="text-base font-bold text-foreground">المحتوى المرئي</h2>
@@ -67,13 +69,18 @@ const ReelsShelf = () => {
                 </button>
             </div>
 
-            {/* 2×2 Grid */}
-            <div className="grid grid-cols-2 gap-2" dir="rtl">
+            {/* Horizontal Scrolling Bar */}
+            {/* استخدمنا -mx-4 و px-4 لكي يصل التمرير إلى حافة الشاشة بشكل جميل */}
+            <div
+                className="flex gap-3 overflow-x-auto snap-x snap-mandatory -mx-4 px-4 pb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                dir="rtl"
+            >
                 {reels.map((reel, index) => (
                     <button
                         key={reel.id}
                         onClick={() => goToReel(index)}
-                        className="relative aspect-[9/16] rounded-2xl overflow-hidden bg-black active:scale-95 transition-transform duration-150 shadow-md"
+                        // حددنا عرض البطاقة لتتسع لـ 3 مقاطع وجزء من الرابع
+                        className="relative w-[115px] sm:w-[130px] shrink-0 snap-start aspect-[9/16] rounded-2xl overflow-hidden bg-black active:scale-95 transition-transform duration-150 shadow-md"
                         style={{ touchAction: 'manipulation' }}
                     >
                         {/* Thumbnail */}
@@ -116,12 +123,12 @@ const ReelsShelf = () => {
                         <div className="absolute bottom-0 left-0 right-0 px-2.5 pb-2.5">
                             <p
                                 dir="rtl"
-                                className="text-white text-xs font-medium line-clamp-2 leading-relaxed drop-shadow-lg"
+                                className="text-white text-xs font-medium line-clamp-2 leading-relaxed drop-shadow-lg text-right"
                             >
                                 {reel.title}
                             </p>
                             {reel.author && (
-                                <p className="text-white/50 text-[10px] mt-0.5">
+                                <p className="text-white/50 text-[10px] mt-0.5 text-right">
                                     @{reel.author}
                                 </p>
                             )}

@@ -163,6 +163,9 @@ import AdsAdmin from "./pages/admin/ads/AdsAdmin";
 import AdForm from "./pages/admin/ads/AdForm";
 import SuggestionBoxAdmin from "./pages/admin/SuggestionBoxAdmin";
 
+import DepartmentDetail from "./pages/info/DepartmentDetail";
+import DepartmentAdmin from "./pages/admin/info/DepartmentAdmin";
+
 
 const queryClient = new QueryClient();
 
@@ -314,6 +317,8 @@ const App = () => (
                   <Route path="info/hero-images" element={<HeroImagesAdmin />} />
                   <Route path="publish" element={<Publish />} />
                   <Route path="relations" element={<RelationsAdmin />} />
+                  <Route path="info/departments" element={<DepartmentAdmin />} />
+
 
                   {/* ─── Store Admin Routes ─────────────────────────────── */}
                   <Route path="store" element={<StoreAdminHub />} />
@@ -375,6 +380,8 @@ const App = () => (
                   <Route path="/icons" element={<IconsPage />} />
                   <Route path="/icons/:id" element={<IconDetail />} />
                   <Route path="/achievements" element={<AchievementsPage />} />
+                  <Route path="/departments/:id" element={<DepartmentDetail />} />
+
                   <Route path="/" element={<Index />} />
                 </Route>
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { fetchUniversityById, InfoUniversity } from '@/service/infoCMS';
+import { fetchUniversityById, fetchDepartments, InfoUniversity, InfoDepartment } from '@/service/infoCMS';
 import { useLanguage } from '@/context/LanguageContext';
 import { commonText, pagesText, getField } from '@/i18n/pages';
 import { AdSlot } from '@/components/ads/AdSlot';
@@ -10,10 +10,18 @@ export default function UniversityDetail() {
   const { language: lang } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
   const [uni, setUni] = useState<InfoUniversity | null>(null);
+  const [allDepts, setAllDepts] = useState<InfoDepartment[]>([]); // State for departments
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  // Fetch departments once when the component mounts
+  useEffect(() => {
+    fetchDepartments().then(setAllDepts).catch(console.error);
+  }, []);
+
+  // Fetch the specific university details
   useEffect(() => {
     if (!id) return;
     fetchUniversityById(id)
@@ -116,7 +124,7 @@ export default function UniversityDetail() {
           </p>
         </div>
 
-        {/* Specialties */}
+        {/* Specialties with Dynamic Links */}
         {specialtiesList.length > 0 && (
           <div style={{
             background: 'var(--bg-1)', border: '1px solid var(--border)',
@@ -126,15 +134,32 @@ export default function UniversityDetail() {
               {commonText.availableSpecialties[lang]}
             </h2>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-              {specialtiesList.map(s => (
-                <span key={s} style={{
+              {specialtiesList.map(s => {
+                // Check if this string matches any real department name
+                const matchedDept = allDepts.find(d => d.name.trim() === s.trim());
+
+                const tagStyle: React.CSSProperties = {
                   background: 'rgba(200,168,75,0.08)', border: '1px solid rgba(200,168,75,0.2)',
                   color: '#c8a84b', padding: '6px 14px', borderRadius: '20px',
-                  fontSize: '0.8rem', fontWeight: 600,
-                }}>
-                  {s}
-                </span>
-              ))}
+                  fontSize: '0.8rem', fontWeight: 600, display: 'inline-block', textDecoration: 'none'
+                };
+
+                if (matchedDept) {
+                  // It's a real department! Make it a link.
+                  return (
+                    <Link key={s} to={`/departments/${matchedDept.id}`} style={{ ...tagStyle, background: 'rgba(200,168,75,0.2)', cursor: 'pointer' }}>
+                      {s} ↗
+                    </Link>
+                  );
+                }
+
+                // Just normal text if no match found
+                return (
+                  <span key={s} style={tagStyle}>
+                    {s}
+                  </span>
+                );
+              })}
             </div>
           </div>
         )}

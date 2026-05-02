@@ -128,9 +128,66 @@ export interface InfoAchievement {
   updated_at?: string;
 }
 
+
+// Adjust this import path based on your project structure!
+
+export interface InfoDepartment {
+  id?: string;
+  name: string;
+  description: string;
+  image_url?: string;
+  duration?: string;
+  career_paths?: string;
+  is_published: boolean;
+  order_index: number;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // GENERIC HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
+
+
+
+
+export async function fetchDepartments(): Promise<InfoDepartment[]> {
+  const { data, error } = await supabase
+    .from('info_departments')
+    .select('*')
+    .eq('is_published', true)
+    .order('order_index');
+
+  if (error) {
+    console.error('Error fetching departments:', error);
+    return [];
+  }
+  return data || [];
+}
+
+export async function fetchDepartmentById(id: string): Promise<InfoDepartment | null> {
+  const { data, error } = await supabase
+    .from('info_departments')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    console.error('Error fetching department by ID:', error);
+    return null;
+  }
+  return data;
+}
+
+export async function upsertDepartment(department: InfoDepartment): Promise<void> {
+  const { error } = await supabase
+    .from('info_departments')
+    .upsert(department);
+
+  if (error) {
+    console.error('Error upserting department:', error);
+    throw error;
+  }
+}
+
 
 async function upsertRow<T extends { id?: string }>(table: string, row: T): Promise<T> {
   const { id, created_at, updated_at, ...fields } = row as any;
