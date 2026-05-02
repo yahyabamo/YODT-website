@@ -19,6 +19,7 @@ const adminLinks = [
     { title: 'إدارة المدارات', desc: 'إضافة وتعديل وحذف المدارات', icon: BookOpen, href: '/admin/busla/tracks', color: 'text-red-700' },
     { title: 'إدارة الأنشطة', desc: 'إدارة الفعاليات والأنشطة', icon: Calendar, href: '/admin/busla/activities', color: 'text-gray-700' },
     { title: 'إدارة المكتبة', desc: 'رفع الكتب والمحتوى', icon: Library, href: '/admin/busla/library', color: 'text-red-900' },
+    { title: 'مجتمع بوصلة', desc: 'إدارة مجتمع بوصلة (حذف رسائل وأعضاء)', icon: Users, href: '/admin/busla/community', color: 'text-blue-700' },
 ];
 
 export default function BuslaAdminPage() {

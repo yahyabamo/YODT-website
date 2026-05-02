@@ -28,14 +28,14 @@ const SECTIONS = [
     path: '/admin/info/students',
     color: '#f59e0b'
   },
-  // { 
-  //   id: 'icons', 
-  //   title: 'رموزنا', 
-  //   description: 'توثيق الشخصيات والرموز الوطنية اليمنية', 
-  //   icon: Medal, 
-  //   path: '/admin/info/icons',
-  //   color: '#8b5cf6'
-  // },
+  {
+    id: 'icons',
+    title: 'رموزنا',
+    description: 'توثيق الشخصيات والرموز الوطنية اليمنية',
+    icon: Medal,
+    path: '/admin/info/icons',
+    color: '#8b5cf6'
+  },
   {
     id: 'achievements',
     title: 'إنجازات',

@@ -5,6 +5,7 @@ import { fetchIconById, InfoIcon } from '@/service/infoCMS';
 import { useLanguage } from '@/context/LanguageContext';
 import { commonText, getField } from '@/i18n/pages';
 
+
 export default function IconDetail() {
   const { language: lang } = useLanguage();
   const { id } = useParams<{ id: string }>();
@@ -46,7 +47,7 @@ export default function IconDetail() {
       {/* Return button */}
       <div style={{ maxWidth: '800px', margin: '0 auto', padding: '24px clamp(16px, 4vw, 40px) 0' }}>
         <button
-          onClick={() => navigate('/icons')}
+          onClick={() => navigate('/about-yemen')}
           style={{
             display: 'flex', alignItems: 'center', gap: '8px',
             padding: '8px 16px', borderRadius: '12px',
@@ -64,7 +65,7 @@ export default function IconDetail() {
           }}
         >
           <ArrowRight size={16} />
-          <span>{commonText.returnToIcons[lang]}</span>
+          <span>{commonText.returnToArticles[lang]}</span>
         </button>
       </div>
 

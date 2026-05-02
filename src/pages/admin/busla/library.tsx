@@ -16,6 +16,8 @@ import {
 import type { LibraryItem } from '@/integrations/supabase/types';
 import { LIBRARY_TYPE_LABELS } from '@/integrations/supabase/types';
 import { useRoleGuard } from '@/hooks/useRoleGuard';
+import { ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const EMPTY_FORM = {
     title: '',
@@ -33,6 +35,7 @@ export default function AdminLibraryPage() {
     const [uploadProgress, setUploadProgress] = useState('');
     const [showForm, setShowForm] = useState(false);
     const fileRef = useRef<HTMLInputElement>(null);
+    const navigate = useNavigate();
 
     const fetchItems = async () => {
         setLoading(true);
@@ -122,6 +125,12 @@ export default function AdminLibraryPage() {
 
     return (
         <div className="min-h-screen bg-background pb-10" dir="rtl">
+            <button
+                onClick={() => navigate('/admin/busla')}
+                className="flex items-center gap-1 text-slate-500 hover:text-slate-800 transition-colors text-sm font-semibold mb-4"
+            >
+                <ChevronRight size={18} /> العودة للقائمة
+            </button>
             <PageHeader title="إدارة المكتبة" />
 
             <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">

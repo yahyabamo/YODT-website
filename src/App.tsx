@@ -94,6 +94,8 @@ import AdminActivitiesPage from "./pages/admin/busla/activityadmin";
 import BuslaAdminPage from "./pages/admin/busla/buslaAdmin";
 import LibraryAdminPage from "./pages/admin/busla/library";
 import TrackDetailAdminPage from "./pages/admin/busla/trackadmin";
+import BuslaCommunity from "./pages/busla/BuslaCommunity";
+import BuslaCommunityAdmin from "./pages/admin/busla/BuslaCommunityAdmin";
 import WeeklyQuestion from "./pages/engagement/WeeklyQuestion";
 import Chat from "./pages/engagement/Chat";
 import EngagementPoints from "./pages/engagement/EngagementPoints";
@@ -159,6 +161,7 @@ import ProjectCategoriesAdmin from "./pages/admin/student-projects/ProjectCatego
 // ─── Ads Management Pages ──────────────────────────────────────────────────────────────
 import AdsAdmin from "./pages/admin/ads/AdsAdmin";
 import AdForm from "./pages/admin/ads/AdForm";
+import SuggestionBoxAdmin from "./pages/admin/SuggestionBoxAdmin";
 
 
 const queryClient = new QueryClient();
@@ -228,6 +231,7 @@ const App = () => (
                 <Route path="/busla" element={<BuslaPage />} />
                 <Route path="/busla/tracks" element={<TracksPage />} />
                 <Route path="/busla/library" element={<LibraryPage />} />
+                <Route path="/busla/community" element={<BuslaCommunity />} />
                 <Route path="/busla/track/:id" element={<TrackDetailPage />} />
                 <Route path="/busla/activities" element={<ActivitiesPage />} />
                 <Route path="/engagement/weekly-question" element={<WeeklyQuestion />} />
@@ -280,6 +284,7 @@ const App = () => (
                   <Route path="busla/activities" element={<AdminActivitiesPage />} />
                   <Route path="busla" element={<BuslaAdminPage />} />
                   <Route path="busla/library" element={<LibraryAdminPage />} />
+                  <Route path="busla/community" element={<BuslaCommunityAdmin />} />
                   <Route path="busla/tracks" element={<TrackDetailAdminPage />} />
                   <Route path="engagement/chat" element={<ChatAdmin />} />
                   <Route path="engagement/weekly" element={<WeeklyAdmin />} />
@@ -332,6 +337,9 @@ const App = () => (
                   <Route path="ads" element={<AdsAdmin />} />
                   <Route path="ads/new" element={<AdForm />} />
                   <Route path="ads/:id" element={<AdForm />} />
+
+                  {/* ─── Suggestion Box Admin ──────────────────────────────── */}
+                  <Route path="suggestion-boxes" element={<SuggestionBoxAdmin />} />
 
                   {/* Make sure imports above are un-commented to use these! */}
                   <Route path="info/articles" element={<ArticlesAdmin />} />

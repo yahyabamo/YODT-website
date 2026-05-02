@@ -306,37 +306,168 @@ export default function ChatAdmin() {
               <p>لا توجد مجموعات بعد</p>
             </div>
           ) : (
-            <div className="space-y-2">
-              {groups.map(group => {
-                const memberCount = requests.filter(r => r.group_id === group.id && r.status === 'approved').length;
-                const isDeleting = processing === 'del_' + group.id;
-                return (
-                  <div key={group.id} className="bg-white rounded-2xl p-4 shadow-sm border border-[#f0f0f0]">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-sm text-[#111]">{group.name}</p>
-                        {group.description && (
-                          <p className="text-xs text-[#6b7280] mt-0.5">{group.description}</p>
-                        )}
-                        <p className="text-xs text-[#9ca3af] mt-1">
-                          {group.gender === 'male' ? '👨 ذكور' : group.gender === 'female' ? '👩 إناث' : '👥 الكل'}
-                          {' · '}
-                          {memberCount} عضو
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleDeleteGroup(group.id)}
-                        disabled={isDeleting}
-                        className="text-xs font-bold text-white px-3 py-1.5 rounded-xl"
-                        style={{ background: '#ef4444', border: 'none', cursor: isDeleting ? 'default' : 'pointer', opacity: isDeleting ? 0.6 : 1 }}
-                      >
-                        {isDeleting ? '...' : '🗑 حذف'}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="space-y-4">
+              {groups.map(group => (
+                <GroupManager
+                  key={group.id}
+                  group={group}
+                  requests={requests}
+                  processing={processing}
+                  setProcessing={setProcessing}
+                  handleDeleteGroup={handleDeleteGroup}
+                  refresh={refresh}
+                />
+              ))}
             </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function GroupManager({ group, requests, processing, setProcessing, handleDeleteGroup, refresh }: any) {
+  const [expandedTab, setExpandedTab] = useState<'none' | 'members' | 'messages'>('none');
+  const [messages, setMessages] = useState<any[]>([]);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+
+  const groupRequests = requests.filter((r: any) => r.group_id === group.id && r.status === 'approved');
+
+  const fetchGroupMessages = async () => {
+    setLoadingMessages(true);
+    const { data } = await (supabase as any)
+      .from('eng_chat_messages')
+      .select('*, profiles:user_id(full_name)')
+      .eq('group_id', group.id)
+      .order('created_at', { ascending: false })
+      .limit(50);
+    if (data) setMessages(data);
+    setLoadingMessages(false);
+  };
+
+  useEffect(() => {
+    if (expandedTab === 'messages') {
+      fetchGroupMessages();
+    }
+  }, [expandedTab]);
+
+  const handleKickMember = async (requestId: string, userName: string) => {
+    if (!window.confirm(`هل أنت متأكد من طرد "${userName}" من المجموعة؟`)) return;
+    setProcessing('kick_' + requestId);
+    const { error } = await (supabase as any)
+      .from('eng_chat_requests')
+      .delete()
+      .eq('id', requestId);
+    setProcessing(null);
+    if (!error) {
+      toast.success('تم طرد العضو بنجاح');
+      refresh();
+    } else {
+      toast.error('فشل طرد العضو');
+    }
+  };
+
+  const handleDeleteMessage = async (msgId: string) => {
+    if (!window.confirm('هل أنت متأكد من حذف هذه الرسالة؟')) return;
+    setProcessing('delmsg_' + msgId);
+    const { error } = await (supabase as any)
+      .from('eng_chat_messages')
+      .delete()
+      .eq('id', msgId);
+    setProcessing(null);
+    if (!error) {
+      toast.success('تم حذف الرسالة بنجاح');
+      setMessages(prev => prev.filter(m => m.id !== msgId));
+    } else {
+      toast.error('فشل حذف الرسالة');
+    }
+  };
+
+  const isDeleting = processing === 'del_' + group.id;
+
+  return (
+    <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#f0f0f0]">
+      <div className="flex items-start justify-between">
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-sm text-[#111]">{group.name}</p>
+          {group.description && (
+            <p className="text-xs text-[#6b7280] mt-0.5">{group.description}</p>
+          )}
+          <p className="text-xs text-[#9ca3af] mt-1">
+            {group.gender === 'male' ? '👨 ذكور' : group.gender === 'female' ? '👩 إناث' : '👥 الكل'}
+            {' · '}
+            {groupRequests.length} عضو
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setExpandedTab(prev => prev === 'members' ? 'none' : 'members')}
+            className="text-xs font-bold text-[#8B1A2A] px-3 py-1.5 rounded-xl border border-[#8B1A2A] hover:bg-[#8B1A2A] hover:text-white transition"
+          >
+            إدارة الأعضاء
+          </button>
+          <button
+            onClick={() => setExpandedTab(prev => prev === 'messages' ? 'none' : 'messages')}
+            className="text-xs font-bold text-blue-600 px-3 py-1.5 rounded-xl border border-blue-600 hover:bg-blue-600 hover:text-white transition"
+          >
+            إدارة الرسائل
+          </button>
+          <button
+            onClick={() => handleDeleteGroup(group.id)}
+            disabled={isDeleting}
+            className="text-xs font-bold text-white px-3 py-1.5 rounded-xl"
+            style={{ background: '#ef4444', border: 'none', cursor: isDeleting ? 'default' : 'pointer', opacity: isDeleting ? 0.6 : 1 }}
+          >
+            {isDeleting ? '...' : '🗑 حذف'}
+          </button>
+        </div>
+      </div>
+
+      {expandedTab === 'members' && (
+        <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+          <h4 className="text-xs font-bold text-gray-700 mb-2">الأعضاء المقبولين</h4>
+          {groupRequests.length === 0 ? (
+            <p className="text-xs text-gray-400">لا يوجد أعضاء</p>
+          ) : (
+            groupRequests.map((req: any) => (
+              <div key={req.id} className="flex justify-between items-center bg-gray-50 p-2 rounded-lg">
+                <span className="text-xs font-bold">{req.profiles?.full_name || 'مستخدم'}</span>
+                <button
+                  onClick={() => handleKickMember(req.id, req.profiles?.full_name || 'مستخدم')}
+                  disabled={processing === 'kick_' + req.id}
+                  className="text-xs text-red-500 font-bold px-2 py-1 hover:bg-red-100 rounded disabled:opacity-50"
+                >
+                  {processing === 'kick_' + req.id ? '...' : 'طرد'}
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {expandedTab === 'messages' && (
+        <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+          <h4 className="text-xs font-bold text-gray-700 mb-2">آخر الرسائل</h4>
+          {loadingMessages ? (
+            <p className="text-xs text-gray-400">جاري التحميل...</p>
+          ) : messages.length === 0 ? (
+            <p className="text-xs text-gray-400">لا يوجد رسائل</p>
+          ) : (
+            messages.map((msg: any) => (
+              <div key={msg.id} className="flex justify-between items-start bg-gray-50 p-2 rounded-lg gap-3">
+                <div className="flex-1">
+                  <span className="text-[10px] text-gray-500">{msg.profiles?.full_name || 'مستخدم'}</span>
+                  <p className="text-xs font-medium text-gray-800">{msg.content}</p>
+                </div>
+                <button
+                  onClick={() => handleDeleteMessage(msg.id)}
+                  disabled={processing === 'delmsg_' + msg.id}
+                  className="text-xs text-red-500 font-bold px-2 py-1 hover:bg-red-100 rounded disabled:opacity-50"
+                >
+                  {processing === 'delmsg_' + msg.id ? '...' : 'حذف'}
+                </button>
+              </div>
+            ))
           )}
         </div>
       )}

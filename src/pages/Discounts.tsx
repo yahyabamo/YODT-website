@@ -1,8 +1,9 @@
-﻿import { Percent, MapPin, Clock, ExternalLink } from 'lucide-react';
+import { Percent, MapPin, Clock, ExternalLink } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { BottomNav } from '@/components/layout/BottomNav';
+import { SuggestionBoxes } from '@/components/SuggestionBoxes';
 
 interface Discount {
   id: string;
@@ -172,6 +173,7 @@ const Discounts = () => {
         </p>
       </div>
 
+      <SuggestionBoxes page="discounts" className="mb-6" />
       <BottomNav />
     </div>
   );

@@ -11,6 +11,7 @@ import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { AdSlot } from '@/components/ads/AdSlot';
+import { SuggestionBoxes } from '@/components/SuggestionBoxes';
 
 interface TrackPageState {
     track: any;
@@ -66,8 +67,14 @@ function RequestModal({ service, onClose }: { service: Service; onClose: () => v
         if (!cardFile) { toast.error("يرجى رفع صورة الهوية الجامعية"); return; }
         setSubmitting(true);
         try {
+            const { data: { user } } = await supabase.auth.getUser();
             const student_card_url = await uploadFile(cardFile);
-            const { error } = await supabase.from("service_requests").insert({ service_id: service.id, ...form, student_card_url });
+            const { error } = await supabase.from("service_requests").insert({ 
+                service_id: service.id, 
+                user_id: user?.id || null,
+                ...form, 
+                student_card_url 
+            });
             if (error) throw error;
             setDone(true);
         } catch (err: any) { toast.error(err.message || "فشل إرسال الطلب"); }
@@ -362,6 +369,7 @@ export default function Awn() {
             </div>
 
             <AdSlot page="3wn" position="bottom" className="mb-4" />
+            <SuggestionBoxes page="3wn" className="mb-6" />
             <BottomNav />
 
             {selected && <RequestModal service={selected} onClose={() => setSelected(null)} />}

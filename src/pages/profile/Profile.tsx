@@ -164,7 +164,8 @@ const Profile = () => {
     // { icon: CreditCard, label: 'الاشتراكات', path: '/subscriptions', color: 'bg-primary/10 text-primary' },
     { icon: Heart, label: 'الداعمون والشركاء', path: '/partners', color: 'bg-red-500/10 text-red-600' },
     { icon: StickyNote, label: 'الملاحظات', path: '/notes', color: 'bg-blue-500/10 text-blue-600' },
-    { icon: Activity, label: 'طلباتي ومقترحاتي', path: '/profile/requests', color: 'bg-indigo-500/10 text-indigo-600' },
+    { icon: Activity, label: 'الاقتراحات والاستفسارات', path: '/suggestions', color: 'bg-indigo-500/10 text-indigo-600' },
+    { icon: Activity, label: 'طلباتي ', path: '/profile/requests', color: 'bg-indigo-500/10 text-indigo-600' },
   ];
 
   if (authLoading || loading) {

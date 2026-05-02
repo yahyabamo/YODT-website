@@ -19,6 +19,7 @@ import {
     Share2,
     ChevronLeft,
     ArrowRight,
+    Lock,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -133,6 +134,7 @@ export default function TrackDetailPage() {
                     currentPage: data.last_page || 1,
                     totalPages: data.total_pages || 0,
                 });
+                console.log(`TrackDetail: Membership status for user ${state.userId} is:`, data.is_member ? 'APPROVED' : (data.is_pending ? 'PENDING' : 'NONE'));
             } catch (error) {
                 console.error('Track fetch error:', error);
                 toast.error('حدث خطأ أثناء تحميل البيانات');
@@ -358,350 +360,375 @@ export default function TrackDetailPage() {
                 </div>
             </header>
 
-            {/* Main Content */}
-            <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
-                <AdSlot page="track_details" position="top" />
-                {/* No book assigned state */}
-                {!state.track?.current_book?.file_url ? (
-                    <Card className="border-0 shadow-md bg-white">
-                        <CardContent className="py-16 text-center space-y-4">
-                            <div className="flex justify-center">
-                                <div className="p-4 bg-slate-100 rounded-full">
-                                    <BookOpen className="h-12 w-12 text-slate-400" />
-                                </div>
-                            </div>
-                            <div>
-                                <p className="text-slate-600 font-medium">لم يُعيَّن كتاب لهذا المسار بعد</p>
-                                <p className="text-sm text-slate-500 mt-2">سيتم إضافة الكتاب قريباً</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ) : (
-                    /* PDF Viewer with Suspense */
-                    <Suspense
-                        fallback={
-                            <div className="flex flex-col items-center justify-center py-24 bg-white rounded-2xl shadow-md border border-slate-200">
-                                <Loader2 className="h-10 w-10 animate-spin text-red-700 mb-3" />
-                                <p className="text-sm text-slate-600 font-medium">جاري تحميل قارئ الكتب...</p>
-                            </div>
-                        }
-                    >
-                        <PDFViewer
-                            url={state.track.current_book.file_url}
-                            currentPage={state.currentPage}
-                            totalPages={state.totalPages}
-                            isBookmarked={state.bookmarkedPages.has(state.currentPage)}
-                            onPageChange={handlePageChange}
-                            onBookmarkToggle={handleBookmarkToggle}
-                            onTotalPagesChange={handleTotalPagesChange}
-                        />
-                    </Suspense>
-                )}
-
-                {/* Progress Info Card */}
-                {state.track?.current_book?.file_url && (
-                    <Card className="border-0 shadow-md bg-white">
-                        <CardContent className="p-4 space-y-4">
-                            <div className="flex items-center justify-between gap-4">
-                                <div className="flex-1">
-                                    <label className="text-xs font-semibold text-slate-600 block mb-2">
-                                        الصفحة الحالية
-                                    </label>
-                                    <div className="flex items-center gap-2">
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() => handlePageChange(state.currentPage - 1)}
-                                            disabled={state.currentPage <= 1}
-                                            className="h-9 px-3"
-                                        >
-                                            السابقة
-                                        </Button>
-                                        <input
-                                            type="number"
-                                            min={1}
-                                            value={state.currentPage}
-                                            onChange={(e) => {
-                                                const page = Math.max(1, Number(e.target.value) || 1);
-                                                handlePageChange(page);
-                                            }}
-                                            className="flex-1 h-9 px-3 border border-slate-300 rounded-lg text-center font-mono text-sm focus:outline-none focus:ring-2 focus:ring-red-700"
-                                        />
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() => handlePageChange(state.currentPage + 1)}
-                                            disabled={state.totalPages > 0 && state.currentPage >= state.totalPages}
-                                            className="h-9 px-3"
-                                        >
-                                            التالية
-                                        </Button>
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-xs font-semibold text-slate-600 mb-2">التقدم</p>
-                                    <div className="text-2xl font-bold text-red-700">
-                                        {state.totalPages > 0
-                                            ? Math.round((state.currentPage / state.totalPages) * 100)
-                                            : 0}
-                                        %
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Progress bar */}
-                            <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
-                                <div
-                                    className="bg-gradient-to-r from-red-600 to-red-500 h-full transition-all duration-300"
-                                    style={{
-                                        width: `${state.totalPages > 0 ? (state.currentPage / state.totalPages) * 100 : 0}%`,
-                                    }}
-                                />
-                            </div>
-
-                            {/* Stats */}
-                            <div className="grid grid-cols-3 gap-3 pt-2">
-                                <div className="bg-slate-50 rounded-lg p-3 text-center">
-                                    <Clock className="h-4 w-4 text-slate-500 mx-auto mb-1" />
-                                    <p className="text-xs text-slate-600 font-medium">قراءة</p>
-                                    <p className="text-sm font-bold text-slate-900">
-                                        {Math.ceil((state.totalPages || 0) / 10)}د
-                                    </p>
-                                </div>
-                                <div className="bg-slate-50 rounded-lg p-3 text-center">
-                                    <StickyNote className="h-4 w-4 text-slate-500 mx-auto mb-1" />
-                                    <p className="text-xs text-slate-600 font-medium">ملاحظات</p>
-                                    <p className="text-sm font-bold text-slate-900">{state.notes.length}</p>
-                                </div>
-                                <div className="bg-slate-50 rounded-lg p-3 text-center">
-                                    <Bookmark className="h-4 w-4 text-slate-500 mx-auto mb-1" />
-                                    <p className="text-xs text-slate-600 font-medium">إشارات</p>
-                                    <p className="text-sm font-bold text-slate-900">{state.bookmarks.length}</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
-
-                {/* Tabs Navigation */}
-                <div className="flex gap-2 bg-white rounded-xl p-1 shadow-sm border border-slate-200">
-                    {tabs.map((tab) => (
-                        <button
-                            key={tab.key}
-                            onClick={() => updateState({ activeTab: tab.key })}
-                            className={cn(
-                                'flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200',
-                                state.activeTab === tab.key
-                                    ? 'bg-red-700 text-white shadow-md'
-                                    : 'text-slate-600 hover:bg-slate-50'
-                            )}
+            {/* Access Control Check */}
+            {state.track && !state.track.is_member && (
+                <div className="max-w-lg mx-auto px-4 py-12 flex flex-col items-center justify-center text-center">
+                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 max-w-sm w-full">
+                        <div className="bg-red-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Lock className="h-8 w-8 text-red-600" />
+                        </div>
+                        <h2 className="text-xl font-bold text-slate-800 mb-2">محتوى مقفل</h2>
+                        <p className="text-sm text-slate-500 mb-6 leading-relaxed">
+                            {state.track.is_pending
+                                ? "طلب انضمامك قيد المراجعة حالياً من قبل الإدارة. يرجى الانتظار."
+                                : "يجب الانضمام إلى هذا المدار للوصول إلى المحتوى الخاص به."}
+                        </p>
+                        <Button
+                            onClick={() => navigate('/busla/tracks')}
+                            className="w-full bg-red-800 hover:bg-red-900"
                         >
-                            {tab.icon}
-                            <span className="hidden sm:inline">{tab.label}</span>
-                            {tab.count !== undefined && (
-                                <span className="ml-1 text-xs bg-white/20 px-2 py-0.5 rounded-full">
-                                    {tab.count}
-                                </span>
-                            )}
-                        </button>
-                    ))}
+                            العودة إلى المدارات
+                        </Button>
+                    </div>
                 </div>
+            )}
 
-                {/* Tab Content */}
-                <div className="space-y-4">
-                    {/* Notes Tab */}
-                    {state.activeTab === 'notes' && (
-                        <div className="space-y-4">
-                            {/* Search Bar */}
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    placeholder="ابحث في الملاحظات..."
-                                    value={state.searchQuery}
-                                    onChange={(e) => updateState({ searchQuery: e.target.value })}
-                                    className="w-full px-4 py-3 pl-10 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent"
-                                />
-                                <Search className="absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
-                            </div>
-
-                            {/* Note Input */}
-                            <Card className="border-0 shadow-md bg-white">
-                                <CardContent className="p-4 space-y-3">
-                                    <textarea
-                                        value={state.noteInput}
-                                        onChange={(e) => updateState({ noteInput: e.target.value })}
-                                        placeholder="أضف ملاحظة جديدة..."
-                                        className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:bg-white resize-none"
-                                        rows={3}
-                                    />
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-xs text-slate-500">الصفحة {state.currentPage}</span>
-                                        <Button
-                                            onClick={handleSaveNote}
-                                            disabled={state.savingNote || !state.noteInput.trim()}
-                                            className="bg-red-700 hover:bg-red-800 text-white gap-2"
-                                            size="sm"
-                                        >
-                                            {state.savingNote ? (
-                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                            ) : (
-                                                <Plus className="h-4 w-4" />
-                                            )}
-                                            حفظ الملاحظة
-                                        </Button>
+            {/* Main Content */}
+            {state.track?.is_member && (
+                <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
+                    <AdSlot page="track_details" position="top" />
+                    {/* No book assigned state */}
+                    {!state.track?.current_book?.file_url ? (
+                        <Card className="border-0 shadow-md bg-white">
+                            <CardContent className="py-16 text-center space-y-4">
+                                <div className="flex justify-center">
+                                    <div className="p-4 bg-slate-100 rounded-full">
+                                        <BookOpen className="h-12 w-12 text-slate-400" />
                                     </div>
-                                </CardContent>
-                            </Card>
-
-                            {/* Toggle All Notes */}
-                            {state.notes.length > 0 && (
-                                <button
-                                    onClick={() => updateState({ showAllNotes: !state.showAllNotes })}
-                                    className="w-full text-sm text-red-700 font-medium hover:text-red-800 transition-colors py-2"
-                                >
-                                    {state.showAllNotes ? '← عرض ملاحظات هذه الصفحة فقط' : '→ عرض جميع الملاحظات'}
-                                </button>
-                            )}
-
-                            {/* Notes List */}
-                            {searchedNotes.length > 0 ? (
-                                <div className="space-y-3">
-                                    {searchedNotes.map((note) => (
-                                        <Card key={note.id} className="border-0 shadow-sm bg-white hover:shadow-md transition-shadow">
-                                            <CardContent className="p-4 space-y-2">
-                                                <div className="flex items-start justify-between gap-2">
-                                                    <div className="flex-1">
-                                                        <p className="text-xs font-semibold text-slate-500 mb-1">
-                                                            الصفحة {note.page_number}
-                                                        </p>
-                                                        <p className="text-sm text-slate-800 leading-relaxed">{note.content}</p>
-                                                    </div>
-                                                    <button
-                                                        onClick={() => handleDeleteNote(note.id)}
-                                                        className="p-2 hover:bg-red-50 rounded-lg transition-colors text-slate-400 hover:text-red-600"
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </button>
-                                                </div>
-                                                <p className="text-xs text-slate-400">
-                                                    {new Date(note.created_at).toLocaleDateString('ar-SA')}
-                                                </p>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
                                 </div>
-                            ) : (
-                                <div className="text-center py-12">
-                                    <StickyNote className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-                                    <p className="text-slate-500 text-sm">لا توجد ملاحظات بعد</p>
+                                <div>
+                                    <p className="text-slate-600 font-medium">لم يُعيَّن كتاب لهذا المسار بعد</p>
+                                    <p className="text-sm text-slate-500 mt-2">سيتم إضافة الكتاب قريباً</p>
                                 </div>
-                            )}
-                        </div>
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        /* PDF Viewer with Suspense */
+                        <Suspense
+                            fallback={
+                                <div className="flex flex-col items-center justify-center py-24 bg-white rounded-2xl shadow-md border border-slate-200">
+                                    <Loader2 className="h-10 w-10 animate-spin text-red-700 mb-3" />
+                                    <p className="text-sm text-slate-600 font-medium">جاري تحميل قارئ الكتب...</p>
+                                </div>
+                            }
+                        >
+                            <PDFViewer
+                                url={state.track.current_book.file_url}
+                                currentPage={state.currentPage}
+                                totalPages={state.totalPages}
+                                isBookmarked={state.bookmarkedPages.has(state.currentPage)}
+                                onPageChange={handlePageChange}
+                                onBookmarkToggle={handleBookmarkToggle}
+                                onTotalPagesChange={handleTotalPagesChange}
+                            />
+                        </Suspense>
                     )}
 
-                    {/* Bookmarks Tab */}
-                    {state.activeTab === 'bookmarks' && (
-                        <div className="space-y-3">
-                            {state.bookmarks.length > 0 ? (
-                                state.bookmarks.map((bookmark) => (
-                                    <Card
-                                        key={bookmark.id}
-                                        onClick={() => handlePageChange(bookmark.page_number)}
-                                        className="border-0 shadow-sm bg-white hover:shadow-md cursor-pointer transition-all"
-                                    >
-                                        <CardContent className="p-4 flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <Bookmark className="h-5 w-5 text-yellow-500 fill-yellow-500" />
-                                                <div>
-                                                    <p className="font-semibold text-slate-900">الصفحة {bookmark.page_number}</p>
-                                                    <p className="text-xs text-slate-500">
-                                                        {new Date(bookmark.created_at).toLocaleDateString('ar-SA')}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <ChevronLeft className="h-5 w-5 text-slate-400" />
-                                        </CardContent>
-                                    </Card>
-                                ))
-                            ) : (
-                                <div className="text-center py-12">
-                                    <Bookmark className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-                                    <p className="text-slate-500 text-sm">لا توجد إشارات مرجعية بعد</p>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Chat Tab */}
-                    {state.activeTab === 'chat' && (
+                    {/* Progress Info Card */}
+                    {state.track?.current_book?.file_url && (
                         <Card className="border-0 shadow-md bg-white">
                             <CardContent className="p-4 space-y-4">
-                                {/* Messages List */}
-                                <div className="max-h-96 overflow-y-auto space-y-3 mb-4">
-                                    {state.messages.length > 0 ? (
-                                        state.messages.map((msg, idx) => (
-                                            <div
-                                                key={idx}
-                                                className={cn(
-                                                    'flex gap-2',
-                                                    msg.user_id === state.userId ? 'justify-end' : 'justify-start'
-                                                )}
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="flex-1">
+                                        <label className="text-xs font-semibold text-slate-600 block mb-2">
+                                            الصفحة الحالية
+                                        </label>
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => handlePageChange(state.currentPage - 1)}
+                                                disabled={state.currentPage <= 1}
+                                                className="h-9 px-3"
                                             >
-                                                <div
-                                                    className={cn(
-                                                        'max-w-xs px-4 py-2 rounded-xl text-sm',
-                                                        msg.user_id === state.userId
-                                                            ? 'bg-red-700 text-white rounded-br-none'
-                                                            : 'bg-slate-100 text-slate-900 rounded-bl-none'
-                                                    )}
-                                                >
-                                                    {msg.message}
-                                                </div>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div className="text-center py-8">
-                                            <MessageCircle className="h-10 w-10 text-slate-300 mx-auto mb-2" />
-                                            <p className="text-slate-500 text-sm">لا توجد رسائل بعد</p>
+                                                السابقة
+                                            </Button>
+                                            <input
+                                                type="number"
+                                                min={1}
+                                                value={state.currentPage}
+                                                onChange={(e) => {
+                                                    const page = Math.max(1, Number(e.target.value) || 1);
+                                                    handlePageChange(page);
+                                                }}
+                                                className="flex-1 h-9 px-3 border border-slate-300 rounded-lg text-center font-mono text-sm focus:outline-none focus:ring-2 focus:ring-red-700"
+                                            />
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => handlePageChange(state.currentPage + 1)}
+                                                disabled={state.totalPages > 0 && state.currentPage >= state.totalPages}
+                                                className="h-9 px-3"
+                                            >
+                                                التالية
+                                            </Button>
                                         </div>
-                                    )}
-                                    <div ref={chatEndRef} />
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xs font-semibold text-slate-600 mb-2">التقدم</p>
+                                        <div className="text-2xl font-bold text-red-700">
+                                            {state.totalPages > 0
+                                                ? Math.round((state.currentPage / state.totalPages) * 100)
+                                                : 0}
+                                            %
+                                        </div>
+                                    </div>
                                 </div>
 
-                                {/* Message Input */}
-                                <div className="flex gap-2 pt-4 border-t border-slate-200">
-                                    <textarea
-                                        value={state.chatInput}
-                                        onChange={(e) => updateState({ chatInput: e.target.value })}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' && !e.shiftKey) {
-                                                e.preventDefault();
-                                                handleSendMessage();
-                                            }
+                                {/* Progress bar */}
+                                <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                                    <div
+                                        className="bg-gradient-to-r from-red-600 to-red-500 h-full transition-all duration-300"
+                                        style={{
+                                            width: `${state.totalPages > 0 ? (state.currentPage / state.totalPages) * 100 : 0}%`,
                                         }}
-                                        placeholder="اكتب رسالة..."
-                                        className="flex-1 bg-slate-50 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:bg-white resize-none"
-                                        rows={2}
                                     />
-                                    <Button
-                                        size="icon"
-                                        onClick={handleSendMessage}
-                                        disabled={state.sendingMsg || !state.chatInput.trim()}
-                                        className="bg-red-700 hover:bg-red-800 text-white h-10 w-10"
-                                    >
-                                        {state.sendingMsg ? (
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                        ) : (
-                                            <Send className="h-4 w-4" />
-                                        )}
-                                    </Button>
+                                </div>
+
+                                {/* Stats */}
+                                <div className="grid grid-cols-3 gap-3 pt-2">
+                                    <div className="bg-slate-50 rounded-lg p-3 text-center">
+                                        <Clock className="h-4 w-4 text-slate-500 mx-auto mb-1" />
+                                        <p className="text-xs text-slate-600 font-medium">قراءة</p>
+                                        <p className="text-sm font-bold text-slate-900">
+                                            {Math.ceil((state.totalPages || 0) / 10)}د
+                                        </p>
+                                    </div>
+                                    <div className="bg-slate-50 rounded-lg p-3 text-center">
+                                        <StickyNote className="h-4 w-4 text-slate-500 mx-auto mb-1" />
+                                        <p className="text-xs text-slate-600 font-medium">ملاحظات</p>
+                                        <p className="text-sm font-bold text-slate-900">{state.notes.length}</p>
+                                    </div>
+                                    <div className="bg-slate-50 rounded-lg p-3 text-center">
+                                        <Bookmark className="h-4 w-4 text-slate-500 mx-auto mb-1" />
+                                        <p className="text-xs text-slate-600 font-medium">إشارات</p>
+                                        <p className="text-sm font-bold text-slate-900">{state.bookmarks.length}</p>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
                     )}
+
+                    {/* Tabs Navigation */}
+                    <div className="flex gap-2 bg-white rounded-xl p-1 shadow-sm border border-slate-200">
+                        {tabs.map((tab) => (
+                            <button
+                                key={tab.key}
+                                onClick={() => updateState({ activeTab: tab.key })}
+                                className={cn(
+                                    'flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200',
+                                    state.activeTab === tab.key
+                                        ? 'bg-red-700 text-white shadow-md'
+                                        : 'text-slate-600 hover:bg-slate-50'
+                                )}
+                            >
+                                {tab.icon}
+                                <span className="hidden sm:inline">{tab.label}</span>
+                                {tab.count !== undefined && (
+                                    <span className="ml-1 text-xs bg-white/20 px-2 py-0.5 rounded-full">
+                                        {tab.count}
+                                    </span>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Tab Content */}
+                    <div className="space-y-4">
+                        {/* Notes Tab */}
+                        {state.activeTab === 'notes' && (
+                            <div className="space-y-4">
+                                {/* Search Bar */}
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        placeholder="ابحث في الملاحظات..."
+                                        value={state.searchQuery}
+                                        onChange={(e) => updateState({ searchQuery: e.target.value })}
+                                        className="w-full px-4 py-3 pl-10 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent"
+                                    />
+                                    <Search className="absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
+                                </div>
+
+                                {/* Note Input */}
+                                <Card className="border-0 shadow-md bg-white">
+                                    <CardContent className="p-4 space-y-3">
+                                        <textarea
+                                            value={state.noteInput}
+                                            onChange={(e) => updateState({ noteInput: e.target.value })}
+                                            placeholder="أضف ملاحظة جديدة..."
+                                            className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:bg-white resize-none"
+                                            rows={3}
+                                        />
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs text-slate-500">الصفحة {state.currentPage}</span>
+                                            <Button
+                                                onClick={handleSaveNote}
+                                                disabled={state.savingNote || !state.noteInput.trim()}
+                                                className="bg-red-700 hover:bg-red-800 text-white gap-2"
+                                                size="sm"
+                                            >
+                                                {state.savingNote ? (
+                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                ) : (
+                                                    <Plus className="h-4 w-4" />
+                                                )}
+                                                حفظ الملاحظة
+                                            </Button>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Toggle All Notes */}
+                                {state.notes.length > 0 && (
+                                    <button
+                                        onClick={() => updateState({ showAllNotes: !state.showAllNotes })}
+                                        className="w-full text-sm text-red-700 font-medium hover:text-red-800 transition-colors py-2"
+                                    >
+                                        {state.showAllNotes ? '← عرض ملاحظات هذه الصفحة فقط' : '→ عرض جميع الملاحظات'}
+                                    </button>
+                                )}
+
+                                {/* Notes List */}
+                                {searchedNotes.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {searchedNotes.map((note) => (
+                                            <Card key={note.id} className="border-0 shadow-sm bg-white hover:shadow-md transition-shadow">
+                                                <CardContent className="p-4 space-y-2">
+                                                    <div className="flex items-start justify-between gap-2">
+                                                        <div className="flex-1">
+                                                            <p className="text-xs font-semibold text-slate-500 mb-1">
+                                                                الصفحة {note.page_number}
+                                                            </p>
+                                                            <p className="text-sm text-slate-800 leading-relaxed">{note.content}</p>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => handleDeleteNote(note.id)}
+                                                            className="p-2 hover:bg-red-50 rounded-lg transition-colors text-slate-400 hover:text-red-600"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+                                                    <p className="text-xs text-slate-400">
+                                                        {new Date(note.created_at).toLocaleDateString('ar-SA')}
+                                                    </p>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-12">
+                                        <StickyNote className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+                                        <p className="text-slate-500 text-sm">لا توجد ملاحظات بعد</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Bookmarks Tab */}
+                        {state.activeTab === 'bookmarks' && (
+                            <div className="space-y-3">
+                                {state.bookmarks.length > 0 ? (
+                                    state.bookmarks.map((bookmark) => (
+                                        <Card
+                                            key={bookmark.id}
+                                            onClick={() => handlePageChange(bookmark.page_number)}
+                                            className="border-0 shadow-sm bg-white hover:shadow-md cursor-pointer transition-all"
+                                        >
+                                            <CardContent className="p-4 flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <Bookmark className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+                                                    <div>
+                                                        <p className="font-semibold text-slate-900">الصفحة {bookmark.page_number}</p>
+                                                        <p className="text-xs text-slate-500">
+                                                            {new Date(bookmark.created_at).toLocaleDateString('ar-SA')}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <ChevronLeft className="h-5 w-5 text-slate-400" />
+                                            </CardContent>
+                                        </Card>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-12">
+                                        <Bookmark className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+                                        <p className="text-slate-500 text-sm">لا توجد إشارات مرجعية بعد</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Chat Tab */}
+                        {state.activeTab === 'chat' && (
+                            <Card className="border-0 shadow-md bg-white">
+                                <CardContent className="p-4 space-y-4">
+                                    {/* Messages List */}
+                                    <div className="max-h-96 overflow-y-auto space-y-3 mb-4">
+                                        {state.messages.length > 0 ? (
+                                            state.messages.map((msg, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    className={cn(
+                                                        'flex gap-2',
+                                                        msg.user_id === state.userId ? 'justify-end' : 'justify-start'
+                                                    )}
+                                                >
+                                                    <div
+                                                        className={cn(
+                                                            'max-w-xs px-4 py-2 rounded-xl text-sm',
+                                                            msg.user_id === state.userId
+                                                                ? 'bg-red-700 text-white rounded-br-none'
+                                                                : 'bg-slate-100 text-slate-900 rounded-bl-none'
+                                                        )}
+                                                    >
+                                                        {msg.message}
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="text-center py-8">
+                                                <MessageCircle className="h-10 w-10 text-slate-300 mx-auto mb-2" />
+                                                <p className="text-slate-500 text-sm">لا توجد رسائل بعد</p>
+                                            </div>
+                                        )}
+                                        <div ref={chatEndRef} />
+                                    </div>
+
+                                    {/* Message Input */}
+                                    <div className="flex gap-2 pt-4 border-t border-slate-200">
+                                        <textarea
+                                            value={state.chatInput}
+                                            onChange={(e) => updateState({ chatInput: e.target.value })}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' && !e.shiftKey) {
+                                                    e.preventDefault();
+                                                    handleSendMessage();
+                                                }
+                                            }}
+                                            placeholder="اكتب رسالة..."
+                                            className="flex-1 bg-slate-50 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:bg-white resize-none"
+                                            rows={2}
+                                        />
+                                        <Button
+                                            size="icon"
+                                            onClick={handleSendMessage}
+                                            disabled={state.sendingMsg || !state.chatInput.trim()}
+                                            className="bg-red-700 hover:bg-red-800 text-white h-10 w-10"
+                                        >
+                                            {state.sendingMsg ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : (
+                                                <Send className="h-4 w-4" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </div>
+                    <AdSlot page="track_details" position="bottom" className="mt-4" />
                 </div>
-                <AdSlot page="track_details" position="bottom" className="mt-4" />
-            </div>
+            )}
         </div>
     );
 }

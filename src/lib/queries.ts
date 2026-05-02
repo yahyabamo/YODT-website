@@ -128,7 +128,8 @@ export async function getTracks(userId: string) {
 
     const { data: members } = await supabase
         .from('track_members')
-        .select('track_id, user_id');
+        .select('track_id, user_id, status')
+        .eq('user_id', userId);
 
     const { data: books } = await supabase
         .from('track_books')
@@ -144,16 +145,85 @@ export async function getTracks(userId: string) {
         const trackMembers = members?.filter((m) => m.track_id === t.id) ?? [];
         const book = books?.find((b) => b.track_id === t.id);
         const prog = progress?.find((p) => p.track_id === t.id);
+        
+        const myMembership = trackMembers.find((m) => m.user_id === userId);
 
         return {
             ...t,
-            member_count: trackMembers.length,
-            is_member: trackMembers.some((m) => m.user_id === userId),
+            member_count: trackMembers.filter(m => m.status === 'approved').length,
+            is_member: myMembership?.status === 'approved',
+            is_pending: myMembership?.status === 'pending',
             current_book: book?.library_items ?? null,
             user_progress: prog?.last_page ?? 0,
         };
     });
 }
+
+export async function adminGetTrackRequests() {
+    console.log("Fetching admin track requests...");
+    const { data, error } = await supabase
+        .from('track_members')
+        .select(`
+            id,
+            user_id,
+            status,
+            joined_at,
+            profiles(full_name),
+            tracks(title)
+        `)
+        .eq('status', 'pending')
+        .order('joined_at', { ascending: false });
+
+    if (error || !data) {
+        console.error("adminGetTrackRequests error:", error);
+        return { data: [], error: error?.message };
+    }
+
+    console.log(`Found ${data.length} pending requests.`);
+
+    // Fetch academic profiles separately since relationship isn't detected
+    const userIds = [...new Set(data.map(req => req.user_id))];
+    
+    const { data: academicProfiles } = await supabase
+        .from('academic_profiles')
+        .select('*')
+        .in('id', userIds);
+
+    // Fetch approved tracks for each user
+    const { data: approvedMembers } = await supabase
+        .from('track_members')
+        .select('user_id, tracks(title)')
+        .eq('status', 'approved')
+        .in('user_id', userIds);
+
+    const formattedData = data.map(req => {
+        const acadProfile = academicProfiles?.find(ap => ap.id === req.user_id) || null;
+        const userApprovedTracks = approvedMembers
+            ?.filter(am => am.user_id === req.user_id)
+            ?.map(am => (am.tracks as any)?.title)
+            .filter(Boolean) || [];
+
+        return {
+            ...req,
+            academic_profile: acadProfile,
+            approved_tracks: userApprovedTracks,
+        };
+    });
+
+    console.log("Formatted requests count:", formattedData.length);
+    return { data: formattedData, error: null };
+}
+
+export async function adminHandleTrackRequest(requestId: string, status: 'approved' | 'rejected') {
+    const { data, error } = await supabase
+        .from('track_members')
+        .update({ status })
+        .eq('id', requestId)
+        .select();
+    
+    return { data, error };
+}
+
 
 export async function getTrackById(trackId: string, userId: string) {
     const { data: track, error } = await supabase
@@ -180,15 +250,18 @@ export async function getTrackById(trackId: string, userId: string) {
 
     const { data: members } = await supabase
         .from('track_members')
-        .select('user_id')
+        .select('user_id, status')
         .eq('track_id', trackId);
+
+    const myMembership = members?.find((m) => m.user_id === userId);
 
     return {
         ...track,
         current_book: (book?.library_items as LibraryItem) ?? null,
         last_page: progress?.last_page ?? 1,
-        member_count: members?.length ?? 0,
-        is_member: members?.some((m) => m.user_id === userId) ?? false,
+        member_count: members?.filter(m => m.status === 'approved').length ?? 0,
+        is_member: myMembership?.status === 'approved',
+        is_pending: myMembership?.status === 'pending',
     };
 }
 
@@ -196,10 +269,26 @@ export async function joinTrack(
     trackId: string,
     userId: string
 ): Promise<{ error: string | null }> {
-    const { error } = await supabase
+    console.log(`User ${userId} attempting to join track ${trackId}...`);
+    
+    // Use upsert to handle cases where a row exists but RLS prevents selecting it.
+    // If the row exists (e.g., rejected previously), it updates the status to pending.
+    const { data, error } = await supabase
         .from('track_members')
-        .insert({ track_id: trackId, user_id: userId });
-    return { error: error?.message ?? null };
+        .upsert(
+            { track_id: trackId, user_id: userId, status: 'pending' },
+            { onConflict: 'track_id,user_id' }
+        )
+        .select()
+        .single();
+
+    if (error) {
+        console.error("joinTrack error:", error);
+        return { error: error.message };
+    }
+
+    console.log("joinTrack result status:", data?.status);
+    return { error: null };
 }
 
 export async function leaveTrack(
@@ -354,6 +443,14 @@ export async function adminCreateTrack(
 export async function adminDeleteTrack(id: string): Promise<{ error: string | null }> {
     const { error } = await supabase.from('tracks').delete().eq('id', id);
     return { error: error?.message ?? null };
+}
+
+export async function adminRemoveMemberFromTrack(memberRecordId: string) {
+    const { error } = await supabase
+        .from('track_members')
+        .delete()
+        .eq('id', memberRecordId);
+    return { error };
 }
 
 export async function adminAssignBook(

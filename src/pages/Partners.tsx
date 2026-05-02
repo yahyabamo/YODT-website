@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Building2,
   ChevronLeft, Search, Globe, Percent
@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { SmartTopBar } from '@/components/layout/SmartTopBar';
 import { ArrowRight } from 'lucide-react';
+import { SuggestionBoxes } from '@/components/SuggestionBoxes';
 
 
 interface Partner {
@@ -245,6 +246,7 @@ const Partners = () => {
         </Card> */}
       </div>
 
+      <SuggestionBoxes page="partners" className="mb-6" />
       <BottomNav />
     </div>
   );

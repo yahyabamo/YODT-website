@@ -22,6 +22,9 @@ interface Partner {
     city?: string;
     show_on_homepage?: boolean;
     order_index?: number;
+    phone?: string;
+    crm_status?: string;
+    internal_notes?: string;
 }
 
 type PartnerForm = Partial<Partner>;
@@ -33,7 +36,7 @@ const inputStyle: React.CSSProperties = {
 
 const textareaStyle: React.CSSProperties = { ...inputStyle, resize: "vertical", minHeight: 70 };
 
-const BLANK: PartnerForm = { name: "", name_ar: "", name_en: "", name_tr: "", website: "", status: "active", logo_url: "", description_ar: "", description_en: "", description_tr: "", category: "", city: "", show_on_homepage: false, order_index: 0 };
+const BLANK: PartnerForm = { name: "", name_ar: "", name_en: "", name_tr: "", website: "", status: "active", logo_url: "", description_ar: "", description_en: "", description_tr: "", category: "", city: "", show_on_homepage: false, order_index: 0, phone: "", crm_status: "cold", internal_notes: "" };
 
 async function uploadImage(file: File): Promise<string> {
     const formData = new FormData();
@@ -111,6 +114,9 @@ export default function PartnersAdmin() {
                 city:            form.city         || null,
                 show_on_homepage: !!form.show_on_homepage,
                 order_index:     form.order_index  ?? 0,
+                phone:           form.phone        || null,
+                crm_status:      form.crm_status   || "cold",
+                internal_notes:  form.internal_notes || null,
             };
             if (editing) payload.id = editing.id;
             await upsertPartner(payload);
@@ -224,7 +230,27 @@ export default function PartnersAdmin() {
                     </div>
                 </div>
 
-                <Sel label="الحالة" value={form.status} onChange={(e: any) => f("status")(e.target.value)}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+                    <Inp label="رقم التواصل (CRM)" value={form.phone || ""} onChange={(e: any) => f("phone")(e.target.value)} placeholder="+90..." />
+                    <Sel label="حالة العلاقة (CRM)" value={form.crm_status || "cold"} onChange={(e: any) => f("crm_status")(e.target.value)}>
+                        <option value="cold">بارد (لم يتم التواصل)</option>
+                        <option value="in_talks">قيد التفاوض</option>
+                        <option value="active">داعم / نشط</option>
+                        <option value="lapsed">منقطع</option>
+                    </Sel>
+                </div>
+
+                <div style={{ marginBottom: 16 }}>
+                    <FieldLabel label="ملاحظات داخلية (CRM)" />
+                    <textarea 
+                        style={textareaStyle} 
+                        value={form.internal_notes || ""} 
+                        onChange={(e) => f("internal_notes")(e.target.value)} 
+                        placeholder="تفاصيل التواصل الداخلي..."
+                    />
+                </div>
+
+                <Sel label="الحالة العامة (على الموقع)" value={form.status} onChange={(e: any) => f("status")(e.target.value)}>
                     <option value="active">نشط</option>
                     <option value="inactive">معطل</option>
                 </Sel>

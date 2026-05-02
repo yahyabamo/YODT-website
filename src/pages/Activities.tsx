@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { Calendar, MapPin, Users, Star, Check } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { BottomNav } from '@/components/layout/BottomNav';
 import { activities } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { SuggestionBoxes } from '@/components/SuggestionBoxes';
 
 type FilterType = 'all' | 'upcoming' | 'completed';
 
@@ -167,6 +168,7 @@ const Activities = () => {
         )}
       </div>
 
+      <SuggestionBoxes page="activities" className="mb-6" />
       <BottomNav />
     </div>
   );

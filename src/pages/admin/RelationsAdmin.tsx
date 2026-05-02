@@ -59,12 +59,12 @@ export default function RelationsAdmin() {
                 if (!form.name) return toast.error("يرجى إدخال اسم الجهة");
                 const payload = {
                     id: editing?.id,
-                    name: form.name,
+                    name_ar: form.name_ar || form.name,
                     category: form.category,
                     phone: form.phone,
                     crm_status: form.crm_status || "cold",
                     internal_notes: form.internal_notes,
-                    status: form.status || "active" // للحفاظ على توافق الجدول القديم
+                    status: form.status || "active"
                 };
                 await upsertPartner(payload);
             } else {
@@ -154,7 +154,7 @@ export default function RelationsAdmin() {
                             <div className="flex justify-between items-start mb-3">
                                 <div className="flex-1 truncate pr-2">
                                     <h3 className="m-0 font-bold text-[#111] text-lg truncate">
-                                        {activeTab === "supporter" ? item.name : item.full_name}
+                                        {activeTab === "supporter" ? (item.name_ar || item.name) : item.full_name}
                                     </h3>
                                     <span className="text-[#6b7280] text-xs">
                                         {activeTab === "supporter" ? item.category : item.profession_category}
@@ -164,7 +164,16 @@ export default function RelationsAdmin() {
                             </div>
 
                             <div className="space-y-2 mb-4 text-sm mt-2">
-                                {item.phone && <div className="flex items-center gap-2 text-gray-600">📞 {item.phone}</div>}
+                                {item.phone && (
+                                    <a 
+                                        href={`https://wa.me/${item.phone.replace(/\D/g, '')}`} 
+                                        target="_blank" 
+                                        rel="noreferrer" 
+                                        className="flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors no-underline font-medium"
+                                    >
+                                        📞 {item.phone}
+                                    </a>
+                                )}
                                 {item.internal_notes && <div className="flex items-center gap-2 text-gray-500 text-xs mt-2 p-2 bg-gray-50 rounded-lg border border-gray-100">📝 {item.internal_notes}</div>}
                             </div>
 
@@ -182,7 +191,7 @@ export default function RelationsAdmin() {
             <Modal open={modal} title={editing ? "تعديل البيانات" : "إضافة جديدة"} onClose={() => setModal(false)}>
                 {activeTab === "supporter" ? (
                     <>
-                        <Inp label="اسم الجهة الداعمة *" value={form.name || ""} onChange={(e: any) => setForm({ ...form, name: e.target.value })} />
+                        <Inp label="اسم الجهة الداعمة *" value={form.name_ar || form.name || ""} onChange={(e: any) => setForm({ ...form, name_ar: e.target.value, name: e.target.value })} />
                         <Sel label="التصنيف" value={form.category || ""} onChange={(e: any) => setForm({ ...form, category: e.target.value })}>
                             <option value="">اختر تصنيفاً...</option>
                             {SUPPORTER_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}

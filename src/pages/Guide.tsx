@@ -1,4 +1,4 @@
-﻿import { Search, ChevronDown, BookOpen, HelpCircle } from 'lucide-react';
+import { Search, ChevronDown, BookOpen, HelpCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -10,6 +10,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { SuggestionBoxes } from '@/components/SuggestionBoxes';
 
 const Guide = () => {
   const [data, setData] = useState<any[]>([]);
@@ -109,6 +110,7 @@ const Guide = () => {
         </Card>
       </div>
 
+      <SuggestionBoxes page="guide" className="mb-6" />
       <BottomNav />
     </div>
   );
