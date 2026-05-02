@@ -21,6 +21,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { QuickServicesSection } from '@/components/QuickServicesSection';
 import ReelsShelf from '@/pages/home/ReelsShelf';
 import { AdSlot } from '@/components/ads/AdSlot';
+import { SuggestionBoxes } from '@/components/SuggestionBoxes';
 
 /**
  * Home Page - Institutional Dashboard Redesign
@@ -289,6 +290,7 @@ const Home = () => {
         </div>
       </main>
 
+      <SuggestionBoxes page="home" className="mb-6" />
       <BottomNav />
     </div>
   );

@@ -53,6 +53,7 @@ const unionProjects: Project[] = [
 const mainSections: MainSection[] = [
   { icon: Home, label: 'الرئيسية', path: '/home', description: 'لوحتك اليومية', color: 'bg-primary/15 text-primary' },
   { icon: Sparkles, label: 'الانشطة', path: '/home/activities', description: 'الأنشطة', color: 'bg-primary/15 text-primary' },
+  { icon: Sparkles, label: 'طلباتي', path: '/profile/requests', description: 'طلباتي', color: 'bg-primary/15 text-primary' },
 ];
 
 const quickLinks: QuickLink[] = [
@@ -66,6 +67,7 @@ const quickLinks: QuickLink[] = [
   { icon: HelpCircle, label: 'الأسئلة الشائعة', path: '/faq' },
   // { icon: '🗳️', label: 'الانتخابات', path: '/elections' },
   { icon: '🎓', label: 'الأكاديمية', path: '/academy' },
+  { icon: '🤝', label: 'الشركاء', path: '/partners' },
 ];
 
 interface SmartTopBarProps {

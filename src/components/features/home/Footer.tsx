@@ -6,6 +6,7 @@ import { fetchFooter, type HomepageFooter } from '@/service/homepageCMS';
 import { useLanguage } from '@/context/LanguageContext';
 import { footerText, getField } from '@/i18n/pages';
 import { PatternDivider } from '@/components/PatternDivider'; // ← ADD THIS
+import { Link } from 'react-router-dom';
 
 
 // Social link wrapper — renders as <a> if URL is set, else plain div
@@ -210,10 +211,10 @@ export const Footer = () => {
                     <div className="footer-col">
                         <div className="footer-col-title">{footerText.sections.studentGuide[lang]}</div>
                         <div className="footer-links">
-                            <a href="#guide">{footerText.links.qna[lang]}</a>
-                            <a href="#guide">{footerText.links.universitiesGuide[lang]}</a>
-                            <a href="#guide">{footerText.links.residenceProcedures[lang]}</a>
-                            <a href="#guide">{footerText.links.dailyLifeTips[lang]}</a>
+                            <Link to="/faq">{footerText.links.qna[lang]}</Link>
+                            <Link to="/universities">{footerText.links.universitiesGuide[lang]}</Link>
+                            <Link to="/guide">{footerText.links.residenceProcedures[lang]}</Link>
+                            <Link to="/about-istanbul">{footerText.links.dailyLifeTips[lang]}</Link>
                         </div>
                     </div>
 

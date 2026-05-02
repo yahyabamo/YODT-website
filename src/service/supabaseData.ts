@@ -645,6 +645,8 @@ export interface UnifiedRequest {
     user_id: string | null;
     contact_email?: string | null;
     contact_phone?: string | null;
+    contact_name?: string | null;
+    source_page?: string | null;
     user_name?: string | null;
     user_phone?: string | null;
     order_number?: string | null;
@@ -653,9 +655,12 @@ export interface UnifiedRequest {
 export async function submitSuggestion(payload: {
     type: string;
     message: string;
+    status?: string;
     user_id?: string;
     contact_email?: string;
     contact_phone?: string;
+    contact_name?: string;
+    source_page?: string;
     tracking_code?: string;
 }) {
     const { data, error } = await supabase
@@ -675,7 +680,9 @@ export async function fetchSuggestions(): Promise<UnifiedRequest[]> {
     const TYPE_LABELS: Record<string, string> = {
         suggestion: 'اقتراح',
         problem: 'مشكلة',
-        idea: 'فكرة',
+        question: 'استفسار',
+        // Legacy fallback for old 'idea' rows
+        idea: 'استفسار',
     };
 
     const { data, error } = await supabase
@@ -693,7 +700,7 @@ export async function fetchSuggestions(): Promise<UnifiedRequest[]> {
         id: s.id,
         source_table: 'suggestions' as const,
         type: s.type,
-        // Use the human-readable type as title — the raw `type` is 'suggestion'|'problem'|'idea'
+        // Human-readable label: 'suggestion'|'problem'|'question' (plus legacy 'idea')
         title: TYPE_LABELS[s.type] || s.type || null,
         message: s.message,
         status: s.status || 'NEW',
@@ -705,6 +712,8 @@ export async function fetchSuggestions(): Promise<UnifiedRequest[]> {
         user_id: s.user_id || null,
         contact_email: s.contact_email || null,
         contact_phone: s.contact_phone || null,
+        contact_name: s.contact_name || null,
+        source_page: s.source_page || null,
         user_name: s.profiles?.full_name || null,
         user_phone: s.profiles?.phone || null,
     }));
@@ -840,9 +849,9 @@ export async function fetchUserRequests(params: { userId?: string, email?: strin
 
         // ── Store Orders ──────────────────────────────────────────────────────────
         const ordersConditions: string[] = [];
-        if (params.userId)      ordersConditions.push(`user_id.eq.${params.userId}`);
-        if (params.email)       ordersConditions.push(`customer_email.eq.${params.email}`);
-        if (params.phone)       ordersConditions.push(`customer_phone.eq.${params.phone}`);
+        if (params.userId) ordersConditions.push(`user_id.eq.${params.userId}`);
+        if (params.email) ordersConditions.push(`customer_email.eq.${params.email}`);
+        if (params.phone) ordersConditions.push(`customer_phone.eq.${params.phone}`);
 
         if (ordersConditions.length > 0) {
             const ordersOr = ordersConditions.join(",");

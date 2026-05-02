@@ -15,6 +15,8 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import type { Activity2 } from '@/integrations/supabase/types';
 import { useRoleGuard } from '@/hooks/useRoleGuard';
+import { ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const STATUS_LABELS = {
     upcoming: 'قادم',
@@ -46,6 +48,7 @@ export default function AdminActivitiesPage() {
     const [form, setForm] = useState(EMPTY_FORM);
     const [saving, setSaving] = useState(false);
     const [showForm, setShowForm] = useState(false);
+    const navigate = useNavigate();
 
     const fetchActivities = async () => {
         setLoading(true);
@@ -111,6 +114,12 @@ export default function AdminActivitiesPage() {
 
     return (
         <div className="min-h-screen bg-background pb-10" dir="rtl">
+            <button
+                onClick={() => navigate('/admin/busla')}
+                className="flex items-center gap-1 text-slate-500 hover:text-slate-800 transition-colors text-sm font-semibold mb-4"
+            >
+                <ChevronRight size={18} /> العودة للقائمة
+            </button>
             <PageHeader title="إدارة الأنشطة" />
 
             <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">

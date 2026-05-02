@@ -10,10 +10,24 @@ import {
 import { PageHeader } from '@/components/layout/PageHeader';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { AdSlot } from '@/components/ads/AdSlot';
+import { useNavigate } from 'react-router-dom';
+import { ChevronLeft } from 'lucide-react';
+import { SmartTopBar } from '@/components/layout/SmartTopBar';
+import { ArrowRight } from 'lucide-react';
+import { SuggestionBoxes } from '@/components/SuggestionBoxes';
+
 
 const FAQ = () => {
   const [faqs, setFaqs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const [showSearch, setShowSearch] = useState(false);
+
+
+  const handleBack = () => {
+    navigate(-1);
+  };
+
 
   // جلب الأسئلة من قاعدة البيانات
   useEffect(() => {
@@ -37,20 +51,13 @@ const FAQ = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <PageHeader title="الأسئلة الشائعة" />
 
       <div className="px-4 py-4 max-w-lg mx-auto">
         <AdSlot page="faq" position="top" />
         {/* Header */}
-        <div className="text-center py-6 animate-slide-up">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-            <HelpCircle className="h-8 w-8 text-primary" />
-          </div>
-          <h2 className="text-lg font-bold mb-2">كيف يمكننا مساعدتك؟</h2>
-          <p className="text-sm text-muted-foreground">
-            إجابات على الأسئلة الأكثر شيوعاً
-          </p>
-        </div>
+
+        <PageHeader title="الأسئلة الشائعة" showBack />
+
 
         {/* FAQ Accordion - الآن يقرأ من قاعدة البيانات */}
         {loading ? (
@@ -96,6 +103,7 @@ const FAQ = () => {
         <AdSlot page="faq" position="bottom" className="mt-8" />
       </div>
 
+      <SuggestionBoxes page="faq" className="mb-6" />
       <BottomNav />
     </div>
   );

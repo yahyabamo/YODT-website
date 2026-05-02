@@ -105,12 +105,23 @@ export default function MyRequests() {
     getCurrentUser().then(async (u) => {
       setUser(u);
       if (u) {
-        // Auto-link requests on load if email exists
-        if (u.email) {
-          await linkGuestRequests(u.id, u.email);
+        // Fetch profile to get phone number if it exists
+        const { data: profile } = await supabase.from('profiles').select('phone').eq('id', u.id).single();
+        const userPhone = profile?.phone || u.phone;
+        const userEmail = u.email;
+
+        // Auto-link requests on load
+        if (userEmail || userPhone) {
+          await linkGuestRequests(u.id, userEmail, userPhone);
         }
+
+        // Add phone to user object so loadRequests can use it
+        const uWithPhone = { ...u, phone: userPhone };
+        setUser(uWithPhone);
+        loadRequests(uWithPhone);
+      } else {
+        loadRequests(u);
       }
-      loadRequests(u);
 
       // Real-time subscription
       channel = supabase.channel('my-requests-channel')

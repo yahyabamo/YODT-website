@@ -8,6 +8,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { storeText } from '@/i18n/pages';
 import { ShoppingBag } from 'lucide-react';
 import { AdSlot } from '@/components/ads/AdSlot';
+import { SuggestionBoxes } from '@/components/SuggestionBoxes';
 
 export default function StorePage() {
   const { language } = useLanguage();
@@ -22,12 +23,12 @@ export default function StorePage() {
 
         {/* Top Ad Slot */}
         <AdSlot page="store" position="top" className="mb-2" />
-        
+
         {/* Hero Section */}
         <div className="bg-primary/10 rounded-3xl p-8 md:p-12 border border-primary/20 relative overflow-hidden">
-          <div className="absolute inset-0 opacity-20 pointer-events-none" 
-               style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, var(--primary) 1px, transparent 0)', backgroundSize: '32px 32px' }} />
-          
+          <div className="absolute inset-0 opacity-20 pointer-events-none"
+            style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, var(--primary) 1px, transparent 0)', backgroundSize: '32px 32px' }} />
+
           <div className="relative z-10 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/15 text-primary text-sm font-bold mb-4">
               <ShoppingBag size={16} />
@@ -45,10 +46,10 @@ export default function StorePage() {
         {/* Categories */}
         {!isCategoriesLoading && categories && categories.length > 0 && (
           <section>
-            <CategoryFilter 
-              categories={categories} 
-              activeCategoryId={activeCategoryId} 
-              onSelectCategory={setActiveCategoryId} 
+            <CategoryFilter
+              categories={categories}
+              activeCategoryId={activeCategoryId}
+              onSelectCategory={setActiveCategoryId}
             />
           </section>
         )}
@@ -81,6 +82,7 @@ export default function StorePage() {
 
         {/* Bottom Ad Slot */}
         <AdSlot page="store" position="bottom" className="mt-2" />
+        <SuggestionBoxes page="store" className="mb-6" />
 
       </div>
     </StoreLayout>

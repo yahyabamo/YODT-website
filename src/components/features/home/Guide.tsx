@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
+import { useNavigate } from 'react-router-dom'; // <-- Added import
 
 const guideCards = [
     {
@@ -11,6 +12,7 @@ const guideCards = [
         descEn: 'Detailed answers to all common questions — from required documents to tuition costs and everything you need to know.',
         descTr: 'Tüm sık sorulan sorulara ayrıntılı yanıtlar — gerekli belgelerden öğrenim ücretlerine ve bilmeniz gereken her şeye kadar.',
         wide: true,
+        link: '/faq', // <-- Added link
     },
     {
         icon: '🏠',
@@ -21,6 +23,7 @@ const guideCards = [
         descEn: 'Everything about housing in Istanbul — neighborhoods, prices, and rental tips.',
         descTr: "İstanbul'da konut hakkında bilmeniz gereken her şey — semtler, fiyatlar ve kiralama ipuçları.",
         wide: false,
+        link: '/about-istanbul', // <-- Added link
     },
     {
         icon: '🏛️',
@@ -31,6 +34,7 @@ const guideCards = [
         descEn: 'Comprehensive comparison of Turkish universities, majors, and admission requirements.',
         descTr: 'Türk üniversitelerinin, bölümlerinin ve kabul gereksinimlerinin kapsamlı karşılaştırması.',
         wide: false,
+        link: '/universities', // <-- Added link
     },
     {
         icon: '📋',
@@ -41,6 +45,7 @@ const guideCards = [
         descEn: 'Step-by-step guide for student residence, required documents, and appointments.',
         descTr: 'Öğrenci ikameti için adım adım rehber, gerekli belgeler ve randevular.',
         wide: false,
+        link: '/guide', // <-- Added link
     },
     {
         icon: '☀️',
@@ -51,6 +56,7 @@ const guideCards = [
         descEn: 'A practical guide to Istanbul — transportation, shopping, and healthcare services.',
         descTr: "İstanbul'a pratik rehber — ulaşım, alışveriş ve sağlık hizmetleri.",
         wide: false,
+        link: '/about-istanbul', // <-- Added link
     },
 ];
 
@@ -70,6 +76,7 @@ const guideText = {
 
 export const Guide = () => {
     const { language: lang } = useLanguage();
+    const navigate = useNavigate(); // <-- Initialized useNavigate
     const sectionRef = useRef<HTMLElement>(null);
 
     useEffect(() => {
@@ -145,7 +152,8 @@ export const Guide = () => {
                             }}
                         >
                             <div
-                                className="relative h-full p-6 sm:p-7 rounded-2xl sm:rounded-3xl border transition-all duration-500 ease-out cursor-default overflow-hidden"
+                                onClick={() => navigate(card.link)} // <-- Added onClick event
+                                className="relative h-full p-6 sm:p-7 rounded-2xl sm:rounded-3xl border transition-all duration-500 ease-out cursor-pointer overflow-hidden" // <-- Changed cursor-default to cursor-pointer
                                 style={{
                                     background: 'var(--bg-1)',
                                     borderColor: 'var(--border)',
@@ -197,7 +205,7 @@ export const Guide = () => {
                                     </p>
 
                                     {/* Action link */}
-                                    <div className="flex items-center gap-2 group/link cursor-pointer">
+                                    <div className="flex items-center gap-2 group/link">
                                         <span className="text-xs font-semibold uppercase tracking-wider transition-colors duration-300" style={{ color: 'var(--text-2)' }}>
                                             {lang === 'ar' ? 'استكشف' : lang === 'en' ? 'Explore' : 'Keşfet'}
                                         </span>

@@ -34,7 +34,7 @@ interface TrackPageState {
     sendingMsg: boolean;
 }
 export default function TracksPage() {
-    const [tracks, setTracks] = useState<Track[]>([]);
+    const [tracks, setTracks] = useState<(Track & { is_pending?: boolean })[]>([]);
     const [loading, setLoading] = useState(true);
     const [userId, setUserId] = useState<string | null>(null);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -75,7 +75,7 @@ export default function TracksPage() {
         if (userId) fetchTracks(userId);
     }, [userId]);
 
-    const handleJoin = async (track: Track) => {
+    const handleJoin = async (track: any) => {
         if (!userId) return;
         setActionLoading(track.id);
 
@@ -88,11 +88,14 @@ export default function TracksPage() {
                 fetchTracks(userId);
             }
         } else {
+            console.log(`Sending join request for track: ${track.title}`);
             const { error } = await joinTrack(track.id, userId);
             if (error) {
-                toast.error('حدث خطأ');
+                console.error("Join request failed:", error);
+                toast.error('فشل إرسال الطلب: ' + error);
             } else {
-                toast.success(`انضممت إلى "${track.title}"`);
+                console.log("Join request sent successfully to database.");
+                toast.success('تم إرسال طلب الانضمام بنجاح');
                 fetchTracks(userId);
             }
         }
@@ -235,6 +238,15 @@ export default function TracksPage() {
                                                             مغادرة
                                                         </Button>
                                                     </>
+                                                ) : track.is_pending ? (
+                                                    <Button
+                                                        className="w-full"
+                                                        size="sm"
+                                                        variant="outline"
+                                                        disabled
+                                                    >
+                                                        قيد الانتظار...
+                                                    </Button>
                                                 ) : (
                                                     <Button
                                                         className="w-full"
@@ -243,7 +255,7 @@ export default function TracksPage() {
                                                         onClick={() => handleJoin(track)}
                                                         disabled={actionLoading === track.id}
                                                     >
-                                                        {actionLoading === track.id ? 'جاري...' : 'انضمام للمدار'}
+                                                        {actionLoading === track.id ? 'جاري...' : 'طلب انضمام'}
                                                     </Button>
                                                 )}
                                             </div>

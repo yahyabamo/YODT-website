@@ -7,7 +7,7 @@ import {
     Users, ShieldCheck, Vote,
     HeartHandshake, Compass, Clapperboard,
     Briefcase, Map, GraduationCap, BookOpen,
-    MessageSquare, TrendingUp, Handshake, Tag, BarChart, Layout, FileText, ShoppingBag, ListOrdered, Inbox, Megaphone
+    MessageSquare, TrendingUp, Handshake, Tag, BarChart, Layout, FileText, ShoppingBag, ListOrdered, Inbox, Megaphone, MessagesSquare
 } from "lucide-react";
 
 const B = "#8B1A2A"; // Primary Brand Color
@@ -52,14 +52,7 @@ export const navGroups = [
 
         ]
     },
-    {
-        title: "خدمات وأدوات", // Matches "خدمات وأدوات" grid
-        items: [
-            { id: "jobadmin", path: "/admin/jobadmin", label: "إدارة الوظائف", icon: Briefcase, permission: null, adminOnly: false },
-            { id: "appsmapadmin", path: "/admin/appsmapadmin", label: "تطبيقات وخرائط", icon: Map, permission: null, adminOnly: false },
-            { id: "guideadmin", path: "/admin/guideadmin", label: "الدليل والأسئلة", icon: BookOpen, permission: null, adminOnly: false },
-        ]
-    },
+
     {
         title: "إدارة المتجر", // Store Management
         items: [
@@ -82,19 +75,33 @@ export const navGroups = [
         title: "الإعلانات", // Ads Management
         items: [
             { id: "ads", path: "/admin/ads", label: "إدارة الإعلانات", icon: Megaphone, permission: null, adminOnly: true },
+            { id: "suggestion-boxes", path: "/admin/suggestion-boxes", label: "صناديق الاقتراحات", icon: MessagesSquare, permission: null, adminOnly: true },
         ]
     },
     {
-        title: "التفاعل والشركاء", // Remaining admin-specific management
+        title: "التفاعل", // Remaining admin-specific management
         items: [
             { id: "requests", path: "/admin/requests", label: "الاقتراحات  ", icon: MessageSquare, permission: null, adminOnly: false },
             { id: "engagement-chat", path: "/admin/engagement/chat", label: "إدارة الدردشة", icon: MessageSquare, permission: null, adminOnly: false },
             { id: "engagement-weekly", path: "/admin/engagement/weekly", label: "التفاعل الأسبوعي", icon: TrendingUp, permission: null, adminOnly: false },
+        ]
+    },
+    {
+        title: "ادارة العلاقات", // Remaining admin-specific management
+        items: [
             { id: "partners", path: "/admin/partners", label: "إدارة الشركاء", icon: Handshake, permission: "partners", adminOnly: false },
             { id: "relations", path: "/admin/relations", label: "إدارة العلاقات", icon: Handshake, permission: "partners", adminOnly: false },
             { id: "offers", path: "/admin/offers", label: "إدارة العروض", icon: Tag, permission: "partners", adminOnly: false },
         ]
-    }
+    },
+    {
+        title: "خدمات وأدوات", // Matches "خدمات وأدوات" grid
+        items: [
+            { id: "jobadmin", path: "/admin/jobadmin", label: "إدارة الوظائف", icon: Briefcase, permission: null, adminOnly: false },
+            { id: "appsmapadmin", path: "/admin/appsmapadmin", label: "تطبيقات وخرائط", icon: Map, permission: null, adminOnly: false },
+            { id: "guideadmin", path: "/admin/guideadmin", label: "الدليل والأسئلة", icon: BookOpen, permission: null, adminOnly: false },
+        ]
+    },
 ];
 
 // REQUIRED FOR ADMIN.TSX ROUTING: This flattens the groups back into the list your router expects.

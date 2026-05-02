@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Star, Trophy, TrendingUp, Gift } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { SmartTopBar } from '@/components/layout/SmartTopBar';
 import { ArrowRight } from 'lucide-react';
+import { SuggestionBoxes } from '@/components/SuggestionBoxes';
 
 
 interface Profile {
@@ -220,6 +221,7 @@ const Points = () => {
         </div>
       </div>
 
+      <SuggestionBoxes page="points" className="mb-6" />
       <BottomNav />
     </div>
   );

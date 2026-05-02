@@ -24,19 +24,20 @@ import React from 'react';
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const STATUS_MAP: Record<string, { label: string; color: string; icon: React.ElementType }> = {
-  NEW:          { label: 'جديد',         color: 'bg-blue-100 text-blue-700',       icon: Clock },
-  UNDER_REVIEW: { label: 'قيد المراجعة', color: 'bg-amber-100 text-amber-700',     icon: Search },
-  IN_PROGRESS:  { label: 'جاري العمل',   color: 'bg-purple-100 text-purple-700',   icon: Loader2 },
-  COMPLETED:    { label: 'تمت المعالجة', color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle2 },
-  REJECTED:     { label: 'مرفوض',        color: 'bg-red-100 text-red-700',         icon: AlertCircle },
+  NEW: { label: 'جديد', color: 'bg-blue-100 text-blue-700', icon: Clock },
+  UNDER_REVIEW: { label: 'قيد المراجعة', color: 'bg-amber-100 text-amber-700', icon: Search },
+  IN_PROGRESS: { label: 'جاري العمل', color: 'bg-purple-100 text-purple-700', icon: Loader2 },
+  COMPLETED: { label: 'تمت المعالجة', color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle2 },
+  REJECTED: { label: 'مرفوض', color: 'bg-red-100 text-red-700', icon: AlertCircle },
 };
 
 const STATUSES = Object.keys(STATUS_MAP);
 
 const TYPE_COLORS: Record<string, string> = {
   suggestion: 'bg-primary/10 text-primary',
-  problem:    'bg-red-100 text-red-600',
-  idea:       'bg-amber-100 text-amber-700',
+  problem: 'bg-red-100 text-red-600',
+  question: 'bg-amber-100 text-amber-700',
+  idea: 'bg-amber-100 text-amber-700', // legacy fallback
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -82,9 +83,9 @@ interface ReplyModalProps {
 }
 
 const ReplyModal = ({ request, onClose, onSaved }: ReplyModalProps) => {
-  const [editStatus,   setEditStatus]   = useState(request.status || 'NEW');
+  const [editStatus, setEditStatus] = useState(request.status || 'NEW');
   const [editResponse, setEditResponse] = useState(safeText(request.admin_response));
-  const [isSaving,     setIsSaving]     = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -102,7 +103,7 @@ const ReplyModal = ({ request, onClose, onSaved }: ReplyModalProps) => {
   };
 
   const typeColor = TYPE_COLORS[request.type] || 'bg-gray-100 text-gray-500';
-  const typeName  = safeText(request.title) || safeText(request.type);
+  const typeName = safeText(request.title) || safeText(request.type);
 
   return (
     <div
@@ -230,7 +231,7 @@ const ReplyModal = ({ request, onClose, onSaved }: ReplyModalProps) => {
 
 // ─── Suggestion Card ──────────────────────────────────────────────────────────
 
-const SuggestionCard = ({
+  const SuggestionCard = ({
   request,
   onClick,
 }: {
@@ -239,6 +240,16 @@ const SuggestionCard = ({
 }) => {
   const typeColor = TYPE_COLORS[request.type] || 'bg-gray-100 text-gray-500';
   const hasResponse = !!safeText(request.admin_response);
+
+  // Page label map for source_page
+  const PAGE_LABELS: Record<string, string> = {
+    home: 'الرئيسية', store: 'المتجر', activities: 'الأنشطة',
+    busla: 'بوصلة', discounts: 'العروض', universities: 'الجامعات',
+    university_details: 'تفاصيل الجامعة', about_istanbul: 'عن إسطنبول',
+    about_yemen: 'عن اليمن', article_detail: 'تفاصيل المقال',
+    student: 'الطلاب', points: 'النقاط', '3wn': 'عون',
+    jobs: 'الوظائف', partners: 'الشركاء', faq: 'الأسئلة الشائعة', guide: 'الدليل',
+  };
 
   return (
     <div
@@ -252,7 +263,7 @@ const SuggestionCard = ({
             {safeText(request.title)}
           </span>
           <span className="text-[12px] font-medium text-gray-700 truncate">
-            {safeText(request.user_name) || 'ضيف'}
+            {safeText(request.contact_name) || safeText(request.user_name) || 'ضيف'}
           </span>
           <span className="text-[11px] text-gray-400 font-mono truncate hidden sm:inline-block">
             {safeText(request.tracking_code) || request.user_id?.substring(0, 8)}
@@ -268,7 +279,14 @@ const SuggestionCard = ({
 
       {/* Footer */}
       <div className="flex items-center justify-between text-[11px] text-gray-400 pt-2 border-t border-gray-50">
-        <span>{formatDate(request.created_at)}</span>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span>{formatDate(request.created_at)}</span>
+          {request.source_page && (
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 font-semibold text-[10px] border border-blue-100">
+              {PAGE_LABELS[request.source_page] ?? request.source_page}
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           {hasResponse ? (
             <span className="flex items-center gap-1 text-emerald-600 font-semibold">
@@ -289,13 +307,13 @@ const SuggestionCard = ({
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function RequestsAdmin() {
-  const [suggestions,      setSuggestions]      = useState<UnifiedRequest[]>([]);
-  const [loading,          setLoading]           = useState(true);
-  const [error,            setError]             = useState<string | null>(null);
-  const [selectedRequest,  setSelectedRequest]   = useState<UnifiedRequest | null>(null);
-  const [searchQuery,      setSearchQuery]       = useState('');
-  const [typeFilter,       setTypeFilter]        = useState<'all' | 'suggestion' | 'problem' | 'idea'>('all');
-  const [statusFilter,     setStatusFilter]      = useState<string>('all');
+  const [suggestions, setSuggestions] = useState<UnifiedRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<UnifiedRequest | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'suggestion' | 'problem' | 'question'>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const loadSuggestions = async () => {
     setLoading(true);
@@ -327,22 +345,27 @@ export default function RequestsAdmin() {
   const filtered = useMemo(() => {
     const q = searchQuery.toLowerCase();
     return suggestions.filter(r => {
-      const matchesType   = typeFilter === 'all' || r.type === typeFilter;
+      // When filtering by 'question', also include legacy 'idea' rows
+      const matchesType =
+        typeFilter === 'all' ||
+        (typeFilter === 'question' ? (r.type === 'question' || r.type === 'idea') : r.type === typeFilter);
       const matchesStatus = statusFilter === 'all' || r.status === statusFilter;
       const matchesSearch = !q ||
         safeText(r.message).toLowerCase().includes(q) ||
         safeText(r.tracking_code).toLowerCase().includes(q) ||
-        safeText(r.contact_email).toLowerCase().includes(q);
+        safeText(r.contact_email).toLowerCase().includes(q) ||
+        safeText(r.contact_name).toLowerCase().includes(q) ||
+        safeText(r.contact_phone).toLowerCase().includes(q);
       return matchesType && matchesStatus && matchesSearch;
     });
   }, [suggestions, typeFilter, statusFilter, searchQuery]);
 
   const counts = useMemo(() => ({
-    all:        suggestions.length,
+    all: suggestions.length,
     suggestion: suggestions.filter(r => r.type === 'suggestion').length,
-    problem:    suggestions.filter(r => r.type === 'problem').length,
-    idea:       suggestions.filter(r => r.type === 'idea').length,
-    pending:    suggestions.filter(r => r.status === 'NEW').length,
+    problem: suggestions.filter(r => r.type === 'problem').length,
+    question: suggestions.filter(r => r.type === 'question' || r.type === 'idea').length,
+    pending: suggestions.filter(r => r.status === 'NEW').length,
   }), [suggestions]);
 
   return (
@@ -365,19 +388,18 @@ export default function RequestsAdmin() {
       {/* Type filter pills */}
       <div className="flex gap-2 flex-wrap">
         {([
-          { key: 'all',        label: 'الكل',       count: counts.all },
-          { key: 'suggestion', label: 'اقتراح',     count: counts.suggestion },
-          { key: 'problem',    label: 'مشكلة',      count: counts.problem },
-          { key: 'idea',       label: 'فكرة',       count: counts.idea },
+          { key: 'all', label: 'الكل', count: counts.all },
+          { key: 'suggestion', label: 'اقتراح', count: counts.suggestion },
+          { key: 'problem', label: 'مشكلة', count: counts.problem },
+          { key: 'question', label: 'استفسار', count: counts.question },
         ] as const).map(({ key, label, count }) => (
           <button
             key={key}
             onClick={() => setTypeFilter(key)}
-            className={`px-3 py-1.5 rounded-xl text-sm font-medium border transition-all duration-150 ${
-              typeFilter === key
+            className={`px-3 py-1.5 rounded-xl text-sm font-medium border transition-all duration-150 ${typeFilter === key
                 ? 'bg-primary text-white border-primary shadow-sm'
                 : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
-            }`}
+              }`}
           >
             {label} <span className="opacity-70 text-xs">({count})</span>
           </button>

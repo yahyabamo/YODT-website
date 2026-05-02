@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Calendar, Library, ArrowLeft, Compass } from 'lucide-react';
+import { BookOpen, Calendar, Library, ArrowLeft, Compass, Users } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { BottomNav } from '@/components/layout/BottomNav';
@@ -11,6 +11,8 @@ import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCallback } from 'react';
 import type { Track } from '@/integrations/supabase/types';
+import { SuggestionBoxes } from '@/components/SuggestionBoxes';
+
 
 
 
@@ -59,6 +61,14 @@ const sections = [
         href: '/busla/library',
         gradient: 'from-rose-700 to-rose-900',
         shadow: 'shadow-rose-900/30',
+    },
+    {
+        title: 'مجتمع بوصلة',
+        description: 'تواصل وشارك أفكارك مع أعضاء المدارات',
+        icon: Users,
+        href: '/busla/community',
+        gradient: 'from-blue-700 to-blue-900',
+        shadow: 'shadow-blue-900/30',
     },
 ];
 
@@ -166,6 +176,7 @@ export default function BuslaPage() {
                 </div>
             </main>
 
+            <SuggestionBoxes page="busla" className="mb-6" />
             <BottomNav />
         </div>
     );

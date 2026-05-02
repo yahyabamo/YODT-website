@@ -6,6 +6,9 @@ import { BottomNav } from '@/components/layout/BottomNav';
 import { useNavigate } from 'react-router-dom';
 import { useCallback } from 'react';
 import { ArrowRight } from 'lucide-react';
+import { AdSlot } from '@/components/ads/AdSlot';
+import { SuggestionBoxes } from '@/components/SuggestionBoxes';
+
 
 
 interface TrackPageState {
@@ -27,7 +30,7 @@ interface TrackPageState {
 
 
 
-// ─── Cloudinary upload ────────────────────────────────────────────────────────
+// ??? Cloudinary upload ????????????????????????????????????????????????????????
 async function uploadFile(file: File, folder: string): Promise<string> {
   const fd = new FormData();
   fd.append("file", file);
@@ -35,11 +38,11 @@ async function uploadFile(file: File, folder: string): Promise<string> {
   fd.append("folder", folder);
   const res = await fetch("https://api.cloudinary.com/v1_1/dknz5c7d0/image/upload", { method: "POST", body: fd });
   const d = await res.json();
-  if (!res.ok) throw new Error(d.error?.message || "فشل رفع الملف");
+  if (!res.ok) throw new Error(d.error?.message || "��� ��� �����");
   return d.secure_url;
 }
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ??? Types ????????????????????????????????????????????????????????????????????
 interface Job {
   id: string;
   title: string;
@@ -55,7 +58,7 @@ interface Job {
   created_at: string;
 }
 
-// ─── Config ───────────────────────────────────────────────────────────────────
+// ??? Config ???????????????????????????????????????????????????????????????????
 const TYPE_CONFIG = {
   job: { label: "وظيفة", icon: "💼", color: "#0ea5e9", bg: "#e0f2fe" },
   volunteer: { label: "تطوع", icon: "🤝", color: "#10b981", bg: "#d1fae5" },
@@ -77,14 +80,15 @@ function fmtDeadline(deadline: string | null) {
   return new Date(deadline).toLocaleDateString("ar-SA", { year: "numeric", month: "long", day: "numeric" });
 }
 
-// ─── Apply Form Modal ─────────────────────────────────────────────────────────
+// ??? Apply Form Modal ?????????????????????????????????????????????????????????
 function ApplyModal({ job, onClose }: { job: Job; onClose: () => void }) {
   const cfg = TYPE_CONFIG[job.type] || TYPE_CONFIG.job;
-  const [form, setForm] = useState({ student_name: "", student_id_number: "", phone: "", email: "", college: "", academic_year: "", notes: "" });
+  const [form, setForm] = useState({ student_name: "", phone: "", email: "", college: "", academic_year: "", notes: "" });
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [cardFile, setCardFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [trackingCode, setTrackingCode] = useState("");
   const [dragCv, setDragCv] = useState(false);
   const [dragCard, setDragCard] = useState(false);
   const cvRef = useRef<HTMLInputElement>(null);
@@ -116,19 +120,30 @@ function ApplyModal({ job, onClose }: { job: Job; onClose: () => void }) {
   const [showSearch, setShowSearch] = useState(false);
 
   const submit = async () => {
-    if (!form.student_name || !form.student_id_number || !form.phone) {
-      toast.error("يرجى تعبئة الاسم ورقم الطالب والجوال"); return;
+    if (!form.student_name || !form.phone) {
+      toast.error("يرجى تعبئة الاسم ورقم الجوال"); return;
     }
     if (!cvFile) { toast.error("يرجى إرفاق السيرة الذاتية"); return; }
     if (!cardFile) { toast.error("يرجى إرفاق البطاقة الجامعية"); return; }
     setSubmitting(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
       const [cv_url, student_card_url] = await Promise.all([
         uploadFile(cvFile, "cvs"),
         uploadFile(cardFile, "student_cards"),
       ]);
+
+      const code = "JOB-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+      setTrackingCode(code);
+
       const { error } = await supabase.from("job_applications").insert({
-        job_id: job.id, ...form, cv_url, student_card_url, status: "pending",
+        job_id: job.id,
+        ...form,
+        cv_url,
+        student_card_url,
+        status: "pending",
+        user_id: user?.id || null,
+        tracking_code: code
       });
       if (error) throw error;
       setDone(true);
@@ -162,7 +177,7 @@ function ApplyModal({ job, onClose }: { job: Job; onClose: () => void }) {
         onChange={e => { const f = e.target.files?.[0]; if (f) setFile(f); }} />
       {file ? (
         <div>
-          <div style={{ fontSize: 26, marginBottom: 4 }}>✅</div>
+          <div style={{ fontSize: 26, marginBottom: 4 }}>?</div>
           <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: cfg.color }}>{file.name}</p>
           <p style={{ margin: "2px 0 0", fontSize: 11, color: "#9ca3af" }}>انقر للتغيير</p>
         </div>
@@ -205,15 +220,24 @@ function ApplyModal({ job, onClose }: { job: Job; onClose: () => void }) {
         </header>
 
         {done ? (
-          // ── Success State ──
+          // ?? Success State ??
           <div className="flex flex-col items-center justify-center py-16 px-8 text-center gap-4">
-            <div style={{ fontSize: 64, animation: "pop .5s cubic-bezier(.34,1.56,.64,1)" }}>🎉</div>
+            <div style={{ fontSize: 64, animation: "pop .5s cubic-bezier(.34,1.56,.64,1)" }}>??</div>
             <h3 className="font-extrabold text-gray-900 text-xl m-0">تم إرسال طلبك بنجاح!</h3>
             <p className="text-gray-500 text-sm leading-relaxed m-0">
               سيتم مراجعة طلبك من قِبل الفريق المختص والتواصل معك قريباً. حظاً موفقاً! 🌟
             </p>
+
+            {/* <div className="bg-slate-50 p-4 rounded-2xl w-full border border-slate-100 my-2">
+              <p className="text-xs text-slate-500 font-bold mb-1">��� ���� ����� ����� ��:</p>
+              <div className="text-xl font-mono font-black tracking-widest text-slate-800 select-all">
+                  {trackingCode}
+              </div>
+              <p className="text-[10px] text-slate-400 mt-2">���� ��� ��� ����� ������� ���� ���� ������</p>
+            </div> */}
+
             <button onClick={onClose}
-              className="mt-4 px-8 py-3 rounded-2xl border-none font-bold text-white cursor-pointer text-sm"
+              className="mt-2 w-full px-8 py-3 rounded-2xl border-none font-bold text-white cursor-pointer text-sm"
               style={{ background: `linear-gradient(135deg,${cfg.color},${cfg.color}bb)` }}>
               إغلاق
             </button>
@@ -224,7 +248,7 @@ function ApplyModal({ job, onClose }: { job: Job; onClose: () => void }) {
             {/* Info banner */}
             <div className="flex items-start gap-2.5 p-3 rounded-2xl"
               style={{ background: `${cfg.color}0d`, border: `1px solid ${cfg.color}25` }}>
-              <span style={{ color: cfg.color, fontSize: 16, marginTop: 1 }}>💡</span>
+              <span style={{ color: cfg.color, fontSize: 16, marginTop: 1 }}>??</span>
               <p className="text-[12.5px] text-gray-600 m-0 leading-relaxed">
                 يرجى رفع <strong>سيرتك الذاتية</strong> و<strong>بطاقتك الجامعية</strong>. سيتم مراجعة طلبك خلال 5–7 أيام عمل.
               </p>
@@ -235,7 +259,6 @@ function ApplyModal({ job, onClose }: { job: Job; onClose: () => void }) {
             <div className="grid grid-cols-1 gap-3">
               <FInp label="الاسم الكامل *" value={form.student_name} onChange={v => set("student_name", v)} placeholder="أدخل اسمك الكامل" color={cfg.color} inp={inp} />
               <div className="grid grid-cols-2 gap-3">
-                <FInp label="رقم الطالب *" value={form.student_id_number} onChange={v => set("student_id_number", v)} placeholder="2023001" color={cfg.color} inp={inp} />
                 <FInp label="رقم الجوال *" value={form.phone} onChange={v => set("phone", v)} placeholder="05xxxxxxxx" color={cfg.color} inp={inp} type="tel" />
               </div>
               <FInp label="البريد الإلكتروني" value={form.email} onChange={v => set("email", v)} placeholder="example@uni.edu.sa" color={cfg.color} inp={inp} type="email" />
@@ -295,7 +318,7 @@ function ApplyModal({ job, onClose }: { job: Job; onClose: () => void }) {
   );
 }
 
-// ─── Job Detail Modal ─────────────────────────────────────────────────────────
+// ??? Job Detail Modal ?????????????????????????????????????????????????????????
 function JobDetailModal({ job, onClose, onApply }: { job: Job; onClose: () => void; onApply: () => void }) {
   const cfg = TYPE_CONFIG[job.type] || TYPE_CONFIG.job;
   const days = daysLeft(job.deadline);
@@ -328,7 +351,7 @@ function JobDetailModal({ job, onClose, onApply }: { job: Job; onClose: () => vo
             </div>
             <button onClick={onClose}
               className="w-8 h-8 rounded-full border-none cursor-pointer flex items-center justify-center text-gray-400 shrink-0 hover:bg-gray-200 transition-colors"
-              style={{ background: "#f3f4f6", fontSize: 18 }}>✕</button>
+              style={{ background: "#f3f4f6", fontSize: 18 }}>?</button>
           </div>
 
           {/* Meta chips */}
@@ -391,7 +414,7 @@ function JobDetailModal({ job, onClose, onApply }: { job: Job; onClose: () => vo
   );
 }
 
-// ─── Job Card ─────────────────────────────────────────────────────────────────
+// ??? Job Card ?????????????????????????????????????????????????????????????????
 function JobCard({ job, index, onClick }: { job: Job; index: number; onClick: () => void }) {
   const cfg = TYPE_CONFIG[job.type] || TYPE_CONFIG.job;
   const days = daysLeft(job.deadline);
@@ -492,7 +515,7 @@ function JobCard({ job, index, onClick }: { job: Job; index: number; onClick: ()
   );
 }
 
-// ─── Small helpers ────────────────────────────────────────────────────────────
+// ??? Small helpers ????????????????????????????????????????????????????????????
 const Chip = ({ icon, text, danger }: { icon: string; text: string; danger?: boolean }) => (
   <span className="inline-flex items-center gap-1 text-[12px] font-bold px-3 py-1 rounded-full"
     style={{ background: danger ? "#fee2e2" : "#f3f4f6", color: danger ? "#dc2626" : "#374151" }}>
@@ -533,7 +556,7 @@ const Spin = () => (
   <span style={{ width: 16, height: 16, border: "2px solid #fff5", borderTopColor: "#fff", borderRadius: "50%", display: "inline-block", animation: "spin .7s linear infinite" }} />
 );
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
+// ??? Main Page ????????????????????????????????????????????????????????????????
 export default function JobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -596,7 +619,7 @@ export default function JobsPage() {
 
   return (
     <div dir="rtl" className="min-h-screen bg-background transition-colors duration-300">
-      {/* ── Header ── */}
+      {/* ?? Header ?? */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
         <div className="p-4 max-w-screen-xl mx-auto">
           <SmartTopBar onOpenSearch={() => updateState({ showSearch: true })} />
@@ -618,7 +641,7 @@ export default function JobsPage() {
 
       <AdSlot page="jobs" position="top" />
 
-      {/* ── Hero ── */}
+      {/* ?? Hero ?? */}
       <div className="relative overflow-hidden px-6 py-16 md:py-24 text-center
   bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-800
   dark:from-emerald-950 dark:via-[#052e1c] dark:to-[#0a3828]">
@@ -679,7 +702,7 @@ export default function JobsPage() {
         </div>
       </div>
 
-      {/* ── Filter Tabs ── */}
+      {/* ?? Filter Tabs ?? */}
       <div className="flex justify-center gap-2 flex-wrap px-4 mb-8 relative" style={{ zIndex: 1 }}>
         {[
           { key: "all", label: "الكل", icon: "✨", count: counts.all },
@@ -711,7 +734,7 @@ export default function JobsPage() {
         })}
       </div>
 
-      {/* ── Cards Grid ── */}
+      {/* ?? Cards Grid ?? */}
       <div className="max-w-5xl mx-auto px-5 pb-20 relative" style={{ zIndex: 1 }}>
         {loading ? (
           <div className="flex flex-col items-center gap-4 py-24">
@@ -734,6 +757,7 @@ export default function JobsPage() {
       </div>
 
       <AdSlot page="jobs" position="bottom" className="mb-4" />
+      <SuggestionBoxes page="jobs" className="mb-6" />
       <BottomNav />
 
       {/* Modals */}
