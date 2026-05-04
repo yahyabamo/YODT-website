@@ -157,7 +157,7 @@ export const Discounts = () => {
                                 {discountsText.partnerCTA[lang]}
                             </p>
                             <a
-                                href="#"
+                                href="info/partners"
                                 style={{
                                     display: 'inline-block',
                                     padding: '9px 18px',

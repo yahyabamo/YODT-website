@@ -86,9 +86,9 @@ export default function AboutIstanbul() {
         eyebrow={aboutIstanbulText.heroEyebrow[lang]}
         title={aboutIstanbulText.heroTitle[lang]}
         description={aboutIstanbulText.heroDesc[lang]}
-        gradient="linear-gradient(135deg, #07080b 0%, #1a0505 40%, #07080b 100%)"
+        // gradient="linear-gradient(135deg, #07080b 0%, #1a0505 40%, #07080b 100%)"
         backgroundImages={heroImages}
-        isLoading={loading} /* 👈 NEW: Pass the loading state down */
+      // isLoading={loading} /* 👈 NEW: Pass the loading state down */
       />
 
       {/* Return button */}

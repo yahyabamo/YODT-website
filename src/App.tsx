@@ -171,6 +171,8 @@ import ArrivalsDashboard from "./pages/admin/ArrivalsDashboard";
 import ArrivalDetailAdmin from "./pages/admin/ArrivalDetailAdmin";
 import VolunteerDashboard from "./pages/admin/VolunteerDashboard";
 
+import AboutPartnersPage from "./pages/info/AboutPartners";
+
 
 const queryClient = new QueryClient();
 
@@ -398,6 +400,8 @@ const App = () => (
                   {/* ─── Arrivals Standalone Routes (own layout, no PublicLayout wrapper) ── */}
                   <Route path="/arrivals" element={<ArrivalHome />} />
                   <Route path="/arrivals/status/:id" element={<ArrivalStatusPage />} />
+                  <Route path="/info/partners" element={<AboutPartnersPage />} />
+
 
                   <Route path="/" element={<Index />} />
                 </Route>

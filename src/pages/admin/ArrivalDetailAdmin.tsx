@@ -48,8 +48,8 @@ export default function ArrivalDetailAdmin() {
 
     return (
         <div className="p-4 md:p-8 max-w-6xl mx-auto animate-in fade-in duration-500">
-            <button 
-                onClick={() => navigate(-1)} 
+            <button
+                onClick={() => navigate(-1)}
                 className="flex items-center gap-2 mb-6 text-gray-500 hover:text-gray-800 transition-colors"
             >
                 <ArrowRight size={20} />
@@ -65,11 +65,10 @@ export default function ArrivalDetailAdmin() {
                                 <User size={18} className="text-primary" />
                                 تفاصيل الطالب
                             </h2>
-                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                                request.status === ArrivalStatus.RECEIVED ? 'bg-green-100 text-green-700' :
-                                request.status === ArrivalStatus.PENDING_ASSIGNMENT ? 'bg-yellow-100 text-yellow-700' :
-                                'bg-blue-100 text-blue-700'
-                            }`}>
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${request.status === ArrivalStatus.RECEIVED ? 'bg-green-100 text-green-700' :
+                                    request.status === ArrivalStatus.PENDING_ASSIGNMENT ? 'bg-yellow-100 text-yellow-700' :
+                                        'bg-blue-100 text-blue-700'
+                                }`}>
                                 {request.status}
                             </span>
                         </div>
@@ -80,9 +79,9 @@ export default function ArrivalDetailAdmin() {
                             </div>
                             <div>
                                 <label className="text-xs text-gray-400 block mb-1">رقم الواتساب</label>
-                                <a 
-                                    href={whatsappUrl} 
-                                    target="_blank" 
+                                <a
+                                    href={whatsappUrl}
+                                    target="_blank"
                                     rel="noreferrer"
                                     className="font-semibold text-primary flex items-center gap-1 hover:underline"
                                 >
@@ -128,11 +127,10 @@ export default function ArrivalDetailAdmin() {
                                 <button
                                     key={status}
                                     onClick={() => handleStatusUpdate(status)}
-                                    className={`text-right px-4 py-2.5 rounded-xl text-sm font-semibold transition-all border ${
-                                        request.status === status 
-                                            ? 'bg-primary text-white border-primary shadow-md' 
+                                    className={`text-right px-4 py-2.5 rounded-xl text-sm font-semibold transition-all border ${request.status === status
+                                            ? 'bg-primary text-white border-primary shadow-md'
                                             : 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50'
-                                    }`}
+                                        }`}
                                 >
                                     {status === ArrivalStatus.PENDING_ASSIGNMENT && 'قيد الانتظار'}
                                     {status === ArrivalStatus.ASSIGNED && 'تم التعيين'}

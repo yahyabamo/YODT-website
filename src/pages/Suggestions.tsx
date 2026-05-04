@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { MessageSquare, HelpCircle, AlertCircle, Send, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { getCurrentUser, submitSuggestion } from '@/service/supabaseData';
+import { submitSuggestion } from '@/service/supabaseData';
+import { useAuth } from '@/context/AuthContext';
 import { SmartTopBar } from '@/components/layout/SmartTopBar';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
@@ -60,12 +61,15 @@ const Suggestions = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [trackingCode, setTrackingCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const { user, profile } = useAuth();
   const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {
-    getCurrentUser().then(u => setUser(u)).catch(console.error);
-  }, []);
+    if (profile) {
+      setName(profile.full_name || '');
+      setPhone(profile.phone || '');
+    }
+  }, [profile]);
 
   const handleSubmit = async () => {
     if (!name.trim()) {

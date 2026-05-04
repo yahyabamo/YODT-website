@@ -82,6 +82,7 @@ export const navbarText = {
   },
   links: {
     arrivals: { ar: 'من اليمن إلى إسطنبول', en: 'From Yemen to Istanbul', tr: 'Yemen' },
+    partners: { ar: 'شركاؤنا', en: 'Our Partners', tr: 'Partnerlerimiz' },
 
     aboutIstanbul: { ar: "عن إسطنبول", en: "About Istanbul", tr: "İstanbul Hakkında" },
     aboutYemen: { ar: "عن اليمن", en: "About Yemen", tr: "Yemen Hakkında" },
