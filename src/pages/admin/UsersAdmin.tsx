@@ -4,7 +4,7 @@ import { fetchUsers, updateUserStatus, updateUserPoints } from "@/service/supaba
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar, Badge, Spinner, Inp, Sel, Modal, B } from "./components/AdminUI";
-import { ROLE_LABELS, ALL_PERMISSIONS, PERMISSION_LABELS, PERMISSION_ICONS, Permission, UserRole } from "@/hooks/useRoleGuard";
+import { ROLE_LABELS, ALL_PERMISSIONS, PERMISSION_LABELS, PERMISSION_ICONS, PERMISSION_GROUPS, Permission, UserRole } from "@/hooks/useRoleGuard";
 import { useOutletContext } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
@@ -151,6 +151,20 @@ export default function UsersAdmin() {
                 })
                 .eq('id', roleModal.id);
             if (error) throw error;
+
+            // ── Auto-sync volunteers table when 'volunteers' permission changes ──
+            const hadVolunteers = volunteerIds.has(roleModal.id);
+            const nowHasVolunteers = selectedRole === 'staff' && selectedPerms.includes('volunteers');
+            if (!hadVolunteers && nowHasVolunteers) {
+                // Grant: insert into volunteers table
+                await supabase.from('volunteers').upsert([{ id: roleModal.id, full_name: roleModal.full_name, phone: '' }], { onConflict: 'id' });
+                setVolunteerIds(prev => new Set(prev).add(roleModal.id));
+            } else if (hadVolunteers && !nowHasVolunteers) {
+                // Revoke: remove from volunteers table
+                await supabase.from('volunteers').delete().eq('id', roleModal.id);
+                setVolunteerIds(prev => { const s = new Set(prev); s.delete(roleModal.id); return s; });
+            }
+
             setRoleModal(null);
             toast.success(`تم تحديث الصلاحيات بنجاح`);
             load(false);
@@ -282,20 +296,34 @@ export default function UsersAdmin() {
                         { key: 'all', label: 'الكل', icon: '👁️' },
                         { key: 'user', label: 'أعضاء', icon: '👤' },
                         { key: 'staff', label: 'مسؤول (كامل)', icon: '🔧' },
+                        { key: 'admin', label: 'مسؤولون', icon: '👑' },
+                        // Module permissions
+                        { key: 'store', label: 'المتجر', icon: '🛒' },
+                        { key: 'student-projects', label: 'مشاريع الطلاب', icon: '🎓' },
+                        // Individual
                         { key: 'activity', label: 'الفعاليات', icon: '🎯' },
+                        { key: 'chat', label: 'الدردشة', icon: '💬' },
+                        { key: 'requests', label: 'الاقتراحات', icon: '📬' },
                         { key: 'partners', label: 'الشركاء', icon: '🤝' },
-                        { key: 'reels', label: 'الريلز', icon: '🎬' },
+                        { key: 'relations', label: 'العلاقات', icon: '🔗' },
+                        { key: 'offers', label: 'العروض', icon: '🏷️' },
+                        { key: 'arrivals', label: 'الاستقبال', icon: '🛬' },
                         { key: '3wn', label: 'عون', icon: '🛠' },
                         { key: 'academy', label: 'الأكاديمية', icon: '🎓' },
                         { key: 'busla', label: 'بوصلة', icon: '🧭' },
-                        { key: 'admin', label: 'مسؤولون', icon: '👑' },
+                        { key: 'reels', label: 'الريلز', icon: '🎬' },
+                        { key: 'homepage', label: 'الصفحة الرئيسية', icon: '🏠' },
+                        { key: 'info-cms', label: 'المحتوى', icon: '📄' },
+                        { key: 'published', label: 'المنشورات', icon: '📢' },
+                        { key: 'weekly-engagement', label: 'التفاعل الأسبوعي', icon: '📈' },
+                        { key: 'volunteers', label: 'المتطوعون', icon: '🙋' },
                     ] as const).map(f => {
                         const count =
                             f.key === 'all' ? users.length
                                 : f.key === 'user' ? users.filter(u => u.role === 'user').length
                                     : f.key === 'admin' ? users.filter(u => u.role === 'admin').length
                                         : f.key === 'staff' ? users.filter(u => u.role === 'staff' && (u.permissions ?? []).length === 0).length
-                                            : users.filter(u => u.role === 'staff' && (u.permissions ?? []).includes(f.key)).length;
+                                            : users.filter(u => u.role === 'staff' && (u.permissions ?? []).includes(f.key as string)).length;
                         const active = filter === f.key;
                         return (
                             <button
@@ -377,16 +405,6 @@ export default function UsersAdmin() {
                                                 ].map((btn, i) => (
                                                     <button key={i} type="button" title={btn.title} onClick={(e) => { e.stopPropagation(); btn.fn(); }} disabled={btn.disabled} className={`w-[30px] h-[30px] rounded-lg border-none flex items-center justify-center shrink-0 text-sm transition-opacity ${btn.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:opacity-80 active:scale-95'}`} style={{ background: btn.bg, color: btn.c }}>{btn.icon}</button>
                                                 ))}
-                                                {/* Volunteer toggle */}
-                                                <button
-                                                    type="button"
-                                                    title={volunteerIds.has(u.id) ? 'إزالة من متطوعي الاستقبال' : 'تعيين كمتطوع استقبال'}
-                                                    onClick={(e) => { e.stopPropagation(); toggleVolunteer(u); }}
-                                                    className="w-[30px] h-[30px] rounded-lg border-none flex items-center justify-center shrink-0 text-sm cursor-pointer hover:opacity-80 active:scale-95 transition-opacity"
-                                                    style={{ background: volunteerIds.has(u.id) ? '#d1fae5' : '#f3f4f6', color: volunteerIds.has(u.id) ? '#059669' : '#6b7280' }}
-                                                >
-                                                    🛬
-                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -484,7 +502,7 @@ export default function UsersAdmin() {
                         {/* ── Layer 2: Permissions (staff only) ── */}
                         {selectedRole === 'staff' && (
                             <div className="mb-5">
-                                <div className="flex items-center justify-between mb-2.5">
+                                <div className="flex items-center justify-between mb-3">
                                     <p className="text-[12px] font-bold text-[#6b7280] uppercase tracking-wider">مناطق المسؤولية</p>
                                     <button
                                         onClick={() => setSelectedPerms(selectedPerms.length === ALL_PERMISSIONS.length ? [] : [...ALL_PERMISSIONS])}
@@ -494,37 +512,75 @@ export default function UsersAdmin() {
                                         {selectedPerms.length === ALL_PERMISSIONS.length ? 'إلغاء الكل' : 'تحديد الكل'}
                                     </button>
                                 </div>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {ALL_PERMISSIONS.map(p => {
-                                        const checked = selectedPerms.includes(p);
-                                        return (
-                                            <button
-                                                key={p}
-                                                onClick={() => togglePerm(p)}
-                                                className="flex items-center gap-2.5 p-3 rounded-xl border-2 text-right transition-all"
-                                                style={{
-                                                    borderColor: checked ? B : '#e5e7eb',
-                                                    background: checked ? `${B}0d` : '#fafafa',
-                                                }}
-                                            >
-                                                <div
-                                                    className="w-4 h-4 rounded flex items-center justify-center shrink-0 text-[10px] font-black text-white"
-                                                    style={{ background: checked ? B : '#d1d5db' }}
-                                                >
-                                                    {checked ? '✓' : ''}
-                                                </div>
-                                                <span className="text-sm">{PERMISSION_ICONS[p]}</span>
-                                                <span className="text-[13px] font-semibold" style={{ color: checked ? B : '#374151' }}>
-                                                    {PERMISSION_LABELS[p]}
-                                                </span>
-                                            </button>
-                                        );
-                                    })}
+
+                                {/* Grouped permission sections */}
+                                <div className="flex flex-col gap-4">
+                                    {PERMISSION_GROUPS.map(group => (
+                                        <div key={group.id}>
+                                            {/* Group header */}
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="text-base">{group.icon}</span>
+                                                <span className="text-[12px] font-bold text-[#374151]">{group.label}</span>
+                                                {group.isModule && (
+                                                    <span
+                                                        className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
+                                                        style={{ background: `${B}15`, color: B }}
+                                                    >
+                                                        وحدة كاملة
+                                                    </span>
+                                                )}
+                                                {group.description && (
+                                                    <span className="text-[10px] text-[#9ca3af] mr-auto">{group.description}</span>
+                                                )}
+                                            </div>
+
+                                            {/* Permission buttons */}
+                                            <div className={`grid gap-2 ${group.isModule ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                                                {group.permissions.map(p => {
+                                                    const checked = selectedPerms.includes(p);
+                                                    return (
+                                                        <button
+                                                            key={p}
+                                                            onClick={() => togglePerm(p)}
+                                                            className="flex items-center gap-2.5 p-3 rounded-xl border-2 text-right transition-all"
+                                                            style={{
+                                                                borderColor: checked ? B : '#e5e7eb',
+                                                                background: checked
+                                                                    ? group.isModule ? `${B}12` : `${B}0d`
+                                                                    : '#fafafa',
+                                                                boxShadow: checked && group.isModule ? `0 0 0 1px ${B}30` : 'none',
+                                                            }}
+                                                        >
+                                                            <div
+                                                                className="w-4 h-4 rounded flex items-center justify-center shrink-0 text-[10px] font-black text-white"
+                                                                style={{ background: checked ? B : '#d1d5db' }}
+                                                            >
+                                                                {checked ? '✓' : ''}
+                                                            </div>
+                                                            <span className="text-sm">{PERMISSION_ICONS[p]}</span>
+                                                            <span className="text-[13px] font-semibold" style={{ color: checked ? B : '#374151' }}>
+                                                                {PERMISSION_LABELS[p]}
+                                                            </span>
+                                                            {group.isModule && (
+                                                                <span className="mr-auto text-[10px] text-[#9ca3af]">
+                                                                    كل الأقسام
+                                                                </span>
+                                                            )}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            {/* Separator between groups */}
+                                            <div className="mt-3 border-b border-[#f3f4f6]" />
+                                        </div>
+                                    ))}
                                 </div>
-                                <p className="text-[11px] text-[#9ca3af] mt-2.5">
+
+                                <p className="text-[11px] text-[#9ca3af] mt-3">
                                     {selectedPerms.length === 0
                                         ? '⚠️ بدون تحديد = وصول كامل لجميع الأقسام'
-                                        : `✓ وصول إلى ${selectedPerms.length} قسم`}
+                                        : `✓ ${selectedPerms.length} صلاحية محددة`}
                                 </p>
                             </div>
                         )}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 import { useAllProjectsAdmin } from '@/hooks/studentProjects/useStudentProjects';
 import { deleteProject, updateProjectStatus, toggleProjectFeatured } from '@/services/studentProjectsService';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 };
 
 export default function ProjectsAdmin() {
+  useRoleGuard(['student-projects']);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: projects, isLoading } = useAllProjectsAdmin();

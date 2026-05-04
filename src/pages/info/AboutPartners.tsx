@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { fetchPartners } from '@/service/supabaseData';
-import { Building2 } from 'lucide-react';
+import { fetchPartners, submitPartnerInquiry } from '@/service/supabaseData';
+import { Building2, Send, CheckCircle2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 /**
  * Partners & Sponsors page for the Yemeni Students Union in Istanbul.
@@ -175,11 +176,11 @@ export default function PartnersSponsorsPage({ onSubmitInquiry }: PartnersSponso
             if (onSubmitInquiry) {
                 await onSubmitInquiry(form);
             } else {
-                // Keep this as a safe placeholder so the component works before integration.
-                await new Promise((resolve) => setTimeout(resolve, 700));
+                await submitPartnerInquiry(form);
             }
 
             setSuccessMessage('تم استلام استفسارك بنجاح. سنقوم بالتواصل معكم في أقرب وقت ممكن.');
+            toast.success('تم إرسال الاستفسار بنجاح');
             setForm(initialFormState);
         } catch (error) {
             console.error('Inquiry submission error:', error);

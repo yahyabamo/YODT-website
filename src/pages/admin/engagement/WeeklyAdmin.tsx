@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 import { useWeeklyAdmin, ActivityType, WeeklyAnswer } from '@/hooks/useWeekly';
 import { Spinner } from '../components/AdminUI';
 import { toast } from 'sonner';
@@ -18,6 +19,7 @@ const typeDescriptions: Record<ActivityType, string> = {
 };
 
 export default function WeeklyAdmin() {
+  useRoleGuard(['weekly-engagement']);
   const {
     activities, loading, error,
     createActivity, activateActivity, deactivateActivity, deleteActivity, fetchAnswers,

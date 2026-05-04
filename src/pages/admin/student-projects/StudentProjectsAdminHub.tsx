@@ -1,11 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 import { useStudentProjectStats } from '@/hooks/studentProjects/useStudentProjects';
 import { Briefcase, Inbox, Star, Tag } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 export default function StudentProjectsAdminHub() {
+  useRoleGuard(['student-projects']);
   const navigate = useNavigate();
   const { data: stats, isLoading } = useStudentProjectStats();
 

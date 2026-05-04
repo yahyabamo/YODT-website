@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 import { fetchCategoryById, upsertCategory, StoreCategory } from '@/services/storeService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { useQueryClient } from '@tanstack/react-query';
 
 export default function StoreCategoryForm() {
+  useRoleGuard(['store']);
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();

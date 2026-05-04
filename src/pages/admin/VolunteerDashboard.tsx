@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { PlaneLanding, Clock, MessageSquare, CheckCircle, MapPin } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 import { ArrivalRequest, ArrivalStatus } from '@/integrations/supabase/types';
 import { getArrivalText } from '@/i18n/pages';
 import { getRequestsByVolunteer, updateRequestStatus } from '@/service/arrivalsCMS';
@@ -10,6 +11,7 @@ import { BottomNav } from '@/components/layout/BottomNav';
 import { toast } from 'sonner';
 
 export default function VolunteerDashboard({ lang = 'ar' }: { lang?: 'ar' | 'en' | 'tr' }) {
+    useRoleGuard(['volunteers']);
     const { user, profile } = useAuth();
     const [assignedRequests, setAssignedRequests] = useState<ArrivalRequest[]>([]);
     const [loading, setLoading] = useState(true);
@@ -95,8 +97,12 @@ export default function VolunteerDashboard({ lang = 'ar' }: { lang?: 'ar' | 'en'
                                 </div>
 
                                 <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--border, #2a2e3d)', display: 'flex', gap: '12px' }}>
-                                    <a href={`/arrivals/status/${req.id}`} target="_blank" rel="noreferrer" style={{ flex: 1, background: '#1d4ed8', color: '#fff', border: 'none', padding: '10px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontWeight: 600, textDecoration: 'none' }}>                                        <MessageSquare size={18} />المحادثة
-                                    </a>
+                                    <button
+                                        onClick={() => window.open(`/admin/arrivals/volunteer-chat/${req.id}`, '_self')}
+                                        style={{ flex: 1, background: '#1d4ed8', color: '#fff', border: 'none', padding: '10px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontWeight: 600 }}
+                                    >
+                                        <MessageSquare size={18} />محادثة
+                                    </button>
                                     {req.status !== ArrivalStatus.RECEIVED && (
                                         <button onClick={() => handleMarkReceived(req.id)} title="تحديد كـ 'تم الاستقبال'" style={{ background: 'var(--bg-2, #14171f)', color: '#fff', border: '1px solid var(--border)', padding: '10px', borderRadius: '8px', cursor: 'pointer' }}>
                                             <CheckCircle size={18} color="#10b981" />

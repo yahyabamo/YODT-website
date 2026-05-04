@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 import { fetchProductById, upsertProduct, StoreProduct } from '@/services/storeService';
 import { useAllStoreCategories } from '@/hooks/store/useStoreCategories';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ async function uploadImage(file: File): Promise<string> {
 }
 
 export default function StoreProductForm() {
+  useRoleGuard(['store']);
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();

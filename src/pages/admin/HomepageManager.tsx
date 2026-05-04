@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Layout } from 'lucide-react';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 import { B } from './homepage/HomepageShared';
 import DiscountsTab from './homepage/DiscountsTab';
 import ActivitiesTab from './homepage/ActivitiesTab';
@@ -16,6 +17,7 @@ const TABS = [
 type TabId = typeof TABS[number]['id'];
 
 export default function HomepageManager() {
+  useRoleGuard(['homepage']);
   const [activeTab, setActiveTab] = useState<TabId>('discounts');
 
   return (

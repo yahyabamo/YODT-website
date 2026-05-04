@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 import { FileText, GraduationCap, Users, Medal, Trophy, ChevronLeft, Image } from 'lucide-react';
 import { B } from './info/CMSShared';
 
@@ -63,6 +64,7 @@ const SECTIONS = [
 ];
 
 export default function InfoCMSAdmin() {
+  useRoleGuard(['info-cms']);
   const navigate = useNavigate();
 
   return (

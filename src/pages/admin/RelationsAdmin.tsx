@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { fetchPartners, upsertPartner, deletePartner, fetchCadres, upsertCadre, deleteCadre } from "@/service/supabaseData";
+import { fetchPartners, upsertPartner, deletePartner, fetchCadres, upsertCadre, deleteCadre, fetchPartnerInquiries, updatePartnerInquiryStatus } from "@/service/supabaseData";
 import { Badge, Spinner, Inp, Sel, Modal, B } from "./components/AdminUI";
 import { useOutletContext } from "react-router-dom";
 import { useRoleGuard } from "@/hooks/useRoleGuard";
@@ -9,9 +9,10 @@ const SUPPORTER_CATEGORIES = ["تعليمي", "غذائي", "بلديات", "ج�
 const CADRE_CATEGORIES = ["طالب", "دكاترة", "مشايخ", "كتاب", "مدربون", "أكاديميون", "أصحاب مشاريع"];
 
 export default function RelationsAdmin() {
+    useRoleGuard(['relations']);
     const { setConfirm } = useOutletContext<{ setConfirm: (v: any) => void }>();
 
-    const [activeTab, setActiveTab] = useState<"supporter" | "cadre">("supporter");
+    const [activeTab, setActiveTab] = useState<"supporter" | "cadre" | "inquiry">("supporter");
     const [records, setRecords] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [modal, setModal] = useState(false);
@@ -25,8 +26,11 @@ export default function RelationsAdmin() {
             if (activeTab === "supporter") {
                 const data = await fetchPartners();
                 setRecords(data || []);
-            } else {
+            } else if (activeTab === "cadre") {
                 const data = await fetchCadres();
+                setRecords(data || []);
+            } else {
+                const data = await fetchPartnerInquiries();
                 setRecords(data || []);
             }
         } catch (err) {
@@ -144,6 +148,12 @@ export default function RelationsAdmin() {
                 >
                     👥 الكادر اليمني (أفراد)
                 </button>
+                <button
+                    onClick={() => setActiveTab("inquiry")}
+                    className={`px-4 py-2 font-bold rounded-lg transition-colors border-none cursor-pointer ${activeTab === "inquiry" ? "bg-blue-50 text-blue-600" : "bg-transparent text-gray-500 hover:bg-gray-100"}`}
+                >
+                    📩 استفسارات الشركاء
+                </button>
             </div>
 
             {/* Grid */}
@@ -154,32 +164,75 @@ export default function RelationsAdmin() {
                             <div className="flex justify-between items-start mb-3">
                                 <div className="flex-1 truncate pr-2">
                                     <h3 className="m-0 font-bold text-[#111] text-lg truncate">
-                                        {activeTab === "supporter" ? (item.name_ar || item.name) : item.full_name}
+                                        {activeTab === "supporter" ? (item.name_ar || item.name) : activeTab === "cadre" ? item.full_name : item.institution_name}
                                     </h3>
                                     <span className="text-[#6b7280] text-xs">
-                                        {activeTab === "supporter" ? item.category : item.profession_category}
+                                        {activeTab === "supporter" ? item.category : activeTab === "cadre" ? item.profession_category : item.inquiry_type}
                                     </span>
                                 </div>
-                                {getStatusBadge(item.crm_status)}
+                                {activeTab === "inquiry" ? (
+                                    <span style={{ color: "#3b82f6", backgroundColor: "#eff6ff", padding: "4px 10px", borderRadius: 8, fontSize: 12, fontWeight: "bold" }}>
+                                        {item.status === 'pending' ? 'جديد' : 'تم الرد'}
+                                    </span>
+                                ) : getStatusBadge(item.crm_status)}
                             </div>
 
                             <div className="space-y-2 mb-4 text-sm mt-2">
+                                {activeTab === "inquiry" && (
+                                    <div className="text-gray-700 font-semibold mb-1">👤 {item.contact_person}</div>
+                                )}
                                 {item.phone && (
-                                    <a 
-                                        href={`https://wa.me/${item.phone.replace(/\D/g, '')}`} 
-                                        target="_blank" 
-                                        rel="noreferrer" 
-                                        className="flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors no-underline font-medium"
+                                    <a
+                                        href={`https://wa.me/${item.phone.replace(/\D/g, '')}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="flex items-center gap-2 text-green-600 hover:text-green-700 transition-colors no-underline font-bold"
                                     >
-                                        📞 {item.phone}
+                                        🟢 واتساب: {item.phone}
                                     </a>
                                 )}
-                                {item.internal_notes && <div className="flex items-center gap-2 text-gray-500 text-xs mt-2 p-2 bg-gray-50 rounded-lg border border-gray-100">📝 {item.internal_notes}</div>}
+                                {item.email && <div className="text-gray-500 text-xs">📧 {item.email}</div>}
+
+                                {activeTab === "inquiry" ? (
+                                    <div className="mt-3 p-3 bg-blue-50/50 rounded-xl border border-blue-100 text-gray-700 leading-relaxed italic">
+                                        "{item.message}"
+                                    </div>
+                                ) : (
+                                    item.internal_notes && <div className="flex items-center gap-2 text-gray-500 text-xs mt-2 p-2 bg-gray-50 rounded-lg border border-gray-100">📝 {item.internal_notes}</div>
+                                )}
                             </div>
 
                             <div className="flex gap-2 mt-auto pt-3">
-                                <button type="button" onClick={() => openEdit(item)} className="flex-1 py-2 rounded-lg border-none bg-[#f3f4f6] cursor-pointer font-semibold text-xs text-[#374151]">تعديل</button>
-                                <button type="button" onClick={(e) => del(e, item)} className="w-[34px] h-[34px] rounded-lg border-none bg-[#fee2e2] cursor-pointer text-[#dc2626] text-sm flex items-center justify-center shrink-0">🗑</button>
+                                {activeTab === "inquiry" ? (
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={async () => {
+                                                await updatePartnerInquiryStatus(item.id, 'approved');
+                                                toast.success('تم تحديث الحالة');
+                                                load(false);
+                                            }}
+                                            className="flex-1 py-2 rounded-lg border-none bg-blue-600 cursor-pointer font-semibold text-xs text-white hover:bg-blue-700 transition-colors"
+                                        >
+                                            تحديد كمجيب عليه
+                                        </button>
+                                        <a
+                                            href={item.phone
+                                                ? `https://wa.me/${item.phone.replace(/\D/g, '')}`
+                                                : undefined
+                                            } target="_blank"
+                                            rel="noreferrer"
+                                            className="w-[34px] h-[34px] rounded-lg border-none bg-green-100 cursor-pointer text-green-600 flex items-center justify-center shrink-0 no-underline"
+                                        >
+                                            💬
+                                        </a>
+                                    </>
+                                ) : (
+                                    <>
+                                        <button type="button" onClick={() => openEdit(item)} className="flex-1 py-2 rounded-lg border-none bg-[#f3f4f6] cursor-pointer font-semibold text-xs text-[#374151]">تعديل</button>
+                                        <button type="button" onClick={(e) => del(e, item)} className="w-[34px] h-[34px] rounded-lg border-none bg-[#fee2e2] cursor-pointer text-[#dc2626] text-sm flex items-center justify-center shrink-0">🗑</button>
+                                    </>
+                                )}
                             </div>
                         </div>
                     ))}

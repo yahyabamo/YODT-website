@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 import { useAllStoreProducts } from '@/hooks/store/useStoreProducts';
 import { deleteProduct } from '@/services/storeService';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 
 export default function StoreProductsAdmin() {
+  useRoleGuard(['store']);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: products, isLoading } = useAllStoreProducts();

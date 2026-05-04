@@ -170,6 +170,7 @@ import ArrivalStatusPage from "./pages/arrivals/ArrivalStatus";
 import ArrivalsDashboard from "./pages/admin/ArrivalsDashboard";
 import ArrivalDetailAdmin from "./pages/admin/ArrivalDetailAdmin";
 import VolunteerDashboard from "./pages/admin/VolunteerDashboard";
+import VolunteerChatPage from "./pages/admin/VolunteerChatPage";
 
 import AboutPartnersPage from "./pages/info/AboutPartners";
 
@@ -331,8 +332,9 @@ const App = () => (
 
                   {/* ─── Arrivals Admin Routes ──────────────────────────── */}
                   <Route path="arrivals" element={<ArrivalsDashboard />} />
-                  <Route path="arrivals/:id" element={<ArrivalDetailAdmin />} />
                   <Route path="arrivals/volunteers" element={<VolunteerDashboard />} />
+                  <Route path="arrivals/volunteer-chat/:id" element={<VolunteerChatPage />} />
+                  <Route path="arrivals/:id" element={<ArrivalDetailAdmin />} />
 
 
                   {/* ─── Store Admin Routes ─────────────────────────────── */}

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 import { ImagePlus, Send, Facebook, Instagram, Loader2, X, Heart, MessageCircle, Share2, MoreHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function SocialMediaManager() {
+    useRoleGuard(['published']);
     const [files, setFiles] = useState<File[]>([]);
     const [previewUrls, setPreviewUrls] = useState<string[]>([]);
     const [caption, setCaption] = useState('');

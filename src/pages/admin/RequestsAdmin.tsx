@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -307,6 +308,7 @@ const ReplyModal = ({ request, onClose, onSaved }: ReplyModalProps) => {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function RequestsAdmin() {
+  useRoleGuard(['requests']);
   const [suggestions, setSuggestions] = useState<UnifiedRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
