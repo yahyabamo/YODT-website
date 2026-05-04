@@ -7,7 +7,7 @@ import {
     Users, ShieldCheck, Vote,
     HeartHandshake, Compass, Clapperboard,
     Briefcase, Map, GraduationCap, BookOpen,
-    MessageSquare, TrendingUp, Handshake, Tag, BarChart, Layout, FileText, ShoppingBag, ListOrdered, Inbox, Megaphone, MessagesSquare
+    MessageSquare, TrendingUp, Handshake, Tag, BarChart, Layout, FileText, ShoppingBag, ListOrdered, Inbox, Megaphone, MessagesSquare, PlaneLanding
 } from "lucide-react";
 
 const B = "#8B1A2A"; // Primary Brand Color
@@ -79,6 +79,13 @@ export const navGroups = [
         ]
     },
     {
+        title: "نظام الاستقبال",
+        items: [
+            { id: "arrivals", path: "/admin/arrivals", label: "طلبات الوصول", icon: PlaneLanding, permission: null, adminOnly: true },
+            { id: "arrivals/volunteers", path: "/admin/arrivals/volunteers", label: "متطوعو الاستقبال", icon: Users, permission: null, adminOnly: true },
+        ]
+    },
+    {
         title: "التفاعل", // Remaining admin-specific management
         items: [
             { id: "requests", path: "/admin/requests", label: "الاقتراحات  ", icon: MessageSquare, permission: null, adminOnly: false },
@@ -104,7 +111,7 @@ export const navGroups = [
     },
 ];
 
-// REQUIRED FOR ADMIN.TSX ROUTING: This flattens the groups back into the list your router expects.
+// Keep navItems for backward compat with Admin.tsx routing header
 export const navItems = navGroups.flatMap(group => group.items);
 
 interface AdminSidebarProps {

@@ -51,7 +51,7 @@ export interface Candidate {
         full_name: string | null
         avatar_url: string | null
         faculty: string | null
-        student_id: string | null
+        student_id?: string | null
     }
     position?: Pick<Position, 'id' | 'title'>
 }
@@ -100,11 +100,12 @@ export async function getElectionWithPositions(electionId: string): Promise<Elec
         *,
         candidates (
           id,
+          election_id,
           member_id,
           status,
           photo_url,
           bio,
-          profiles:member_id (full_name, avatar_url, faculty)
+          profile:member_id (full_name, avatar_url, faculty)
         )
       )
     `)

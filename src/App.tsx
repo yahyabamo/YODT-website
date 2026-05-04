@@ -165,6 +165,11 @@ import SuggestionBoxAdmin from "./pages/admin/SuggestionBoxAdmin";
 
 import DepartmentDetail from "./pages/info/DepartmentDetail";
 import DepartmentAdmin from "./pages/admin/info/DepartmentAdmin";
+import ArrivalHome from "./pages/arrivals/ArrivalHome";
+import ArrivalStatusPage from "./pages/arrivals/ArrivalStatus";
+import ArrivalsDashboard from "./pages/admin/ArrivalsDashboard";
+import ArrivalDetailAdmin from "./pages/admin/ArrivalDetailAdmin";
+import VolunteerDashboard from "./pages/admin/VolunteerDashboard";
 
 
 const queryClient = new QueryClient();
@@ -221,7 +226,7 @@ const App = () => (
                 <Route path="/elections/:electionId/nominate" element={<NominationPage />} />
                 <Route path="/elections/:electionId/results" element={<ResultsPage />} />
                 <Route path="/elections/:electionId/voting" element={<VotingPage />} />
-                <Route path="/elections/:electionId/candidates/:candidateId" element={<CandidatePage />} />
+                <Route path="/elections/:electionId/candidates" element={<CandidatePage />} />
                 <Route path="/elections/:electionId/candidates/:candidateId/profile" element={<CandidateProfilePage />} />
                 <Route path="/academy" element={<AcademyPage />} />
                 <Route path="/academy/course/:id" element={<CoursePage />} />
@@ -249,6 +254,9 @@ const App = () => (
                 {/* ─── Student Projects Public Routes (Standalone — own dual layout) ── */}
                 <Route path="/student-projects" element={<StudentProjectsPage />} />
                 <Route path="/student-projects/:slug" element={<StudentProjectDetailPage />} />
+
+
+
 
 
                 {/* 2. PROTECTED ADMIN PAGES (NO Navbar / Footer, AdminGuard wraps them) */}
@@ -319,6 +327,11 @@ const App = () => (
                   <Route path="relations" element={<RelationsAdmin />} />
                   <Route path="info/departments" element={<DepartmentAdmin />} />
 
+                  {/* ─── Arrivals Admin Routes ──────────────────────────── */}
+                  <Route path="arrivals" element={<ArrivalsDashboard />} />
+                  <Route path="arrivals/:id" element={<ArrivalDetailAdmin />} />
+                  <Route path="arrivals/volunteers" element={<VolunteerDashboard />} />
+
 
                   {/* ─── Store Admin Routes ─────────────────────────────── */}
                   <Route path="store" element={<StoreAdminHub />} />
@@ -366,6 +379,7 @@ const App = () => (
                   <Route path="homepage/activities" element={<ActivitiesTabAdmin />} />
                   <Route path="homepage/partners" element={<PartnersTabAdmin />} />
                   <Route path="homepage/footer" element={<FooterTabAdmin />} />
+
                 </Route>
 
                 {/* 3. PUBLIC LAYOUT PAGES (YES Navbar / Footer) */}
@@ -381,6 +395,9 @@ const App = () => (
                   <Route path="/icons/:id" element={<IconDetail />} />
                   <Route path="/achievements" element={<AchievementsPage />} />
                   <Route path="/departments/:id" element={<DepartmentDetail />} />
+                  {/* ─── Arrivals Standalone Routes (own layout, no PublicLayout wrapper) ── */}
+                  <Route path="/arrivals" element={<ArrivalHome />} />
+                  <Route path="/arrivals/status/:id" element={<ArrivalStatusPage />} />
 
                   <Route path="/" element={<Index />} />
                 </Route>

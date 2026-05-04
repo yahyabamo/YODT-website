@@ -25,10 +25,10 @@ import { BottomNav } from '@/components/layout/BottomNav'
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface CandidateWithProfile extends Candidate {
-    profiles: {
+    profile: {
         full_name: string
         faculty: string | null
-        student_id: string | null
+        student_id?: string | null
         avatar_url: string | null
     }
     positions?: {
@@ -68,7 +68,7 @@ export default function CandidateProfilePage() {
                     .select(
                         `
             *,
-            profiles:member_id (full_name, faculty, student_id, avatar_url),
+            profile:member_id (full_name, faculty, student_id, avatar_url),
             positions:position_id (title)
           `
                     )
@@ -150,10 +150,10 @@ export default function CandidateProfilePage() {
         )
     }
 
-    const name = candidate.profiles?.full_name ?? 'غير معروف'
-    const faculty = candidate.profiles?.faculty ?? null
-    const studentId = candidate.profiles?.student_id ?? null
-    const avatarUrl = candidate.photo_url ?? candidate.profiles?.avatar_url ?? null
+    const name = candidate.profile?.full_name ?? 'غير معروف'
+    const faculty = candidate.profile?.faculty ?? null
+    const studentId = candidate.profile?.student_id ?? null
+    const avatarUrl = candidate.photo_url ?? candidate.profile?.avatar_url ?? null
     const positionTitle = candidate.positions?.title ?? 'منصب غير معروف'
 
     const votingOpen = canVote(election.status)
@@ -310,7 +310,7 @@ export default function CandidateProfilePage() {
                                     </p>
                                 </div>
                                 <Link
-                                    to={`/elections/${electionId}/vote?candidate=${candidateId}`}
+                                    to={`/elections/${electionId}/voting?candidate=${candidateId}`}
                                     className="inline-flex w-full sm:w-auto items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-8 py-4 rounded-2xl transition-all shadow-md shadow-emerald-500/20 hover:shadow-lg hover:-translate-y-0.5"
                                 >
                                     <Vote className="w-5 h-5" />

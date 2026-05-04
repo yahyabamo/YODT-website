@@ -16,7 +16,7 @@ export default function ElectionCard({ election, positionCount }: Props) {
 
     // Decide the primary CTA based on phase
     const cta = canVote(status)
-        ? { label: 'صوّت الآن', href: `/elections/${id}/vote`, highlight: true }
+        ? { label: 'صوّت الآن', href: `/elections/${id}/voting`, highlight: true }
         : canNominate(status)
             ? { label: 'رشّح نفسك', href: `/elections/${id}/nominate`, highlight: false }
             : canViewResults(status)
