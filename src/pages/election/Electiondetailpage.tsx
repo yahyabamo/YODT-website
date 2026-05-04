@@ -40,7 +40,7 @@ function CandidateMiniCard({ candidate }: { candidate: Candidate }) {
 
     return (
         <Link
-            to={`/elections/${candidate.election_id}/candidates/${candidate.id}`}
+            to={`/elections/${candidate.election_id}/candidates/${candidate.id}/profile`}
             className="flex items-center gap-3 p-3 rounded-2xl border border-border hover:border-emerald-500/30 hover:bg-emerald-50/50 transition-all group bg-card"
         >
             {candidate.photo_url || candidate.profile?.avatar_url ? (
@@ -172,9 +172,9 @@ function TimelineStep({
 
 export default function ElectionDetailPage() {
     const { electionId } = useParams<{ electionId: string }>()
-    const { profile } = useAuth()
+    const { profile, isAdmin: authIsAdmin } = useAuth()
     const navigate = useNavigate()
-    const admin = profile ? isAdmin(profile.role) : false
+    const admin = authIsAdmin
 
     const [election, setElection] = useState<Election | null>(null)
     const [loading, setLoading] = useState(true)
@@ -301,7 +301,7 @@ export default function ElectionDetailPage() {
                         )}
                         {canVote(status) && (
                             <Link
-                                to={`/elections/${election.id}/vote`}
+                                to={`/elections/${election.id}/voting`}
                                 className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white text-sm font-extrabold rounded-2xl hover:bg-emerald-700 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 animate-pulse"
                             >
                                 <Vote size={18} />

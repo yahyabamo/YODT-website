@@ -81,6 +81,8 @@ export const navbarText = {
     tr: "İstanbul Şubesi · Türkiye",
   },
   links: {
+    arrivals: { ar: 'من اليمن إلى إسطنبول', en: 'From Yemen to Istanbul', tr: 'Yemen' },
+
     aboutIstanbul: { ar: "عن إسطنبول", en: "About Istanbul", tr: "İstanbul Hakkında" },
     aboutYemen: { ar: "عن اليمن", en: "About Yemen", tr: "Yemen Hakkında" },
     universities: { ar: "جامعات إسطنبول", en: "Istanbul Universities", tr: "İstanbul Üniversiteleri" },
@@ -458,4 +460,88 @@ export const studentProjectsText = {
     saveSuccess: { ar: "تم الحفظ بنجاح", en: "Saved successfully", tr: "Başarıyla kaydedildi" },
     deleteConfirm: { ar: "هل أنت متأكد من الحذف؟", en: "Are you sure you want to delete?", tr: "Silmek istediğinize emin misiniz?" },
   },
+
+
+};
+
+// src/i18n/arrivalsText.ts
+
+export const arrivalsText = {
+  // العناوين الترحيبية
+  welcomeEyebrow: {
+    ar: 'لجنة الاستقبال',
+    en: 'Reception Committee',
+    tr: 'Karşılama Komitesi'
+  },
+  welcomeTitle: {
+    ar: 'أهلاً بك في تركيا',
+    en: 'Welcome to Turkey',
+    tr: 'Türkiye\'ye Hoş Geldiniz'
+  },
+  welcomeDesc: {
+    ar: 'لن تصل وحدك، نحن بانتظارك. سجل بيانات وصولك وسيقوم فريقنا باستقبالك ومساعدتك.',
+    en: 'You won\'t arrive alone, we are waiting for you. Register your arrival details and our team will receive and assist you.',
+    tr: 'Yalnız gelmeyeceksiniz, sizi bekliyoruz. Varış bilgilerinizi kaydedin, ekibimiz sizi karşılayacak ve yardımcı olacaktır.'
+  },
+
+  // خطوات النموذج
+  step1Title: { ar: 'البيانات الشخصية', en: 'Personal Info', tr: 'Kişisel Bilgiler' },
+  step2Title: { ar: 'تفاصيل الوصول', en: 'Arrival Details', tr: 'Varış Detayları' },
+  step3Title: { ar: 'تأكيد الطلب', en: 'Confirmation', tr: 'Onaylama' },
+
+  // حقول النموذج
+  fullName: { ar: 'الاسم الكامل', en: 'Full Name', tr: 'Tam Adı' },
+  whatsapp: { ar: 'رقم الجوال (واتساب)', en: 'WhatsApp Number', tr: 'WhatsApp Numarası' },
+  email: { ar: 'البريد الإلكتروني', en: 'Email', tr: 'E-posta' },
+  university: { ar: 'الجامعة', en: 'University', tr: 'Üniversite' },
+  arrivalDate: { ar: 'تاريخ ووقت الوصول', en: 'Arrival Date & Time', tr: 'Varış Tarihi ve Saati' },
+  airport: { ar: 'المطار', en: 'Airport', tr: 'Havalimanı' },
+  flightNumber: { ar: 'رقم الرحلة', en: 'Flight Number', tr: 'Uçuş Numarası' },
+  needsPickup: { ar: 'هل تحتاج استقبال من المطار؟', en: 'Need airport pickup?', tr: 'Havalimanı karşılama istiyor musunuz?' },
+  bagsCount: { ar: 'عدد الحقائب', en: 'Number of Bags', tr: 'Bagaj Sayısı' },
+  notes: { ar: 'ملاحظات إضافية (اختياري)', en: 'Additional Notes (Optional)', tr: 'Ek Notlar (İsteğe Bağlı)' },
+
+  // الأزرار
+  nextBtn: { ar: 'التالي', en: 'Next', tr: 'İleri' },
+  prevBtn: { ar: 'السابق', en: 'Previous', tr: 'Geri' },
+  submitBtn: { ar: 'تأكيد وإرسال', en: 'Confirm & Submit', tr: 'Onayla ve Gönder' },
+  openChat: { ar: 'فتح المحادثة', en: 'Open Chat', tr: 'Sohbeti Aç' },
+  assignBtn: { ar: 'تعيين', en: 'Assign', tr: 'Ata' },
+  followUpBtn: { ar: 'متابعة', en: 'Follow up', tr: 'Takip Et' },
+
+  // حالات الطلب
+  status: {
+    pending_assignment: { ar: 'بانتظار التعيين', en: 'Pending Assignment', tr: 'Atama Bekliyor' },
+    assigned: { ar: 'تم التعيين', en: 'Assigned', tr: 'Atandı' },
+    contacted: { ar: 'تم التواصل', en: 'Contacted', tr: 'İletişime Geçildi' },
+    received: { ar: 'تم الاستقبال', en: 'Received', tr: 'Karşılandı' },
+    issue_delay: { ar: 'مشكلة / تأخر', en: 'Issue / Delay', tr: 'Sorun / Gecikme' }
+  },
+
+  // رسائل النجاح والإشعارات
+  successTitle: { ar: 'تم إرسال بياناتك بنجاح', en: 'Data Submitted Successfully', tr: 'Veriler Başarıyla Gönderildi' },
+  successDesc: {
+    ar: 'سيتم التواصل معك خلال 24 ساعة، يمكنك الآن التحدث معنا مباشرة عبر المحادثة أدناه.',
+    en: 'We will contact you within 24 hours. You can now talk to us directly via the chat below.',
+    tr: '24 saat içinde sizinle iletişime geçeceğiz. Aşağıdaki sohbet üzerinden bizimle doğrudan konuşabilirsiniz.'
+  },
+
+  // لوحة الإدارة
+  dashboardTitle: { ar: 'طلبات الوصول', en: 'Arrival Requests', tr: 'Varış İstekleri' },
+  totalRequests: { ar: 'إجمالي الطلبات', en: 'Total Requests', tr: 'Toplam İstekler' },
+  volunteerName: { ar: 'اسم المتطوع', en: 'Volunteer Name', tr: 'Gönüllü Adı' },
+  actions: { ar: 'الإجراءات', en: 'Actions', tr: 'İşlemler' },
+  arrivals: { ar: 'الوصول', en: 'Arrivals', tr: 'Varışlar' },
+  trackRequestBtn: { ar: 'لديك طلب مسبق؟ تتبعه من هنا', en: 'Already have a request? Track it here', tr: 'Zaten bir isteğiniz mi var? Buradan takip edin' },
+  trackRequestTitle: { ar: 'تتبع طلبك', en: 'Track Your Request', tr: 'İsteğinizi Takip Edin' },
+  phonePlaceholder: { ar: 'أدخل رقم الواتساب الخاص بك', en: 'Enter your WhatsApp Number', tr: 'WhatsApp Numaranızı Girin' },
+  searchBtn: { ar: 'تتبع', en: 'Track', tr: 'Takip Et' },
+  noRequestFound: { ar: 'لم يتم العثور على طلب بهذا الرقم. يرجى التأكد من الرقم أو تقديم طلب جديد.', en: 'No active request found for this number. Please check the number or submit a new request.', tr: 'Bu numara için aktif bir istek bulunamadı. Lütfen numarayı kontrol edin veya yeni bir istek gönderin.' },
+  backToNewRequest: { ar: 'العودة لتقديم طلب جديد', en: 'Back to new request', tr: 'Yeni isteğe geri dön' },
+};
+
+
+// دالة مساعدة لجلب النص بناءً على اللغة
+export const getArrivalText = (key: keyof typeof arrivalsText, lang: 'ar' | 'en' | 'tr' = 'ar') => {
+  return arrivalsText[key]?.[lang] || arrivalsText[key]?.['en'];
 };

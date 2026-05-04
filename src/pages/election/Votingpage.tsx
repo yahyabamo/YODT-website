@@ -25,10 +25,11 @@ import { BottomNav } from '@/components/layout/BottomNav'
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface CandidateWithProfile extends Candidate {
-    profiles?: {
+    profile?: {
         full_name: string
         faculty: string | null
         avatar_url: string | null
+        student_id?: string | null
     }
 }
 
@@ -435,11 +436,11 @@ export default function VotingPage() {
                                     <div className="space-y-4">
                                         {currentStep.candidates.map((candidate) => {
                                             const name =
-                                                candidate.profiles?.full_name ?? 'غير معروف'
-                                            const faculty = candidate.profiles?.faculty ?? null
+                                                candidate.profile?.full_name ?? 'غير معروف'
+                                            const faculty = candidate.profile?.faculty ?? null
                                             const avatarUrl =
                                                 candidate.photo_url ??
-                                                candidate.profiles?.avatar_url ??
+                                                candidate.profile?.avatar_url ??
                                                 null
                                             const isSelected = currentSelection === candidate.id
 
@@ -524,7 +525,7 @@ export default function VotingPage() {
                                         )}
                                         {currentSelection && (
                                             <Link
-                                                to={`/elections/${electionId}/candidates/${currentSelection}`}
+                                                to={`/elections/${electionId}/candidates/${currentSelection}/profile`}
                                                 className="hidden sm:flex items-center gap-1.5 text-[13px] font-bold text-muted-foreground hover:text-emerald-600 transition-colors"
                                             >
                                                 الملف الشخصي

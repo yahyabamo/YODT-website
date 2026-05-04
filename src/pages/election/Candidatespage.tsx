@@ -21,10 +21,11 @@ import { BottomNav } from '@/components/layout/BottomNav'
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface CandidateWithProfile extends Candidate {
-    profiles?: {
+    profile?: {
         full_name: string
         faculty: string | null
         avatar_url: string | null
+        student_id?: string | null
     }
 }
 
@@ -285,13 +286,15 @@ export default function CandidatesPage() {
                         </section>
                     ))
                 )}
+
+
             </main>
 
             {/* Sticky "Go vote" CTA */}
             {votingOpen && (
-                <div className="fixed bottom-20 sm:bottom-0 left-0 right-0 z-30 bg-background/80 backdrop-blur-xl border-t border-border px-6 py-4 flex justify-center">
+                <div className="fixed bottom-20 sm:bottom-16 z-50 left-0 right-0 bg-background/80 backdrop-blur-xl border-t border-border px-6 py-4 flex justify-center">
                     <Link
-                        to={`/elections/${electionId}/vote`}
+                        to={`/elections/${electionId}/voting`}
                         className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-8 py-4 rounded-2xl transition-all shadow-md shadow-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/30 hover:-translate-y-0.5 active:translate-y-0 w-full sm:w-auto justify-center"
                     >
                         <Vote className="w-5 h-5" />
@@ -314,13 +317,13 @@ function CandidateCard({
     candidate: CandidateWithProfile
     electionId: string
 }) {
-    const name = candidate.profiles?.full_name ?? 'غير معروف'
-    const faculty = candidate.profiles?.faculty ?? null
-    const avatarUrl = candidate.photo_url ?? candidate.profiles?.avatar_url ?? null
+    const name = candidate.profile?.full_name ?? 'غير معروف'
+    const faculty = candidate.profile?.faculty ?? null
+    const avatarUrl = candidate.photo_url ?? candidate.profile?.avatar_url ?? null
 
     return (
         <Link
-            to={`/elections/${electionId}/candidates/${candidate.id}`}
+            to={`/elections/${electionId}/candidates/${candidate.id}/profile`}
             className="group bg-card border-border hover:border-emerald-500/30 border-2 rounded-3xl p-5 flex gap-5 hover:bg-emerald-50/50 transition-all shadow-sm hover:shadow-md"
         >
             {/* Avatar */}

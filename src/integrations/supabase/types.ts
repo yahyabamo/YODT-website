@@ -11,6 +11,52 @@ export type Json =
 // BUSLA - TypeScript Types
 // ============================================
 
+
+// arrival to istanbul 
+
+export enum ArrivalStatus {
+  PENDING_ASSIGNMENT = 'pending_assignment',
+  ASSIGNED = 'assigned',
+  CONTACTED = 'contacted',
+  RECEIVED = 'received',
+  ISSUE_DELAY = 'issue_delay'
+}
+
+export interface ArrivalRequest {
+  id: string;
+  created_at: string;
+  student_name: string;
+  phone_whatsapp: string;
+  email: string;
+  university_id?: string; // إذا كانت الجامعات مسجلة في قاعدة البيانات مسبقاً
+  university_name?: string; // في حال كان الإدخال يدوياً
+  arrival_date: string; // ISO String
+  airport: string; // IST أو SAW
+  flight_number: string;
+  needs_pickup: boolean;
+  bags_count: number;
+  additional_notes?: string;
+  status: ArrivalStatus;
+  volunteer_id?: string | null; // ID المتطوع المعين (إن وُجد)
+}
+
+export interface ChatMessage {
+  id: string;
+  request_id: string;
+  sender_id: string; // قد يكون ID الطالب، الإدارة، أو المتطوع
+  sender_role: 'student' | 'admin' | 'volunteer';
+  content: string;
+  created_at: string;
+}
+
+// واجهة مساعدة للمتطوعين في لوحة الإدارة
+export interface Volunteer {
+  id: string;
+  full_name: string;
+  phone: string;
+  is_available: boolean;
+}
+
 export interface LibraryItem {
   id: string;
   title: string;

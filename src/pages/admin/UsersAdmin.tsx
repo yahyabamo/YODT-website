@@ -43,6 +43,7 @@ export default function UsersAdmin() {
     const [loading, setLoading] = useState(true);
     const [pointsModal, setPointsModal] = useState<User | null>(null);
     const [roleModal, setRoleModal] = useState<User | null>(null);
+    const [volunteerIds, setVolunteerIds] = useState<Set<string>>(new Set());
     const [selectedRole, setSelectedRole] = useState<UserRole>('user');
     const [selectedPerms, setSelectedPerms] = useState<Permission[]>([]);
     const [selectedJobTitle, setSelectedJobTitle] = useState("");
@@ -71,6 +72,28 @@ export default function UsersAdmin() {
     }, [page, search]);
 
     useEffect(() => { load(); }, [load]);
+
+    // Load current volunteer IDs from the volunteers table
+    useEffect(() => {
+        supabase.from('volunteers').select('id').then(({ data }) => {
+            if (data) setVolunteerIds(new Set(data.map((v: any) => v.id)));
+        });
+    }, []);
+
+    const toggleVolunteer = async (u: User) => {
+        const isVolunteer = volunteerIds.has(u.id);
+        if (isVolunteer) {
+            const { error } = await supabase.from('volunteers').delete().eq('id', u.id);
+            if (error) { toast.error('فشل إزالة المتطوع'); return; }
+            setVolunteerIds(prev => { const s = new Set(prev); s.delete(u.id); return s; });
+            toast.success(`تم إزالة ${u.full_name} من قائمة متطوعي الاستقبال`);
+        } else {
+            const { error } = await supabase.from('volunteers').insert([{ id: u.id, full_name: u.full_name, phone: '' }]);
+            if (error) { toast.error('فشل تعيين المتطوع'); console.error(error); return; }
+            setVolunteerIds(prev => new Set(prev).add(u.id));
+            toast.success(`تم تعيين ${u.full_name} كمتطوع استقبال ✈`);
+        }
+    };
 
     const handleSearch = (v: string) => {
         clearTimeout(debRef.current);
@@ -354,6 +377,16 @@ export default function UsersAdmin() {
                                                 ].map((btn, i) => (
                                                     <button key={i} type="button" title={btn.title} onClick={(e) => { e.stopPropagation(); btn.fn(); }} disabled={btn.disabled} className={`w-[30px] h-[30px] rounded-lg border-none flex items-center justify-center shrink-0 text-sm transition-opacity ${btn.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:opacity-80 active:scale-95'}`} style={{ background: btn.bg, color: btn.c }}>{btn.icon}</button>
                                                 ))}
+                                                {/* Volunteer toggle */}
+                                                <button
+                                                    type="button"
+                                                    title={volunteerIds.has(u.id) ? 'إزالة من متطوعي الاستقبال' : 'تعيين كمتطوع استقبال'}
+                                                    onClick={(e) => { e.stopPropagation(); toggleVolunteer(u); }}
+                                                    className="w-[30px] h-[30px] rounded-lg border-none flex items-center justify-center shrink-0 text-sm cursor-pointer hover:opacity-80 active:scale-95 transition-opacity"
+                                                    style={{ background: volunteerIds.has(u.id) ? '#d1fae5' : '#f3f4f6', color: volunteerIds.has(u.id) ? '#059669' : '#6b7280' }}
+                                                >
+                                                    🛬
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
