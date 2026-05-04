@@ -5,12 +5,10 @@ interface InfoHeroProps {
     eyebrow?: string;
     title: string;
     description?: string;
-    backgroundImage?: string;
     backgroundImages?: string[];
+    backgroundImage?: string;
     ctaLabel?: string;
     ctaPath?: string;
-    gradient?: string;
-    isLoading?: boolean;
 }
 
 const optimizeImageUrl = (url: string) => {
@@ -20,8 +18,6 @@ const optimizeImageUrl = (url: string) => {
     return url;
 };
 
-type RevealPhase = 'loading' | 'revealing' | 'complete';
-
 export const InfoHero: React.FC<InfoHeroProps> = ({
     eyebrow,
     title,
@@ -30,295 +26,152 @@ export const InfoHero: React.FC<InfoHeroProps> = ({
     backgroundImage,
     ctaLabel,
     ctaPath,
-    gradient = 'linear-gradient(135deg, #07080b 0%, #1a0505 40%, #07080b 100%)',
-    isLoading = false,
 }) => {
     const navigate = useNavigate();
-    const [activeIdx, setActiveIdx] = useState(0);
-    const [touchStart, setTouchStart] = useState<number | null>(null);
-    const [revealPhase, setRevealPhase] = useState<RevealPhase>('loading');
-    const [textVisible, setTextVisible] = useState(false);
-    const [loadedImages, setLoadedImages] = useState<boolean[]>([]);
-    const sectionRef = useRef<HTMLElement>(null);
+    const images = (backgroundImages?.length
+        ? backgroundImages
+        : backgroundImage
+            ? [backgroundImage]
+            : []
+    ).map(optimizeImageUrl);
 
-    const rawImages = backgroundImages?.length ? backgroundImages : backgroundImage ? [backgroundImage] : [];
-    const images = rawImages.map(optimizeImageUrl);
-    const hasImages = images.length > 0;
+    const [active, setActive] = useState(0);
+    const [loaded, setLoaded] = useState<boolean[]>([]);
+
     const isCarousel = images.length > 1;
 
+    // preload all images
     useEffect(() => {
-        if (hasImages) {
-            setLoadedImages(new Array(images.length).fill(false));
-        }
-    }, [hasImages, images.length]);
+        if (!images.length) return;
 
-    useEffect(() => {
-        if (!hasImages || !images[0]) return;
-        const preloadLink = document.createElement('link');
-        preloadLink.rel = 'preload';
-        preloadLink.as = 'image';
-        preloadLink.href = images[0];
-        preloadLink.fetchPriority = 'high';
-        document.head.appendChild(preloadLink);
-        return () => {
-            if (document.head.contains(preloadLink)) document.head.removeChild(preloadLink);
-        };
-    }, [hasImages, images]);
+        setLoaded(new Array(images.length).fill(false));
 
-    useEffect(() => {
-        if (isLoading || !hasImages) {
-            setRevealPhase(!isLoading ? 'complete' : 'loading');
-            return;
-        }
-        const firstImg = new window.Image();
-        firstImg.src = images[0];
-        if (firstImg.complete) {
-            setRevealPhase('revealing');
-            setTimeout(() => setRevealPhase('complete'), 1200);
-        } else {
-            firstImg.onload = () => {
-                setRevealPhase('revealing');
-                setTimeout(() => setRevealPhase('complete'), 1200);
+        images.forEach((src, i) => {
+            const img = new Image();
+            img.src = src;
+            img.onload = () => {
+                setLoaded(prev => {
+                    const copy = [...prev];
+                    copy[i] = true;
+                    return copy;
+                });
             };
-        }
-    }, [isLoading, hasImages, images]);
-
-    useEffect(() => {
-        if (isLoading) return;
-        if (!hasImages) {
-            const timer = setTimeout(() => setTextVisible(true), 120);
-            return () => clearTimeout(timer);
-        }
-        if (loadedImages[0] && revealPhase !== 'loading') {
-            const timer = setTimeout(() => setTextVisible(true), 80);
-            return () => clearTimeout(timer);
-        }
-    }, [loadedImages[0], revealPhase, hasImages, isLoading]);
-
-    useEffect(() => {
-        if (!isCarousel || revealPhase !== 'complete') return;
-        const interval = setInterval(() => {
-            setActiveIdx((prev) => (prev + 1) % images.length);
-        }, 6800);
-        return () => clearInterval(interval);
-    }, [isCarousel, revealPhase, images.length]);
-
-    useEffect(() => {
-        if (images.length <= 1) return;
-        images.slice(1).forEach(src => { new window.Image().src = src; });
+        });
     }, [images]);
 
+    // auto slider
     useEffect(() => {
-        if (!isCarousel || revealPhase !== 'complete') return;
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'ArrowLeft') {
-                setActiveIdx((prev) => (prev - 1 + images.length) % images.length);
-            } else if (e.key === 'ArrowRight') {
-                setActiveIdx((prev) => (prev + 1) % images.length);
-            }
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isCarousel, revealPhase, images.length]);
+        if (!isCarousel) return;
 
-    const handleTouchStart = (e: React.TouchEvent) => {
-        setTouchStart(e.targetTouches[0].clientX);
-    };
+        const interval = setInterval(() => {
+            setActive(prev => (prev + 1) % images.length);
+        }, 6000);
 
-    const handleTouchEnd = (e: React.TouchEvent) => {
-        if (touchStart === null) return;
-        const touchEnd = e.changedTouches[0].clientX;
-        const diff = touchStart - touchEnd;
+        return () => clearInterval(interval);
+    }, [images.length, isCarousel]);
 
-        if (diff > 50) goNext();
-        else if (diff < -50) goPrev();
-
-        setTouchStart(null);
-    };
-
-    const handleImageLoad = (idx: number) => {
-        setLoadedImages(prev => {
-            if (prev[idx]) return prev;
-            const newState = [...prev];
-            newState[idx] = true;
-            return newState;
-        });
-    };
-
-    const goPrev = () => setActiveIdx((prev) => (prev - 1 + images.length) % images.length);
-    const goNext = () => setActiveIdx((prev) => (prev + 1) % images.length);
-
-    const isComplete = revealPhase === 'complete';
+    const goNext = () => setActive(prev => (prev + 1) % images.length);
+    const goPrev = () => setActive(prev => (prev - 1 + images.length) % images.length);
 
     return (
         <section
-            ref={sectionRef}
             style={{
                 position: 'relative',
-                marginTop: '-72px',
-                minHeight: hasImages ? 'clamp(450px, 65vh, 700px)' : 'clamp(320px, 45vh, 450px)',
+                minHeight: 'clamp(500px, 70vh, 800px)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 overflow: 'hidden',
-                background: gradient,
-                touchAction: 'pan-y',
             }}
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
         >
-            {/* Background Images */}
-            {hasImages && (
-                <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
-                    {images.map((src, idx) => (
+            {/* Background stack */}
+            <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
+                {images.map((src, i) => (
+                    <div
+                        key={i}
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            opacity: i === active ? 1 : 0,
+                            transition: 'opacity 1.8s ease',
+                        }}
+                    >
                         <img
-                            key={idx}
                             src={src}
                             alt=""
-                            // FIX: Removed lazy loading. Let the browser fetch them so they are ready for swipe!
-                            // @ts-ignore
-                            fetchpriority={idx === 0 ? "high" : "auto"}
-                            onLoad={() => handleImageLoad(idx)}
                             style={{
-                                position: 'absolute',
-                                inset: 0,
                                 width: '100%',
                                 height: '100%',
                                 objectFit: 'cover',
-                                objectPosition: 'center',
-                                // FIX: Simply check if it's the active index. Removes the blank swipe bug.
-                                opacity: idx === activeIdx ? 1 : 0,
-                                transform: idx === activeIdx ? 'translateZ(0) scale(1.04)' : 'translateZ(0) scale(1.08)',
-                                transition: isComplete
-                                    ? 'opacity 1.5s ease-in-out, transform 12s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
-                                    : 'opacity 0.3s ease-out',
-                                filter: revealPhase === 'revealing' && idx === activeIdx ? 'brightness(0.4)' : 'none',
-                                willChange: 'transform, opacity',
-                                WebkitBackfaceVisibility: 'hidden',
+
+                                // 🔥 Cinematic slow zoom
+                                transform: i === active ? 'scale(1.05)' : 'scale(1.1)',
+                                transition: 'transform 10s ease',
+
+                                filter: 'brightness(0.65)',
                             }}
                         />
-                    ))}
-                    <div style={{
-                        position: 'absolute',
-                        inset: 0,
-                        zIndex: 2,
-                        background: 'linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.75) 60%, rgba(0,0,0,0.95) 100%)',
-                    }} />
-                </div>
-            )}
+                    </div>
+                ))}
+            </div>
 
-            {/* Arrow Buttons (FIX: Removed invalid media query, now visible on all devices) */}
-            {isCarousel && isComplete && (
-                <>
-                    <button
-                        onClick={goPrev}
-                        aria-label="Previous image"
-                        style={{
-                            position: 'absolute',
-                            left: '16px',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            zIndex: 20,
-                            background: 'rgba(255,255,255,0.1)',
-                            backdropFilter: 'blur(8px)',
-                            border: '1px solid rgba(255,255,255,0.2)',
-                            borderRadius: '50%',
-                            width: '44px',
-                            height: '44px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            color: 'white',
-                            fontSize: '24px',
-                            transition: 'all 0.2s ease',
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                    >
-                        ‹
-                    </button>
-                    <button
-                        onClick={goNext}
-                        aria-label="Next image"
-                        style={{
-                            position: 'absolute',
-                            right: '16px',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            zIndex: 20,
-                            background: 'rgba(255,255,255,0.1)',
-                            backdropFilter: 'blur(8px)',
-                            border: '1px solid rgba(255,255,255,0.2)',
-                            borderRadius: '50%',
-                            width: '44px',
-                            height: '44px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            color: 'white',
-                            fontSize: '24px',
-                            transition: 'all 0.2s ease',
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                    >
-                        ›
-                    </button>
-                </>
-            )}
+            {/* Professional overlay layers */}
+            <div
+                style={{
+                    position: 'absolute',
+                    inset: 0,
+                    zIndex: 2,
+                    background: `
+            radial-gradient(circle at center, rgba(0,0,0,0.2), rgba(0,0,0,0.8)),
+            linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.9))
+          `,
+                }}
+            />
 
             {/* Content */}
             <div
                 style={{
                     position: 'relative',
-                    zIndex: 10,
-                    maxWidth: '860px',
-                    padding: 'clamp(24px, 5vw, 48px)',
+                    zIndex: 5,
+                    maxWidth: '900px',
+                    padding: '40px',
                     textAlign: 'center',
-                    opacity: textVisible ? 1 : 0,
-                    transform: textVisible ? 'translateY(0px)' : 'translateY(30px)',
-                    transition: 'opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1), transform 0.8s cubic-bezier(0.23, 1, 0.32, 1)',
-                    marginTop: '40px',
+                    color: '#00ff00',
                 }}
             >
                 {eyebrow && (
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '16px',
-                        marginBottom: '16px',
-                    }}>
-                        <div style={{ height: '2px', width: '40px', background: '#c8a84b' }} />
-                        <span style={{ color: '#c8a84b', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase' }}>
-                            {eyebrow}
-                        </span>
-                        <div style={{ height: '2px', width: '40px', background: '#c8a84b' }} />
+                    <div
+                        style={{
+                            color: '#c8a84b',
+                            fontWeight: 700,
+                            letterSpacing: '2px',
+                            marginBottom: '16px',
+                        }}
+                    >
+                        {eyebrow}
                     </div>
                 )}
 
-                <h1 style={{
-                    fontSize: 'clamp(2.2rem, 5vw, 4rem)',
-                    fontWeight: 800,
-                    lineHeight: 1.1,
-                    color: '#fff',
-                    marginBottom: '20px',
-                    letterSpacing: '-0.02em',
-                    textShadow: '0 4px 24px rgba(0,0,0,0.8)',
-                }}>
+                <h1
+                    style={{
+                        fontSize: 'clamp(2.5rem, 5vw, 4.5rem)',
+                        fontWeight: 800,
+                        lineHeight: 1.1,
+                        marginBottom: '20px',
+                        color: '#d3c7b6ff'
+                    }}
+                >
                     {title}
                 </h1>
 
                 {description && (
-                    <p style={{
-                        fontSize: 'clamp(1rem, 1.8vw, 1.15rem)',
-                        color: 'rgba(255,255,255,0.9)',
-                        maxWidth: '680px',
-                        margin: '0 auto 32px',
-                        lineHeight: 1.6,
-                    }}>
+                    <p
+                        style={{
+                            fontSize: '1.2rem',
+                            opacity: 0.9,
+                            marginBottom: '30px',
+                        }}
+                    >
                         {description}
                     </p>
                 )}
@@ -327,24 +180,22 @@ export const InfoHero: React.FC<InfoHeroProps> = ({
                     <button
                         onClick={() => navigate(ctaPath)}
                         style={{
-                            padding: '14px 40px',
-                            fontSize: '1rem',
+                            padding: '16px 44px',
+                            borderRadius: '999px',
                             fontWeight: 700,
-                            borderRadius: '50px',
-                            background: 'linear-gradient(135deg, #8f2020, #7a1c1c)',
-                            color: '#fff',
-                            border: '1px solid rgba(255,255,255,0.1)',
+                            fontSize: '1rem',
+                            background: 'linear-gradient(135deg, #c8a84b, #a88b35)',
+                            color: '#000',
+                            border: 'none',
                             cursor: 'pointer',
-                            boxShadow: '0 8px 24px rgba(122,28,28,0.4)',
+                            boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
                             transition: 'all 0.3s ease',
                         }}
                         onMouseEnter={e => {
-                            e.currentTarget.style.transform = 'translateY(-3px)';
-                            e.currentTarget.style.boxShadow = '0 12px 32px rgba(122,28,28,0.6)';
+                            e.currentTarget.style.transform = 'translateY(-4px) scale(1.03)';
                         }}
                         onMouseLeave={e => {
                             e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow = '0 8px 24px rgba(122,28,28,0.4)';
                         }}
                     >
                         {ctaLabel}
@@ -352,29 +203,43 @@ export const InfoHero: React.FC<InfoHeroProps> = ({
                 )}
             </div>
 
+            {/* Navigation */}
+            {isCarousel && (
+                <>
+                    <button
+                        onClick={goPrev}
+                        style={navBtn('left')}
+                    >›</button>
+
+                    <button
+                        onClick={goNext}
+                        style={navBtn('right')}
+                    >‹</button>
+                </>
+            )}
+
             {/* Dots */}
-            {isCarousel && isComplete && (
-                <div style={{
-                    position: 'absolute',
-                    bottom: '24px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    display: 'flex',
-                    gap: '8px',
-                    zIndex: 20,
-                }}>
+            {isCarousel && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        bottom: '25px',
+                        display: 'flex',
+                        gap: '8px',
+                        zIndex: 10,
+                    }}
+                >
                     {images.map((_, i) => (
-                        <button
+                        <div
                             key={i}
-                            onClick={() => setActiveIdx(i)}
+                            onClick={() => setActive(i)}
                             style={{
-                                width: i === activeIdx ? '32px' : '8px',
+                                width: i === active ? '30px' : '8px',
                                 height: '8px',
-                                borderRadius: '4px',
-                                background: i === activeIdx ? '#c8a84b' : 'rgba(255,255,255,0.3)',
-                                border: 'none',
+                                borderRadius: '10px',
+                                background: i === active ? '#c8a84b' : 'rgba(149, 31, 31, 0.4)',
                                 cursor: 'pointer',
-                                transition: 'all 0.3s ease',
+                                transition: 'all 0.3s',
                             }}
                         />
                     ))}
@@ -383,3 +248,20 @@ export const InfoHero: React.FC<InfoHeroProps> = ({
         </section>
     );
 };
+
+const navBtn = (side: 'left' | 'right'): React.CSSProperties => ({
+    position: 'absolute',
+    top: '50%',
+    [side]: '20px',
+    transform: 'translateY(-50%)',
+    zIndex: 10,
+    width: '46px',
+    height: '46px',
+    borderRadius: '50%',
+    background: 'rgba(170, 37, 37, 0.15)',
+    backdropFilter: 'blur(6px)',
+    border: '1px solid rgba(89, 129, 49, 0.2)',
+    color: 'white',
+    fontSize: '24px',
+    cursor: 'pointer',
+});

@@ -13,8 +13,6 @@
   font-display: swap;
 }
 
-
-
 @font-face {
   font-family: 'ThmanyahSerifDisplay';
   src: url('/src/assets/font/thmanyahserifdisplay/thmanyahserifdisplay-Medium.woff2') format('woff2');
@@ -105,6 +103,14 @@
     --font-sans: 'ThmanyahSans', 'IBM Plex Sans Arabic', 'Tajawal', 'Cairo', system-ui, -apple-system, sans-serif;
     --font-naskh: 'Noto Naskh Arabic', serif;
 
+    :root[data-theme='dark'] {
+      --hero-text-color: #ffffff;
+    }
+
+    :root[data-theme='light'] {
+      --hero-text-color: #ffffff;
+    }
+
     /* Headings - Bolder for Arabic */
     --text-h1: 1.75rem;
     /* 28px - Hero titles */
@@ -124,7 +130,8 @@
     /* 11px - Tiny */
 
     /* Line heights */
-    --leading-tight: 1.5; /* Increased to prevent clipping of Arabic ascenders/descenders */
+    --leading-tight: 1.5;
+    /* Increased to prevent clipping of Arabic ascenders/descenders */
     --leading-normal: 1.65;
     --leading-relaxed: 1.85;
 
@@ -270,7 +277,7 @@
     font-weight: 400;
     min-height: 100vh;
     min-height: 100dvh;
-    
+
     /* Global Arabic Typography Fixes */
     font-feature-settings: "liga" 1, "calt" 1;
     font-kerning: normal;
@@ -279,13 +286,22 @@
   }
 
   /* Typography Hierarchy & Shared Arabic Styles */
-  h1, .h1, h2, .h2, h3, .h3, h4, .h4, .arabic-heading {
+  h1,
+  .h1,
+  h2,
+  .h2,
+  h3,
+  .h3,
+  h4,
+  .h4,
+  .arabic-heading {
     font-family: var(--font-display);
     font-feature-settings: "liga" 1, "calt" 1;
     font-kerning: normal;
     text-rendering: optimizeLegibility;
     letter-spacing: normal !important;
-    transform: none; /* Avoid transforms that break Arabic rendering */
+    transform: none;
+    /* Avoid transforms that break Arabic rendering */
   }
 
   h1,
@@ -314,7 +330,8 @@
 
   h4,
   .h4 {
-    font-size: 1.125rem; /* 18px */
+    font-size: 1.125rem;
+    /* 18px */
     font-weight: 600;
     line-height: var(--leading-tight);
     color: hsl(var(--foreground));
