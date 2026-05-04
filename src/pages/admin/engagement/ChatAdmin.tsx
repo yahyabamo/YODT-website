@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 import { useChatAdmin } from '@/hooks/useChat';
 import { supabase } from '@/integrations/supabase/client';
 import { Spinner } from '../components/AdminUI';
@@ -24,6 +25,7 @@ const genderMap = {
   "الكل": null
 }
 export default function ChatAdmin() {
+  useRoleGuard(['chat']);
   const { requests, groups, loading, approveRequest, rejectRequest, refresh } = useChatAdmin();
   const [processing, setProcessing] = useState<string | null>(null);
   const [tab, setTab] = useState<'requests' | 'groups'>('requests');

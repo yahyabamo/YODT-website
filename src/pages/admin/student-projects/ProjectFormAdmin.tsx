@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowRight, Loader2, Upload, X } from 'lucide-react';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
@@ -30,6 +31,7 @@ const STATUSES = [
 ];
 
 export default function ProjectFormAdmin() {
+  useRoleGuard(['student-projects']);
   const { id } = useParams<{ id: string }>();
   const isEdit = !!id;
   const navigate = useNavigate();

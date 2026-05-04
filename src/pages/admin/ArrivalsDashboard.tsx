@@ -1,12 +1,16 @@
 // src/pages/admin/ArrivalsDashboard.tsx
 import React, { useEffect, useState } from 'react';
 import { Users, Clock, CheckCircle, MessageSquare } from 'lucide-react';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
+import { useNavigate } from 'react-router-dom';
 import { getArrivalText } from '@/i18n/pages';
 import { ArrivalRequest, ArrivalStatus, Volunteer } from '@/integrations/supabase/types';
 import { getAllArrivalRequests, getAvailableVolunteers, assignVolunteerToRequest } from '@/service/arrivalsCMS';
 import { toast } from 'sonner';
 
 export default function ArrivalsDashboard({ lang = 'ar' }: { lang?: 'ar' | 'en' | 'tr' }) {
+    useRoleGuard(['arrivals']);
+    const navigate = useNavigate();
     const [requests, setRequests] = useState<ArrivalRequest[]>([]);
     const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
     const [loading, setLoading] = useState(true);
@@ -106,8 +110,12 @@ export default function ArrivalsDashboard({ lang = 'ar' }: { lang?: 'ar' | 'en' 
                                             </select>
                                         </td>
                                         <td style={{ padding: '16px' }}>
-                                            <a href={`/arrivals/status/${req.id}`} target="_blank" rel="noreferrer" style={{ background: '#1d4ed8', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', textDecoration: 'none' }}>                                                متابعة
-                                            </a>
+                                            <button
+                                                onClick={() => navigate(`/admin/arrivals/${req.id}`)}
+                                                style={{ background: '#1d4ed8', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem' }}
+                                            >
+                                                متابعة
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}

@@ -1,11 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 import { useStoreStats } from '@/hooks/store/useStoreOrders';
 import { Store, ShoppingBag, ListOrdered, Tag } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 export default function StoreAdminHub() {
+  useRoleGuard(['store']);
   const navigate = useNavigate();
   const { data: stats, isLoading } = useStoreStats();
 

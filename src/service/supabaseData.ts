@@ -261,6 +261,54 @@ export async function deletePartner(id: string) {
     if (error) throw error
 }
 
+// ── Partner Inquiries ──────────────────────────────────────────
+
+export async function submitPartnerInquiry(payload: any) {
+    console.log("Submitting Partner Inquiry:", payload);
+    const { error } = await supabase
+        .from('partner_inquiries')
+        .insert([{
+            institution_name: payload.institutionName,
+            contact_person: payload.contactPerson,
+            email: payload.email,
+            phone: payload.phone,
+            inquiry_type: payload.inquiryType,
+            message: payload.message,
+            status: 'pending'
+        }]);
+    
+    if (error) {
+        console.error("Submit Error:", error);
+        throw error;
+    }
+    console.log("Submit Success");
+    return true;
+}
+
+export async function fetchPartnerInquiries() {
+    const { data, error } = await supabase
+        .from('partner_inquiries')
+        .select('*')
+        .order('created_at', { ascending: false });
+    if (error) {
+        console.error("Fetch Inquiries Error:", error);
+        throw error;
+    }
+    console.log("Fetched Inquiries:", data);
+    return data;
+}
+
+export async function updatePartnerInquiryStatus(id: string, status: string) {
+    const { data, error } = await supabase
+        .from('partner_inquiries')
+        .update({ status })
+        .eq('id', id)
+        .select()
+        .single();
+    if (error) throw error;
+    return data;
+}
+
 // ── Offers ────────────────────────────────────────────────────
 
 export async function fetchOffers() {

@@ -130,7 +130,7 @@ const BLANK_FORM = {
 };
 
 export default function OffersAdmin() {
-    useRoleGuard(['partners']);
+    useRoleGuard(['offers']);
     const { setConfirm } = useOutletContext<{ setConfirm: (v: any) => void }>();
 
     const [offers,   setOffers]   = useState<any[]>([]);

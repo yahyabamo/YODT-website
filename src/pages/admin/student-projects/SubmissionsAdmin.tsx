@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Phone, MessageCircle, Check, X, Eye, Inbox, Loader2, Upload } from 'lucide-react';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 import { useAllSubmissions } from '@/hooks/studentProjects/useStudentProjectSubmissions';
 import { useAllProjectCategoriesAdmin } from '@/hooks/studentProjects/useStudentProjectCategories'; // Added category hook
 import {
@@ -28,6 +29,7 @@ const STATUS_COLORS: Record<string, { bg: string; text: string; label: string }>
 };
 
 export default function SubmissionsAdmin() {
+  useRoleGuard(['student-projects']);
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('pending');
   const [selected, setSelected] = useState<ProjectSubmission | null>(null);

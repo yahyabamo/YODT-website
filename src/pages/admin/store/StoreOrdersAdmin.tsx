@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 import { useStoreOrders, useUpdateOrderStatus } from '@/hooks/store/useStoreOrders';
 import { Button } from '@/components/ui/button';
 import { ListOrdered, CheckCircle2, Clock, XCircle, FileText, ShoppingBag } from 'lucide-react';
@@ -26,6 +27,7 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
 };
 
 export default function StoreOrdersAdmin() {
+  useRoleGuard(['store']);
   const [filter, setFilter] = useState<OrderStatus | 'all'>('all');
   const { data: orders, isLoading } = useStoreOrders(filter === 'all' ? undefined : filter);
   const updateMutation = useUpdateOrderStatus();

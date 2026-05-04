@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Edit, Trash2, Tag } from 'lucide-react';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 import { useAllProjectCategoriesAdmin } from '@/hooks/studentProjects/useStudentProjectCategories';
 import { upsertProjectCategory, deleteProjectCategory } from '@/services/studentProjectsService';
 import type { ProjectCategory } from '@/services/studentProjectsService';
@@ -19,6 +20,7 @@ const BLANK: Partial<ProjectCategory> = {
 };
 
 export default function ProjectCategoriesAdmin() {
+  useRoleGuard(['student-projects']);
   const queryClient = useQueryClient();
   const { setConfirm } = useOutletContext<any>();
   const { data: categories, isLoading } = useAllProjectCategoriesAdmin();

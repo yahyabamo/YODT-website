@@ -86,7 +86,7 @@ export default function Dashboard() {
                 <p className="m-0 mt-1 text-[#6b7280] text-sm">اتحاد الطلاب اليمنيين في تركيا – فرع إسطنبول</p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+            {/* <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
                 <AdminCard icon="👥" label="إجمالي الأعضاء" value={stats?.totalUsers || 0} color={B} />
                 <AdminCard
                     icon="✅"
@@ -98,7 +98,7 @@ export default function Dashboard() {
                 <AdminCard icon="🎯" label="الفعاليات" value={stats?.totalActivities || 0} color="#7c3aed" />
                 <AdminCard icon="🏷️" label="عروض نشطة" value={stats?.activeOffers || 0} color="#d97706" />
                 <AdminCard icon="⭐" label="إجمالي النقاط" value={(stats?.totalPoints || 0).toLocaleString()} color="#2563eb" />
-            </div>
+            </div> */}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
 
@@ -154,6 +154,11 @@ export default function Dashboard() {
                     </div>
                 ) : (
                     /* ── Admin / full-access staff: recent users list ── */
+
+
+
+
+
                     <div className="bg-white rounded-2xl p-5 shadow-[0_1px_4px_rgba(0,0,0,.06)] border border-[#f0f0f0]">
                         <h3 className="m-0 mb-4 text-[15px] font-bold">آخر المسجلين</h3>
                         <div className="max-h-[200px] overflow-y-auto pr-1">

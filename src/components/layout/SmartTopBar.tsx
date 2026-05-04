@@ -67,7 +67,6 @@ const quickLinks: QuickLink[] = [
   { icon: HelpCircle, label: 'الأسئلة الشائعة', path: '/faq' },
   { icon: '🗳️', label: 'الانتخابات', path: '/elections' },
   { icon: '🎓', label: 'الأكاديمية', path: '/academy' },
-  { icon: '🤝', label: 'الشركاء', path: '/partners' },
 ];
 
 interface SmartTopBarProps {

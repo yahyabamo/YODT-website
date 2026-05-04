@@ -17,92 +17,100 @@ const B = "#8B1A2A"; // Primary Brand Color
  */
 export const navGroups = [
     {
-        title: "الأقسام الرئيسية", // Matches Top Bar Main Sections
+        title: "الأقسام الرئيسية",
         items: [
             { id: "dashboard", path: "/admin", label: "الرئيسية", icon: LayoutDashboard, permission: null, adminOnly: false },
             { id: "activities", path: "/admin/activities", label: "الفعاليات", icon: Target, permission: "activity", adminOnly: false },
             { id: "scanner", path: "/admin/scanner", label: "الماسح الضوئي", icon: ScanLine, permission: "activity", adminOnly: false },
+            // ── ADMIN ONLY ──
             { id: "points", path: "/admin/points", label: "سجل النقاط", icon: Award, permission: null, adminOnly: true },
         ]
     },
     {
-        title: "كادر الاتحاد والنظام", // Matches "كادر الاتحاد" grid
+        title: "كادر الاتحاد والنظام",
         items: [
+            // ── ADMIN ONLY ──
             { id: "users", path: "/admin/users", label: "المستخدمون", icon: Users, permission: null, adminOnly: true },
             { id: "teamadmin", path: "/admin/teamadmin", label: "فريق الاتحاد", icon: ShieldCheck, permission: null, adminOnly: true },
-            { id: "leadership", path: "/admin/leadership", label: "الأداء ", icon: BarChart, permission: null, adminOnly: false },
+            { id: "leadership", path: "/admin/leadership", label: "تقييم والتواصل مع الكادر ", icon: BarChart, permission: null, adminOnly: false },
             { id: "elections", path: "/admin/elections", label: "الانتخابات", icon: Vote, permission: null, adminOnly: false },
         ]
     },
     {
-        title: "ادارة الصفحة الخارجية", // Matches "خدمات وأدوات" grid
+        // Individual permissions: homepage | info-cms | published
+        title: "ادارة الصفحة الخارجية",
         items: [
-            { id: "homepage", path: "/admin/homepage", label: "مدير الصفحة الرئيسية", icon: Layout, permission: null, adminOnly: true },
-            { id: "info-cms", path: "/admin/info-cms", label: "إدارة المحتوى", icon: FileText, permission: null, adminOnly: true },
-            { id: "published", path: "/admin/publish", label: "المنشورات", icon: FileText, permission: null, adminOnly: true },
+            { id: "homepage", path: "/admin/homepage", label: "مدير الصفحة الرئيسية", icon: Layout, permission: "homepage", adminOnly: false },
+            { id: "info-cms", path: "/admin/info-cms", label: "إدارة المحتوى", icon: FileText, permission: "info-cms", adminOnly: false },
+            { id: "published", path: "/admin/publish", label: "المنشورات", icon: FileText, permission: "published", adminOnly: false },
         ]
     },
     {
-        title: "مشاريع الاتحاد", // Matches "مشاريع الاتحاد" list
+        // Individual permissions per project
+        title: "مشاريع الاتحاد",
         items: [
             { id: "3wn-admin", path: "/admin/3wnAdmin", label: "إدارة عون", icon: HeartHandshake, permission: "3wn", adminOnly: false },
             { id: "busla", path: "/admin/busla", label: "إدارة بوصلة", icon: Compass, permission: "busla", adminOnly: false },
             { id: "reels", path: "/admin/reels", label: "مفهوم (الريلز)", icon: Clapperboard, permission: "reels", adminOnly: false },
             { id: "academy", path: "/admin/academy", label: "الأكاديمية", icon: GraduationCap, permission: "academy", adminOnly: false },
-
         ]
     },
-
     {
-        title: "إدارة المتجر", // Store Management
+        // MODULE permission: 'store' grants access to all sub-pages
+        title: "إدارة المتجر",
         items: [
-            { id: "store", path: "/admin/store", label: "نظرة عامة المتجر", icon: ShoppingBag, permission: null, adminOnly: true },
-            { id: "store/categories", path: "/admin/store/categories", label: "فئات المتجر", icon: Tag, permission: null, adminOnly: true },
-            { id: "store/products", path: "/admin/store/products", label: "المنتجات", icon: ShoppingBag, permission: null, adminOnly: true },
-            { id: "store/orders", path: "/admin/store/orders", label: "الطلبات", icon: ListOrdered, permission: null, adminOnly: true },
+            { id: "store", path: "/admin/store", label: "نظرة عامة المتجر", icon: ShoppingBag, permission: "store", adminOnly: false },
+            { id: "store/categories", path: "/admin/store/categories", label: "فئات المتجر", icon: Tag, permission: "store", adminOnly: false },
+            { id: "store/products", path: "/admin/store/products", label: "المنتجات", icon: ShoppingBag, permission: "store", adminOnly: false },
+            { id: "store/orders", path: "/admin/store/orders", label: "الطلبات", icon: ListOrdered, permission: "store", adminOnly: false },
         ]
     },
     {
-        title: "مشاريع الطلاب", // Student Projects Management
+        // MODULE permission: 'student-projects' grants access to all sub-pages
+        title: "مشاريع الطلاب",
         items: [
-            { id: "student-projects", path: "/admin/student-projects", label: "نظرة عامة", icon: Briefcase, permission: null, adminOnly: true },
-            { id: "student-projects/submissions", path: "/admin/student-projects/submissions", label: "الطلبات الواردة", icon: Inbox, permission: null, adminOnly: true },
-            { id: "student-projects/projects", path: "/admin/student-projects/projects", label: "المشاريع المنشورة", icon: Briefcase, permission: null, adminOnly: true },
-            { id: "student-projects/categories", path: "/admin/student-projects/categories", label: "فئات المشاريع", icon: Tag, permission: null, adminOnly: true },
+            { id: "student-projects", path: "/admin/student-projects", label: "نظرة عامة", icon: Briefcase, permission: "student-projects", adminOnly: false },
+            { id: "student-projects/submissions", path: "/admin/student-projects/submissions", label: "الطلبات الواردة", icon: Inbox, permission: "student-projects", adminOnly: false },
+            { id: "student-projects/projects", path: "/admin/student-projects/projects", label: "المشاريع المنشورة", icon: Briefcase, permission: "student-projects", adminOnly: false },
+            { id: "student-projects/categories", path: "/admin/student-projects/categories", label: "فئات المشاريع", icon: Tag, permission: "student-projects", adminOnly: false },
         ]
     },
     {
-        title: "الإعلانات", // Ads Management
+        // ADMIN ONLY
+        title: "الإعلانات",
         items: [
             { id: "ads", path: "/admin/ads", label: "إدارة الإعلانات", icon: Megaphone, permission: null, adminOnly: true },
             { id: "suggestion-boxes", path: "/admin/suggestion-boxes", label: "صناديق الاقتراحات", icon: MessagesSquare, permission: null, adminOnly: true },
         ]
     },
     {
+        // Individual permissions: arrivals | volunteers
         title: "نظام الاستقبال",
         items: [
-            { id: "arrivals", path: "/admin/arrivals", label: "طلبات الوصول", icon: PlaneLanding, permission: null, adminOnly: true },
-            { id: "arrivals/volunteers", path: "/admin/arrivals/volunteers", label: "متطوعو الاستقبال", icon: Users, permission: null, adminOnly: true },
+            { id: "arrivals", path: "/admin/arrivals", label: "طلبات الوصول", icon: PlaneLanding, permission: "arrivals", adminOnly: false },
+            { id: "arrivals/volunteers", path: "/admin/arrivals/volunteers", label: "متطوعو الاستقبال", icon: Users, permission: "volunteers", adminOnly: false },
         ]
     },
     {
-        title: "التفاعل", // Remaining admin-specific management
+        // Individual permissions: chat | weekly-engagement | requests
+        title: "التفاعل",
         items: [
-            { id: "requests", path: "/admin/requests", label: "الاقتراحات  ", icon: MessageSquare, permission: null, adminOnly: false },
-            { id: "engagement-chat", path: "/admin/engagement/chat", label: "إدارة الدردشة", icon: MessageSquare, permission: null, adminOnly: false },
-            { id: "engagement-weekly", path: "/admin/engagement/weekly", label: "التفاعل الأسبوعي", icon: TrendingUp, permission: null, adminOnly: false },
+            { id: "requests", path: "/admin/requests", label: "الاقتراحات", icon: MessageSquare, permission: "requests", adminOnly: false },
+            { id: "engagement-chat", path: "/admin/engagement/chat", label: "إدارة الدردشة", icon: MessageSquare, permission: "chat", adminOnly: false },
+            { id: "engagement-weekly", path: "/admin/engagement/weekly", label: "التفاعل الأسبوعي", icon: TrendingUp, permission: "weekly-engagement", adminOnly: false },
         ]
     },
     {
-        title: "ادارة العلاقات", // Remaining admin-specific management
+        // Individual permissions: partners | relations | offers
+        title: "ادارة العلاقات",
         items: [
             { id: "partners", path: "/admin/partners", label: "إدارة الشركاء", icon: Handshake, permission: "partners", adminOnly: false },
-            { id: "relations", path: "/admin/relations", label: "إدارة العلاقات", icon: Handshake, permission: "partners", adminOnly: false },
-            { id: "offers", path: "/admin/offers", label: "إدارة العروض", icon: Tag, permission: "partners", adminOnly: false },
+            { id: "relations", path: "/admin/relations", label: "إدارة العلاقات", icon: Handshake, permission: "relations", adminOnly: false },
+            { id: "offers", path: "/admin/offers", label: "إدارة العروض", icon: Tag, permission: "offers", adminOnly: false },
         ]
     },
     {
-        title: "خدمات وأدوات", // Matches "خدمات وأدوات" grid
+        title: "خدمات وأدوات",
         items: [
             { id: "jobadmin", path: "/admin/jobadmin", label: "إدارة الوظائف", icon: Briefcase, permission: null, adminOnly: false },
             { id: "appsmapadmin", path: "/admin/appsmapadmin", label: "تطبيقات وخرائط", icon: Map, permission: null, adminOnly: false },
