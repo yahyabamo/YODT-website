@@ -234,14 +234,14 @@ export const pagesText = {
     established: { ar: "تأسست", en: "Established", tr: "Kuruluş" },
   },
   students: {
-    heroEyebrow: { ar: "طلابنا", en: "Our Students", tr: "Öğrencilerimiz" },
-    heroTitle: { ar: "طلاب يمنيون متميزون", en: "Outstanding Yemeni Students", tr: "Başarılı Yemenli Öğrenciler" },
+    heroEyebrow: { ar: "كادر الاتحاد", en: "Our Team", tr: "Ekibimiz" },
+    heroTitle: { ar: " فريق متكامل لخدمة الطلاب", en: "A Team That Works to Serve the Students", tr: "Öğrencilere Hizmet Etmek İçin Çalışan Bir Ekip" },
     heroDesc: {
-      ar: "قصص نجاح وتفوق يسطرها الطلاب اليمنيون في مختلف الجامعات التركية",
-      en: "Stories of success and excellence written by Yemeni students in various Turkish universities.",
-      tr: "Çeşitli Türk üniversitelerinde Yemenli öğrenciler tarafından yazılan başarı ve mükemmellik hikayeleri.",
+      ar: "فريق من الطلاب اليمنيين المتميزين يعملون على دعم الطلاب اليمنيين في مختلف الجامعات التركية",
+      en: "A team of outstanding Yemeni students working to support Yemeni students in various Turkish universities.",
+      tr: "Çeşitli Türk üniversitelerinde Yemenli öğrencileri desteklemek için çalışan seçkin Yemenli öğrencilerden oluşan bir ekip.",
     },
-    listTitle: { ar: "الطلاب", en: "Students", tr: "Öğrenciler" },
+    listTitle: { ar: "كادر الاتحاد", en: "Our Team", tr: "Ekibimiz" },
   },
   icons: {
     heroEyebrow: { ar: "رموزنا", en: "Our Icons", tr: "İkonlarımız" },

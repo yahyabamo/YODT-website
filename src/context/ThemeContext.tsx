@@ -10,30 +10,34 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+// Read OUTSIDE useState to avoid SSR mismatch
+function getInitialTheme(): Theme {
+    if (typeof window === 'undefined') return 'light'; // SSR safety
+    try {
+        const saved = localStorage.getItem('theme-preference') as Theme;
+        if (saved === 'dark' || saved === 'light') return saved;
+    } catch { }
+    return 'light';
+}
+
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-    const [theme, setThemeState] = useState<Theme>(() => {
-        const savedTheme = localStorage.getItem('theme-preference') as Theme;
-        if (savedTheme) {
-            return savedTheme;
-        }
-        // Default to light as requested: "Light mode should be default."
-        return 'light';
-    });
+    const [theme, setThemeState] = useState<Theme>(getInitialTheme);
 
     useEffect(() => {
         const root = window.document.documentElement;
         root.classList.remove('light', 'dark');
         root.classList.add(theme);
         root.setAttribute('data-theme', theme);
+        // Save in sync with state
+        localStorage.setItem('theme-preference', theme);
     }, [theme]);
 
     const setTheme = (newTheme: Theme) => {
-        setThemeState(newTheme);
-        localStorage.setItem('theme-preference', newTheme);
+        setThemeState(newTheme); // useEffect handles localStorage
     };
 
     const toggleTheme = () => {
-        setTheme(theme === 'dark' ? 'light' : 'dark');
+        setThemeState(prev => (prev === 'dark' ? 'light' : 'dark'));
     };
 
     return (

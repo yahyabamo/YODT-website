@@ -2,6 +2,20 @@
 <html lang="en">
 
 <head>
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('theme-preference');
+        if (t === 'dark' || t === 'light') {
+          document.documentElement.classList.add(t);
+          document.documentElement.setAttribute('data-theme', t);
+        } else {
+          document.documentElement.classList.add('light');
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch (e) { }
+    })();
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- TODO: Set the document title to the name of your application -->
