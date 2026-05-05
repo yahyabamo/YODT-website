@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, Sun, Moon, ChevronRight } from 'lucide-react';
+import { Menu, X, Sun, Moon, ChevronRight, ChevronDown } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { useTheme } from '@/context/ThemeContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { navbarText } from '@/i18n/pages';
-import { PatternDivider } from '@/components/PatternDivider';
+// import { PatternDivider } from '@/components/PatternDivider'; // Uncomment if using
 
 export const Navbar: React.FC = () => {
     const { theme, toggleTheme } = useTheme();
@@ -14,6 +14,10 @@ export const Navbar: React.FC = () => {
 
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+
+    // Dropdown states for desktop
+    const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+    const [langMenuOpen, setLangMenuOpen] = useState(false);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -26,13 +30,15 @@ export const Navbar: React.FC = () => {
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
 
-    // Lock body scroll when drawer is open
+    // Lock body scroll when mobile drawer is open
     useEffect(() => {
         document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
         return () => { document.body.style.overflow = ''; };
     }, [mobileMenuOpen]);
 
-    const infoLinks = [
+    // ── Link Arrays ──────────────────────────────────────────────────────────
+    // All links (used for mobile menu so they appear as a normal list)
+    const allLinks = [
         { path: '/about-istanbul', key: 'aboutIstanbul' as const },
         { path: '/about-yemen', key: 'aboutYemen' as const },
         { path: '/universities', key: 'universities' as const },
@@ -42,11 +48,30 @@ export const Navbar: React.FC = () => {
         { path: '/student-projects', key: 'studentProjects' as const },
         { path: '/arrivals', key: 'arrivals' as const },
         { path: '/info/partners', key: 'partners' as const },
+    ];
 
+    // Main links visible on Desktop
+    const desktopMainLinks = [
+        { path: '/universities', key: 'universities' as const },
+        { path: '/arrivals', key: 'arrivals' as const },
+        { path: '/store', key: 'store' as const },
+        { path: '/student-projects', key: 'studentProjects' as const },
+        { path: '/students', key: 'ourStudents' as const },
+        { path: '/achievements', key: 'achievements' as const },
+    ];
+
+    // Links grouped under "More" on Desktop
+    const desktopMoreLinks = [
+        { path: '/about-istanbul', key: 'aboutIstanbul' as const },
+        { path: '/about-yemen', key: 'aboutYemen' as const },
+        { path: '/info/partners', key: 'partners' as const },
     ];
 
     const isActive = (path: string) =>
         location.pathname === path || location.pathname.startsWith(path + '/');
+
+    // Check if any link inside the "More" dropdown is currently active
+    const isMoreActive = desktopMoreLinks.some((link) => isActive(link.path));
 
     const transparent = isDark && !scrolled;
 
@@ -58,6 +83,7 @@ export const Navbar: React.FC = () => {
     const linkText = transparent ? 'rgba(255,255,255,0.80)' : isDark ? 'rgba(237,234,228,0.75)' : 'rgba(26,18,8,0.75)';
     const linkHoverText = isDark ? '#edeae4' : '#1a1208';
     const linkHoverBg = isDark ? 'rgba(255,255,255,0.09)' : 'rgba(0,0,0,0.06)';
+    const dropdownBg = isDark ? '#121218' : '#ffffff';
 
     const ctrlBg = transparent ? 'rgba(255,255,255,0.12)' : isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
     const ctrlBorder = transparent ? 'rgba(255,255,255,0.18)' : isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.12)';
@@ -121,7 +147,8 @@ export const Navbar: React.FC = () => {
 
                     {/* ── Desktop nav links ── */}
                     <ul className="hidden lg:flex items-center gap-1" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-                        {infoLinks.map((link) => {
+                        {/* 1. Standard Main Links */}
+                        {desktopMainLinks.map((link) => {
                             const active = isActive(link.path);
                             return (
                                 <li key={link.path}>
@@ -143,14 +170,116 @@ export const Navbar: React.FC = () => {
                                 </li>
                             );
                         })}
+
+                        {/* 2. "For More" Dropdown */}
+                        <li
+                            onMouseEnter={() => setMoreMenuOpen(true)}
+                            onMouseLeave={() => setMoreMenuOpen(false)}
+                            style={{ position: 'relative', padding: '10px 0' }} // padding acts as a safe hover bridge
+                        >
+                            <button
+                                style={{
+                                    display: 'flex', alignItems: 'center', gap: '6px',
+                                    padding: '8px 14px', borderRadius: '10px',
+                                    fontSize: '0.875rem', fontWeight: 500,
+                                    color: isMoreActive ? '#c8a84b' : linkText,
+                                    background: isMoreActive ? 'rgba(200,168,75,0.15)' : (moreMenuOpen ? linkHoverBg : 'transparent'),
+                                    border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
+                                    transition: 'all 0.2s ease',
+                                }}
+                            >
+                                {lang === 'ar' ? 'المزيد' : lang === 'tr' ? 'Daha Fazla' : 'More'}
+                                <ChevronDown size={14} style={{ transform: moreMenuOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                            </button>
+
+                            {moreMenuOpen && (
+                                <div style={{
+                                    position: 'absolute', top: '100%',
+                                    left: lang === 'ar' ? 'auto' : 0,
+                                    right: lang === 'ar' ? 0 : 'auto',
+                                    minWidth: '200px', padding: '8px', marginTop: '-4px',
+                                    background: dropdownBg, border: `1px solid ${navBorder}`,
+                                    borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+                                    display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 100
+                                }}>
+                                    {desktopMoreLinks.map((link) => {
+                                        const active = isActive(link.path);
+                                        return (
+                                            <button
+                                                key={link.path}
+                                                onClick={() => { navigate(link.path); setMoreMenuOpen(false); }}
+                                                style={{
+                                                    padding: '10px 14px', borderRadius: '8px',
+                                                    fontSize: '0.875rem', textAlign: lang === 'ar' ? 'right' : 'left',
+                                                    color: active ? '#c8a84b' : linkText,
+                                                    background: active ? 'rgba(200,168,75,0.1)' : 'transparent',
+                                                    border: 'none', cursor: 'pointer', transition: 'all 0.2s ease',
+                                                }}
+                                                onMouseEnter={(e) => { if (!active) { e.currentTarget.style.color = linkHoverText; e.currentTarget.style.background = linkHoverBg; } }}
+                                                onMouseLeave={(e) => { if (!active) { e.currentTarget.style.color = linkText; e.currentTarget.style.background = 'transparent'; } }}
+                                            >
+                                                {navbarText.links[link.key][lang]}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </li>
                     </ul>
 
                     {/* ── Right controls ── */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
 
-                        {/* Language switcher — desktop full, mobile compact */}
-                        <div style={{
-                            display: 'flex', background: ctrlBg,
+                        {/* Language switcher — Desktop Dropdown */}
+                        {/* Language switcher — Desktop Dropdown */}
+                        <div
+                            onMouseEnter={() => setLangMenuOpen(true)}
+                            onMouseLeave={() => setLangMenuOpen(false)}
+                            className="hidden lg:flex"
+                            style={{ position: 'relative', padding: '10px 0' }}
+                        >
+                            <button style={{
+                                display: 'flex', alignItems: 'center', gap: '4px',
+                                padding: '6px 12px', height: '38px', background: ctrlBg,
+                                border: `1px solid ${ctrlBorder}`, borderRadius: '10px',
+                                color: iconColor, fontSize: '0.75rem', fontWeight: 700,
+                                cursor: 'pointer', transition: 'all 0.2s', letterSpacing: '0.04em'
+                            }}>
+                                {lang.toUpperCase()}
+                                <ChevronDown size={14} style={{ transform: langMenuOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                            </button>
+
+                            {langMenuOpen && (
+                                <div style={{
+                                    position: 'absolute', top: '100%', right: lang === 'ar' ? 'auto' : 0, left: lang === 'ar' ? 0 : 'auto',
+                                    padding: '6px', marginTop: '-4px',
+                                    background: dropdownBg, border: `1px solid ${navBorder}`,
+                                    borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                                    display: 'flex', flexDirection: 'column', gap: '2px', zIndex: 100
+                                }}>
+                                    {(['ar', 'en', 'tr'] as const).map(l => (
+                                        <button
+                                            key={l}
+                                            onClick={() => { setLang(l); setLangMenuOpen(false); }}
+                                            style={{
+                                                padding: '8px 16px', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.04em',
+                                                borderRadius: '6px', cursor: 'pointer', border: 'none',
+                                                background: lang === l ? 'rgba(122,28,28,0.1)' : 'transparent',
+                                                color: lang === l ? '#7a1c1c' : linkText,
+                                            }}
+                                            onMouseEnter={(e) => { if (lang !== l) e.currentTarget.style.background = linkHoverBg; }}
+                                            onMouseLeave={(e) => { if (lang !== l) e.currentTarget.style.background = 'transparent'; }}
+                                        >
+                                            {l.toUpperCase()}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Language switcher — Mobile Compact Row */}
+                        <div className="flex lg:hidden" style={{
+                            background: ctrlBg,
                             border: `1px solid ${ctrlBorder}`, borderRadius: '10px', overflow: 'hidden',
                         }}>
                             {(['ar', 'en', 'tr'] as const).map(l => (
@@ -197,14 +326,13 @@ export const Navbar: React.FC = () => {
                             {navbarText.buttons.register[lang]}
                         </button>
 
-                        {/* Hamburger — mobile only */}
+                        {/* Hamburger — strictly mobile only */}
                         <button
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            className="lg:hidden"
+                            className="flex items-center justify-center lg:hidden"
                             aria-label="Toggle menu"
                             style={{
                                 width: '40px', height: '40px', borderRadius: '10px',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 background: mobileMenuOpen ? (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)') : ctrlBg,
                                 border: `1px solid ${ctrlBorder}`,
                                 color: iconColor, cursor: 'pointer',
@@ -214,14 +342,6 @@ export const Navbar: React.FC = () => {
                         </button>
                     </div>
                 </div>
-                {/* Signature Brand Divider */}
-
-                {/* <PatternDivider
-                    height={28}
-                    variant="chevrons"        // zigzag pattern (yemen-pattern3.svg)
-                    opacity={isDark ? 0.55 : 0.30}  // subtle — doesn't fight the nav content
-                /> */}
-
             </nav>
 
             {/* ── Mobile: backdrop ── */}
@@ -256,7 +376,6 @@ export const Navbar: React.FC = () => {
                     transition: 'transform 0.38s cubic-bezier(0.32, 0.72, 0, 1)',
                     maxHeight: '88vh',
                     overflowY: 'auto',
-                    // Safe area for notched phones
                     paddingBottom: 'env(safe-area-inset-bottom, 16px)',
                 }}
             >
@@ -289,9 +408,9 @@ export const Navbar: React.FC = () => {
                     </button>
                 </div>
 
-                {/* Nav links */}
+                {/* Nav links (Mobile uses allLinks) */}
                 <div style={{ padding: '0 12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    {infoLinks.map((link) => {
+                    {allLinks.map((link) => {
                         const active = isActive(link.path);
                         return (
                             <button
@@ -333,7 +452,6 @@ export const Navbar: React.FC = () => {
 
                 {/* Bottom action row */}
                 <div style={{ padding: '0 12px 8px', display: 'flex', gap: '10px' }}>
-
                     {/* Theme toggle pill */}
                     <button
                         onClick={toggleTheme}
