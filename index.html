@@ -5,14 +5,21 @@
   <script>
     (function () {
       try {
+        var root = document.documentElement;
+        root.classList.add('no-transition');
         var t = localStorage.getItem('theme-preference');
         if (t === 'dark' || t === 'light') {
-          document.documentElement.classList.add(t);
-          document.documentElement.setAttribute('data-theme', t);
+          root.classList.add(t);
+          root.setAttribute('data-theme', t);
         } else {
-          document.documentElement.classList.add('light');
-          document.documentElement.setAttribute('data-theme', 'light');
+          root.classList.add('light');
+          root.setAttribute('data-theme', 'light');
         }
+        window.addEventListener('load', function () {
+          setTimeout(function () {
+            root.classList.remove('no-transition');
+          }, 0);
+        });
       } catch (e) { }
     })();
   </script>

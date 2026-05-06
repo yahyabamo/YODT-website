@@ -25,10 +25,13 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
     useEffect(() => {
         const root = window.document.documentElement;
-        root.classList.remove('light', 'dark');
-        root.classList.add(theme);
+        if (!root.classList.contains(theme)) {
+            root.classList.remove('light', 'dark');
+            root.classList.add(theme);
+        }
+
+        // ✅ Always keep data-theme in sync
         root.setAttribute('data-theme', theme);
-        // Save in sync with state
         localStorage.setItem('theme-preference', theme);
     }, [theme]);
 

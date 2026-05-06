@@ -260,6 +260,14 @@
     @apply border-border;
   }
 
+  /* Disable transitions on page load */
+  html.no-transition,
+  html.no-transition *,
+  html.no-transition *::before,
+  html.no-transition *::after {
+    transition: none !important;
+  }
+
   html {
     direction: rtl;
     font-size: 16px;
@@ -1265,7 +1273,6 @@
     font-family: var(--f-sans);
     overflow-x: hidden;
     line-height: 1.7;
-    transition: background 0.5s ease, color 0.5s ease;
   }
 
   img {
