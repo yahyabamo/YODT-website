@@ -173,7 +173,7 @@ import VolunteerDashboard from "./pages/admin/VolunteerDashboard";
 import VolunteerChatPage from "./pages/admin/VolunteerChatPage";
 
 import AboutPartnersPage from "./pages/info/AboutPartners";
-
+import { ScrollToTop } from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -187,6 +187,7 @@ const App = () => (
 
           <AuthProvider>
             <BrowserRouter>
+              <ScrollToTop />
               <Routes>
                 {/* 1. STANDALONE PAGES (NO Navbar / Footer) */}
                 <Route path="/login" element={<Login />} />
