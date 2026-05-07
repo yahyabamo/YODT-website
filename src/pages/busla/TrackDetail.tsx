@@ -428,43 +428,45 @@ export default function TrackDetailPage() {
                     {state.track?.current_book?.file_url && (
                         <Card className="border-0 shadow-md bg-white">
                             <CardContent className="p-4 space-y-4">
-                                <div className="flex items-center justify-between gap-4">
-                                    <div className="flex-1">
+                                <div className="flex items-center justify-between gap-4 overflow-hidden">
+                                    <div className="flex-1 min-w-0">
                                         <label className="text-xs font-semibold text-slate-600 block mb-2">
                                             الصفحة الحالية
                                         </label>
-                                        <div className="flex items-center gap-2">
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => handlePageChange(state.currentPage - 1)}
-                                                disabled={state.currentPage <= 1}
-                                                className="h-9 px-3"
-                                            >
-                                                السابقة
-                                            </Button>
-                                            <input
-                                                type="number"
-                                                min={1}
-                                                value={state.currentPage}
-                                                onChange={(e) => {
-                                                    const page = Math.max(1, Number(e.target.value) || 1);
-                                                    handlePageChange(page);
-                                                }}
-                                                className="flex-1 h-9 px-3 border border-slate-300 rounded-lg text-center font-mono text-sm focus:outline-none focus:ring-2 focus:ring-red-700"
-                                            />
+                                        <div className="flex items-center gap-2 flex-wrap">
                                             <Button
                                                 size="sm"
                                                 variant="outline"
                                                 onClick={() => handlePageChange(state.currentPage + 1)}
                                                 disabled={state.totalPages > 0 && state.currentPage >= state.totalPages}
-                                                className="h-9 px-3"
+                                                className="h-9 px-3 flex-shrink-0"
                                             >
                                                 التالية
                                             </Button>
+                                            <div className="flex-1 min-w-0">
+                                                <input
+                                                    type="number"
+                                                    min={1}
+                                                    value={state.currentPage}
+                                                    onChange={(e) => {
+                                                        const page = Math.max(1, Number(e.target.value) || 1);
+                                                        handlePageChange(page);
+                                                    }}
+                                                    className="w-full min-w-0 h-9 px-3 border border-slate-300 rounded-lg text-center font-mono text-sm focus:outline-none focus:ring-2 focus:ring-red-700"
+                                                />
+                                            </div>
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => handlePageChange(state.currentPage - 1)}
+                                                disabled={state.currentPage <= 1}
+                                                className="h-9 px-3 flex-shrink-0"
+                                            >
+                                                السابقة
+                                            </Button>
                                         </div>
                                     </div>
-                                    <div className="text-right">
+                                    <div className="text-right flex-shrink-0">
                                         <p className="text-xs font-semibold text-slate-600 mb-2">التقدم</p>
                                         <div className="text-2xl font-bold text-red-700">
                                             {state.totalPages > 0

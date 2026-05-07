@@ -487,33 +487,6 @@ function IOSPDFViewer({
             {/* ── Bottom nav bar ── */}
             <div className={cn('flex-shrink-0 border-t', toolbarBg, borderCol)}>
                 <div className="flex items-center px-4 py-3 gap-3">
-                    {/* Prev */}
-                    <button
-                        onClick={() => goToPage(displayPage - 1)}
-                        disabled={displayPage <= 1}
-                        className={cn(
-                            'flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold transition-all active:scale-95 select-none',
-                            displayPage <= 1
-                                ? isDark ? 'bg-white/5 text-white/20' : 'bg-black/5 text-gray-300'
-                                : isDark ? 'bg-white/10 text-white' : 'bg-black/8 text-gray-900'
-                        )}
-                    >
-                        <ChevronRight className="h-4 w-4" />
-                        السابقة
-                    </button>
-
-                    {/* First / Last page jump buttons */}
-                    <div className="flex flex-col items-center gap-1">
-                        <button onClick={() => goToPage(1)} disabled={displayPage <= 1}
-                            className={cn('p-1.5 rounded-lg', displayPage <= 1 ? 'opacity-20' : isDark ? 'text-white/50 active:bg-white/10' : 'text-gray-400 active:bg-black/5')}>
-                            <SkipBack className="h-3.5 w-3.5" />
-                        </button>
-                        <button onClick={() => goToPage(numPages)} disabled={!numPages || displayPage >= numPages}
-                            className={cn('p-1.5 rounded-lg', (!numPages || displayPage >= numPages) ? 'opacity-20' : isDark ? 'text-white/50 active:bg-white/10' : 'text-gray-400 active:bg-black/5')}>
-                            <SkipForward className="h-3.5 w-3.5" />
-                        </button>
-                    </div>
-
                     {/* Next */}
                     <button
                         onClick={() => goToPage(displayPage + 1)}
@@ -527,6 +500,33 @@ function IOSPDFViewer({
                     >
                         التالية
                         <ChevronLeft className="h-4 w-4" />
+                    </button>
+
+                    {/* First / Last page jump buttons */}
+                    <div className="flex flex-col items-center gap-1">
+                        <button onClick={() => goToPage(numPages)} disabled={!numPages || displayPage >= numPages}
+                            className={cn('p-1.5 rounded-lg', (!numPages || displayPage >= numPages) ? 'opacity-20' : isDark ? 'text-white/50 active:bg-white/10' : 'text-gray-400 active:bg-black/5')}>
+                            <SkipForward className="h-3.5 w-3.5" />
+                        </button>
+                        <button onClick={() => goToPage(1)} disabled={displayPage <= 1}
+                            className={cn('p-1.5 rounded-lg', displayPage <= 1 ? 'opacity-20' : isDark ? 'text-white/50 active:bg-white/10' : 'text-gray-400 active:bg-black/5')}>
+                            <SkipBack className="h-3.5 w-3.5" />
+                        </button>
+                    </div>
+
+                    {/* Prev */}
+                    <button
+                        onClick={() => goToPage(displayPage - 1)}
+                        disabled={displayPage <= 1}
+                        className={cn(
+                            'flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold transition-all active:scale-95 select-none',
+                            displayPage <= 1
+                                ? isDark ? 'bg-white/5 text-white/20' : 'bg-black/5 text-gray-300'
+                                : isDark ? 'bg-white/10 text-white' : 'bg-black/8 text-gray-900'
+                        )}
+                    >
+                        <ChevronRight className="h-4 w-4" />
+                        السابقة
                     </button>
                 </div>
             </div>
@@ -915,21 +915,21 @@ function DesktopPDFViewer({
             {isMobile && (
                 <div className={cn('flex-shrink-0 border-t relative z-30', toolbarBg)}>
                     <div className="flex items-center px-4 py-3 gap-3">
-                        <button onClick={() => goToPage(displayPage - 1, 'right')} disabled={displayPage <= 1}
+                        <button onClick={() => goToPage(displayPage + 1, 'left')} disabled={!!numPages && displayPage >= numPages}
                             className={cn('flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold active:scale-95 select-none',
-                                displayPage <= 1 ? isDark ? 'bg-white/5 text-white/20' : 'bg-black/5 text-gray-300' : isDark ? 'bg-white/10 text-white' : 'bg-black/8 text-gray-900'
+                                !!numPages && displayPage >= numPages ? isDark ? 'bg-white/5 text-white/20' : 'bg-black/5 text-gray-300' : 'bg-rose-600 text-white shadow-lg shadow-rose-900/30'
                             )}>
-                            <ChevronRight className="h-4 w-4" /> Prev
+                            التالية <ChevronLeft className="h-4 w-4" />
                         </button>
                         <button onClick={() => { setShowPageInput(true); setPageInputVal(String(displayPage)); }} className="flex flex-col items-center px-2 min-w-[56px]">
                             <span className={cn('text-xl font-bold font-mono', textColor)}>{displayPage}</span>
                             <span className={cn('text-[10px]', mutedText)}>{numPages ? `of ${numPages}` : '—'}</span>
                         </button>
-                        <button onClick={() => goToPage(displayPage + 1, 'left')} disabled={!!numPages && displayPage >= numPages}
+                        <button onClick={() => goToPage(displayPage - 1, 'right')} disabled={displayPage <= 1}
                             className={cn('flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold active:scale-95 select-none',
-                                !!numPages && displayPage >= numPages ? isDark ? 'bg-white/5 text-white/20' : 'bg-black/5 text-gray-300' : 'bg-rose-600 text-white shadow-lg shadow-rose-900/30'
+                                displayPage <= 1 ? isDark ? 'bg-white/5 text-white/20' : 'bg-black/5 text-gray-300' : isDark ? 'bg-white/10 text-white' : 'bg-black/8 text-gray-900'
                             )}>
-                            Next <ChevronLeft className="h-4 w-4" />
+                            <ChevronRight className="h-4 w-4" /> السابقة
                         </button>
                     </div>
                 </div>
