@@ -7,6 +7,7 @@ import {
     Youtube, Save, Eye, EyeOff, AlertCircle, CheckCircle2,
 } from 'lucide-react'
 import { useRoleGuard } from '@/hooks/useRoleGuard'
+import { AdminQuizEditor } from './components/AdminQuizEditor'
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 function getYouTubeId(url: string): string | null {
@@ -275,6 +276,14 @@ export default function AdminCourseFormPage() {
                             + إضافة درس جديد
                         </button>
                     </Card>
+
+                    {/* ── Quiz Editor ── */}
+                    <div className="mt-8">
+                        <AdminQuizEditor 
+                            courseId={id || 'new'} 
+                            lessonYoutubeUrl={lessons[0]?.youtube_url || ''} 
+                        />
+                    </div>
                 </div>
 
                 {/* ── Sidebar ── */}
