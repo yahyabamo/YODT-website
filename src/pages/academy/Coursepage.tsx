@@ -7,6 +7,7 @@ import {
     PlayCircle, Lock, ArrowRight, AlertCircle,
 } from 'lucide-react'
 import { AdSlot } from '@/components/ads/AdSlot'
+import { StudentQuiz } from './components/StudentQuiz'
 
 declare global {
     interface Window {
@@ -163,13 +164,19 @@ export default function CoursePage() {
         await supabase.from('lesson_progress').insert({ user_id: userId, course_id: lesson.course_id, lesson_id: lesson.id })
         const next = new Set(completedIds); next.add(lesson.id)
         setCompletedIds(next); setVideoEnded(false)
-        if (next.size === lessons.length && !hasCert) {
-            await supabase.from('certificates').insert({ user_id: userId, course_id: lesson.course_id })
-            setHasCert(true)
-        }
         const idx = lessons.findIndex(l => l.id === lesson.id)
         if (idx < lessons.length - 1) setActiveLesson(lessons[idx + 1])
-    }, [userId, enrolled, completedIds, lessons, hasCert])
+    }, [userId, enrolled, completedIds, lessons])
+
+    async function handleQuizPassed() {
+        if (!userId || !id || hasCert) return;
+        try {
+            await supabase.from('certificates').insert({ user_id: userId, course_id: id });
+            setHasCert(true);
+        } catch (e) {
+            console.error('Failed to generate certificate', e);
+        }
+    }
 
     const progress = lessons.length > 0 ? Math.round((completedIds.size / lessons.length) * 100) : 0
     const alreadyDone = activeLesson ? completedIds.has(activeLesson.id) : false
@@ -280,8 +287,8 @@ export default function CoursePage() {
                         <p className="text-sm text-gray-600 leading-relaxed">{course.description}</p>
                     </div>
 
-                    {/* Certificate banner */}
-                    {hasCert && (
+                    {/* Quiz or Certificate */}
+                    {hasCert ? (
                         <div className="flex items-center gap-4 p-5"
                             style={{ borderRadius: '20px', background: 'linear-gradient(135deg, #1C1008, #111111)', border: '1px solid rgba(180,83,9,0.3)' }}>
                             <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
@@ -296,6 +303,12 @@ export default function CoursePage() {
                                 عرض الشهادة
                             </button>
                         </div>
+                    ) : (
+                        enrolled && lessons.length > 0 && completedIds.size === lessons.length && userId && id && (
+                            <div className="mt-8">
+                                <StudentQuiz courseId={id} userId={userId} onPassed={handleQuizPassed} />
+                            </div>
+                        )
                     )}
                     <AdSlot page="academy_course_details" position="bottom" className="mt-8" />
                 </div>
