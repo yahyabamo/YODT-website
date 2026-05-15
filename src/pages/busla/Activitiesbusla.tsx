@@ -150,9 +150,7 @@ export default function ActivitiesPage() {
             <h1 className="text-lg font-bold text-slate-900 flex-1 text-center px-4 line-clamp-1">
               {' أنشطة بوصلة'}
             </h1>
-            {/* <Button size="icon" variant="ghost" className="h-10 w-10">
-                            <Share2 className="h-5 w-5 text-slate-600" />
-                        </Button> */}
+
           </div>
         </div>
       </header>

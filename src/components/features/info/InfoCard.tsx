@@ -15,7 +15,7 @@ interface InfoCardProps {
 export const InfoCard: React.FC<InfoCardProps> = ({
   id,
   name,
-  bio,
+  // bio,
   image_url,
   badge,
   badgeColor = '#7a1c1c',
@@ -105,7 +105,7 @@ export const InfoCard: React.FC<InfoCardProps> = ({
           </span>
         )}
 
-        <p style={{
+        {/* <p style={{
           color: 'var(--text-2, #b8b4ac)', fontSize: '0.82rem',
           lineHeight: 1.65, margin: 0,
           display: '-webkit-box',
@@ -114,7 +114,7 @@ export const InfoCard: React.FC<InfoCardProps> = ({
           overflow: 'hidden',
         }}>
           {bio}
-        </p>
+        </p> */}
 
         <div style={{
           marginTop: 'auto', paddingTop: '12px',

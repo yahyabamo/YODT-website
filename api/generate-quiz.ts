@@ -1,5 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { YoutubeTranscript } from 'youtube-transcript';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -14,10 +15,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Missing videoUrl parameter' });
     }
 
-    const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
-    if (!LOVABLE_API_KEY) {
-      return res.status(500).json({ error: 'LOVABLE_API_KEY is not configured on the server' });
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+    if (!GEMINI_API_KEY) {
+      return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server. Please add it to your environment variables.' });
     }
+
+    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
     // Extract video ID
     const patterns = [
@@ -48,7 +51,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'Could not fetch transcript for this video. Ensure the video has closed captions enabled.' });
     }
     
-    const systemPrompt = `
+    const prompt = `
       Based on the following video transcript, generate a multiple-choice quiz in Arabic.
       Generate 5 questions.
       For each question, provide 4 options and specify the exact correct answer.
@@ -65,35 +68,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ${transcriptText}
     `;
 
-    // Call AI using Lovable Gateway to match the chat-assistant setup seamlessly
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: "You are an educational assistant that strictly outputs JSON format exactly as requested without markdown formatting." },
-          { role: "user", content: systemPrompt },
-        ],
-        temperature: 0.3,
-      }),
+    // Call Gemini Free Tier directly
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const result = await model.generateContent({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+            temperature: 0.2,
+        }
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      return res.status(500).json({ error: "حدث خطأ في الاتصال بالذكاء الاصطناعي" });
-    }
-
-    const aiData = await response.json();
-    const text = aiData.choices[0].message.content;
+    const text = result.response.text();
 
     // Extract JSON array from markdown response
     const jsonMatch = text.match(/\[\s*\{.*\}\s*\]/s);
     if (!jsonMatch) {
+       console.error("AI Response text was:", text);
        throw new Error('Could not parse JSON from AI response');
     }
     

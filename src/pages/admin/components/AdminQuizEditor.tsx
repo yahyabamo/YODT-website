@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Sparkles, Plus, Trash2, Save, GripVertical, AlertCircle, CheckCircle2 } from 'lucide-react';
 import type { Quiz, QuizQuestion } from '@/integrations/supabase/academy.types';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { YoutubeTranscript } from 'youtube-transcript';
 
 type QuizQuestionDraft = Omit<QuizQuestion, 'id' | 'quiz_id' | 'created_at'> & { _id: string };
 
@@ -10,6 +12,7 @@ export function AdminQuizEditor({ courseId, lessonYoutubeUrl }: { courseId: stri
     const [questions, setQuestions] = useState<QuizQuestionDraft[]>([]);
     const [loading, setLoading] = useState(true);
     const [generating, setGenerating] = useState(false);
+    const [manualTranscript, setManualTranscript] = useState('');
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState<{ type: 'success' | 'error', msg: string } | null>(null);
 
@@ -64,16 +67,63 @@ export function AdminQuizEditor({ courseId, lessonYoutubeUrl }: { courseId: stri
 
         setGenerating(true);
         try {
-            const res = await fetch('/api/generate-quiz', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ videoUrl: lessonYoutubeUrl })
+            const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+            if (!apiKey) {
+                throw new Error("لم يتم العثور على مفتاح VITE_GEMINI_API_KEY في المتغيرات البيئية.");
+            }
+
+            const strictInstructions = `
+You are a quiz generator. Use ONLY the following content to create questions. 
+If no content is provided or you cannot access the link, return an error message saying "No content provided" instead of making up questions.
+Do not use your general knowledge. Only use the text provided below.
+Ensure the quiz is generated in Arabic.
+Generate 5 questions.
+For each question, provide 4 options and specify the exact correct answer.
+Return the output STRICTLY as a JSON array of objects with the following format:
+[
+  {
+    "question": "Question text here?",
+    "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
+    "correctAnswer": "Exact text of the correct option"
+  }
+]
+`;
+
+            let prompt = '';
+            if (manualTranscript && manualTranscript.trim() !== '') {
+                prompt = `${strictInstructions}\n\nContent:\n${manualTranscript}`;
+            } else {
+                if (!lessonYoutubeUrl) {
+                    throw new Error("يرجى إدخال رابط يوتيوب أو لصق النص يدوياً.");
+                }
+                prompt = `${strictInstructions}\n\nContent (YouTube Link): ${lessonYoutubeUrl}\nPlease access the information from this video and generate a quiz based on its content.`;
+            }
+
+            const genAI = new GoogleGenerativeAI(apiKey);
+            const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+            const result = await model.generateContent({
+                contents: [{ role: "user", parts: [{ text: prompt }] }],
+                generationConfig: { temperature: 0.2 }
             });
 
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'فشل التوليد');
+            const text = result.response.text();
+            
+            if (text.includes("No content provided")) {
+                throw new Error("تعذر على الذكاء الاصطناعي الوصول إلى محتوى الرابط. يرجى لصق نص الدرس يدوياً في المربع المخصص.");
+            }
+            
+            // Clean markdown blocks
+            const cleanText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+            const jsonMatch = cleanText.match(/\[\s*\{.*\}\s*\]/s);
 
-            const aiQuestions = data.questions.map((q: any, i: number) => ({
+            if (!jsonMatch) {
+                console.error("AI Response text was:", text);
+                throw new Error("الذكاء الاصطناعي لم يرجع البيانات بصيغة JSON صحيحة.");
+            }
+
+            const data = JSON.parse(jsonMatch[0]);
+
+            const aiQuestions = data.map((q: any, i: number) => ({
                 _id: crypto.randomUUID(),
                 question_text: q.question,
                 options: q.options,
@@ -127,7 +177,7 @@ export function AdminQuizEditor({ courseId, lessonYoutubeUrl }: { courseId: stri
 
             // 2. Clear old questions & insert new ones
             await supabase.from('quiz_questions').delete().eq('quiz_id', currentQuizId);
-            
+
             const rows = questions.map((q, i) => ({
                 quiz_id: currentQuizId,
                 question_text: q.question_text,
@@ -210,25 +260,35 @@ export function AdminQuizEditor({ courseId, lessonYoutubeUrl }: { courseId: stri
                     <h3 className="font-black text-gray-900 text-lg">التقييم والاختبار (Quiz)</h3>
                     <p className="text-xs text-gray-500 mt-1">امتحان الكورس للحصول على الشهادة. يجب على الطالب اجتيازه.</p>
                 </div>
-                <div className="flex gap-2">
-                    <button
-                        onClick={handleGenerateAI}
-                        disabled={generating}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90 disabled:opacity-60"
-                        style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
-                    >
-                        <Sparkles className="w-3.5 h-3.5" />
-                        {generating ? 'جاري التوليد...' : 'توليد باستخدام الذكاء الاصطناعي'}
-                    </button>
-                    <button
-                        onClick={saveQuiz}
-                        disabled={saving}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
-                        style={{ background: '#111' }}
-                    >
-                        <Save className="w-3.5 h-3.5" />
-                        {saving ? 'جاري الحفظ...' : 'حفظ التقييم'}
-                    </button>
+                <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+                    <div className="flex-1 w-full md:min-w-[300px]">
+                        <textarea
+                            value={manualTranscript}
+                            onChange={(e) => setManualTranscript(e.target.value)}
+                            placeholder="لصق محتوى الدرس يدوياً للذكاء الاصطناعي..."
+                            className="w-full h-10 p-2 rounded-xl border border-[#E8E3DC] text-xs focus:border-red-600 outline-none transition-colors bg-white resize-none"
+                        />
+                    </div>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={handleGenerateAI}
+                            disabled={generating || (!lessonYoutubeUrl && !manualTranscript.trim())}
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90 disabled:opacity-60 h-10 whitespace-nowrap"
+                            style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
+                        >
+                            <Sparkles className="w-3.5 h-3.5" />
+                            {generating ? 'جاري التوليد...' : 'توليد بالذكاء الاصطناعي'}
+                        </button>
+                        <button
+                            onClick={saveQuiz}
+                            disabled={saving}
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all hover:-translate-y-0.5 disabled:opacity-60 h-10 whitespace-nowrap"
+                            style={{ background: '#111' }}
+                        >
+                            <Save className="w-3.5 h-3.5" />
+                            {saving ? 'جاري الحفظ...' : 'حفظ التقييم'}
+                        </button>
+                    </div>
                 </div>
             </div>
 

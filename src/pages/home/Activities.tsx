@@ -262,6 +262,7 @@ const HomeActivities = () => {
                     )}
                 </div>
             </div>
+            
             <div className="px-4 pb-4 max-w-lg mx-auto">
                 <AdSlot page="offers" position="bottom" />
             </div>

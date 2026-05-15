@@ -42,7 +42,7 @@ export const navGroups = [
         items: [
             { id: "homepage", path: "/admin/homepage", label: "مدير الصفحة الرئيسية", icon: Layout, permission: "homepage", adminOnly: false },
             { id: "info-cms", path: "/admin/info-cms", label: "إدارة المحتوى", icon: FileText, permission: "info-cms", adminOnly: false },
-            { id: "published", path: "/admin/publish", label: "المنشورات", icon: FileText, permission: "published", adminOnly: false },
+            // { id: "published", path: "/admin/publish", label: "المنشورات", icon: FileText, permission: "published", adminOnly: false },
         ]
     },
     {
