@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRoleGuard } from '@/hooks/useRoleGuard';
 import { useChatAdmin } from '@/hooks/useChat';
 import { supabase } from '@/integrations/supabase/client';
